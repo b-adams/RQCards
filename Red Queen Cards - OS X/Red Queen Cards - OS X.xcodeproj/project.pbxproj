@@ -17,7 +17,6 @@
 		E9EA33831753F7A4009CE02D /* SenTestingKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9EA33821753F7A4009CE02D /* SenTestingKit.framework */; };
 		E9EA33841753F7A4009CE02D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9EA33611753F7A4009CE02D /* Cocoa.framework */; };
 		E9EA338C1753F7A4009CE02D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E9EA338A1753F7A4009CE02D /* InfoPlist.strings */; };
-		E9EA338F1753F7A4009CE02D /* Red_Queen_Cards___OS_XTests.m in Sources */ = {isa = PBXBuildFile; fileRef = E9EA338E1753F7A4009CE02D /* Red_Queen_Cards___OS_XTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -49,8 +48,6 @@
 		E9EA33821753F7A4009CE02D /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
 		E9EA33891753F7A4009CE02D /* Red Queen Cards - OS XTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Red Queen Cards - OS XTests-Info.plist"; sourceTree = "<group>"; };
 		E9EA338B1753F7A4009CE02D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		E9EA338D1753F7A4009CE02D /* Red_Queen_Cards___OS_XTests.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Red_Queen_Cards___OS_XTests.h"; sourceTree = "<group>"; };
-		E9EA338E1753F7A4009CE02D /* Red_Queen_Cards___OS_XTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "Red_Queen_Cards___OS_XTests.m"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +71,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		E9C2C0321753F7E8001E129E /* Model */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
+		E9C2C0331753F7EC001E129E /* View */ = {
+			isa = PBXGroup;
+			children = (
+				E9EA33761753F7A4009CE02D /* RQCDocument.xib */,
+				E9EA33791753F7A4009CE02D /* MainMenu.xib */,
+			);
+			name = View;
+			sourceTree = "<group>";
+		};
+		E9C2C0341753F7F1001E129E /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				E9EA33731753F7A4009CE02D /* RQCDocument.h */,
+				E9EA33741753F7A4009CE02D /* RQCDocument.m */,
+			);
+			name = Controller;
+			sourceTree = "<group>";
+		};
 		E9EA33551753F7A4009CE02D = {
 			isa = PBXGroup;
 			children = (
@@ -116,10 +138,9 @@
 		E9EA33671753F7A4009CE02D /* Red Queen Cards - OS X */ = {
 			isa = PBXGroup;
 			children = (
-				E9EA33731753F7A4009CE02D /* RQCDocument.h */,
-				E9EA33741753F7A4009CE02D /* RQCDocument.m */,
-				E9EA33761753F7A4009CE02D /* RQCDocument.xib */,
-				E9EA33791753F7A4009CE02D /* MainMenu.xib */,
+				E9C2C0321753F7E8001E129E /* Model */,
+				E9C2C0331753F7EC001E129E /* View */,
+				E9C2C0341753F7F1001E129E /* Controller */,
 				E9EA33681753F7A4009CE02D /* Supporting Files */,
 			);
 			path = "Red Queen Cards - OS X";
@@ -140,8 +161,6 @@
 		E9EA33871753F7A4009CE02D /* Red Queen Cards - OS XTests */ = {
 			isa = PBXGroup;
 			children = (
-				E9EA338D1753F7A4009CE02D /* Red_Queen_Cards___OS_XTests.h */,
-				E9EA338E1753F7A4009CE02D /* Red_Queen_Cards___OS_XTests.m */,
 				E9EA33881753F7A4009CE02D /* Supporting Files */,
 			);
 			path = "Red Queen Cards - OS XTests";
@@ -275,7 +294,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E9EA338F1753F7A4009CE02D /* Red_Queen_Cards___OS_XTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -465,6 +483,7 @@
 				E9EA33941753F7A4009CE02D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		E9EA33951753F7A4009CE02D /* Build configuration list for PBXNativeTarget "Red Queen Cards - OS XTests" */ = {
 			isa = XCConfigurationList;
@@ -473,6 +492,7 @@
 				E9EA33971753F7A4009CE02D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
