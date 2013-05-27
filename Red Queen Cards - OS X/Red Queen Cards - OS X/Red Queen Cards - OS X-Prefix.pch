@@ -1,0 +1,7 @@
+//
+// Prefix header for all source files of the 'Red Queen Cards - OS X' target in the 'Red Queen Cards - OS X' project
+//
+
+#ifdef __OBJC__
+    #import <Cocoa/Cocoa.h>
+#endif
