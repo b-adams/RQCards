@@ -11,6 +11,8 @@
 		E9235BE31753F9C1008A1E47 /* OCMockito.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9235BE11753F9C1008A1E47 /* OCMockito.framework */; };
 		E9235BE51753F9D9008A1E47 /* OCHamcrest.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E9235BE01753F9C1008A1E47 /* OCHamcrest.framework */; };
 		E9235BE61753F9D9008A1E47 /* OCMockito.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E9235BE11753F9C1008A1E47 /* OCMockito.framework */; };
+		E9235BEB1753FB72008A1E47 /* RQCmPlaymat.m in Sources */ = {isa = PBXBuildFile; fileRef = E9235BEA1753FB72008A1E47 /* RQCmPlaymat.m */; };
+		E9235BEE1753FBB2008A1E47 /* RQCmInteractionColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = E9235BED1753FBB2008A1E47 /* RQCmInteractionColumn.m */; };
 		E9EA33621753F7A4009CE02D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9EA33611753F7A4009CE02D /* Cocoa.framework */; };
 		E9EA336C1753F7A4009CE02D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E9EA336A1753F7A4009CE02D /* InfoPlist.strings */; };
 		E9EA336E1753F7A4009CE02D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E9EA336D1753F7A4009CE02D /* main.m */; };
@@ -52,6 +54,10 @@
 		E9235BE11753F9C1008A1E47 /* OCMockito.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OCMockito.framework; sourceTree = "<group>"; };
 		E9235BE71753FA33008A1E47 /* RQC_MI_Columnar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RQC_MI_Columnar.h; sourceTree = "<group>"; };
 		E9235BE81753FA33008A1E47 /* RQC_MI_Playmatted.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RQC_MI_Playmatted.h; sourceTree = "<group>"; };
+		E9235BE91753FB72008A1E47 /* RQCmPlaymat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RQCmPlaymat.h; sourceTree = "<group>"; };
+		E9235BEA1753FB72008A1E47 /* RQCmPlaymat.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RQCmPlaymat.m; sourceTree = "<group>"; };
+		E9235BEC1753FBB2008A1E47 /* RQCmInteractionColumn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RQCmInteractionColumn.h; sourceTree = "<group>"; };
+		E9235BED1753FBB2008A1E47 /* RQCmInteractionColumn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RQCmInteractionColumn.m; sourceTree = "<group>"; };
 		E9EA335E1753F7A4009CE02D /* Red Queen Cards - OS X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Red Queen Cards - OS X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9EA33611753F7A4009CE02D /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		E9EA33641753F7A4009CE02D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -95,11 +101,31 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		E9C2C0321753F7E8001E129E /* Model */ = {
+		E9235BEF1753FBCC008A1E47 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
 				E9235BE71753FA33008A1E47 /* RQC_MI_Columnar.h */,
 				E9235BE81753FA33008A1E47 /* RQC_MI_Playmatted.h */,
+				E9235BE91753FB72008A1E47 /* RQCmPlaymat.h */,
+				E9235BEC1753FBB2008A1E47 /* RQCmInteractionColumn.h */,
+			);
+			name = Headers;
+			sourceTree = "<group>";
+		};
+		E9235BF01753FBD3008A1E47 /* Implementations */ = {
+			isa = PBXGroup;
+			children = (
+				E9235BEA1753FB72008A1E47 /* RQCmPlaymat.m */,
+				E9235BED1753FBB2008A1E47 /* RQCmInteractionColumn.m */,
+			);
+			name = Implementations;
+			sourceTree = "<group>";
+		};
+		E9C2C0321753F7E8001E129E /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				E9235BEF1753FBCC008A1E47 /* Headers */,
+				E9235BF01753FBD3008A1E47 /* Implementations */,
 			);
 			name = Model;
 			sourceTree = "<group>";
@@ -316,6 +342,8 @@
 			files = (
 				E9EA336E1753F7A4009CE02D /* main.m in Sources */,
 				E9EA33751753F7A4009CE02D /* RQCDocument.m in Sources */,
+				E9235BEB1753FB72008A1E47 /* RQCmPlaymat.m in Sources */,
+				E9235BEE1753FBB2008A1E47 /* RQCmInteractionColumn.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
