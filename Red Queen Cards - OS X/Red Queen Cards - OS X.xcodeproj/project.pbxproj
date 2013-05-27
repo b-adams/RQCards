@@ -115,8 +115,8 @@
 		E9235BF01753FBD3008A1E47 /* Implementations */ = {
 			isa = PBXGroup;
 			children = (
-				E9235BEA1753FB72008A1E47 /* RQCmPlaymat.m */,
 				E9235BED1753FBB2008A1E47 /* RQCmInteractionColumn.m */,
+				E9235BEA1753FB72008A1E47 /* RQCmPlaymat.m */,
 			);
 			name = Implementations;
 			sourceTree = "<group>";
