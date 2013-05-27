@@ -12,16 +12,6 @@
 
 #pragma mark - RQC_MI_Columnar methods
 
-- (BOOL)isMAMPAlarmTriggered
-{
-    return NO;
-}
-
-- (BOOL)isEffectorAlarmTriggered
-{
-    return NO;
-}
-
 - (void)enableMAMP
 {
 

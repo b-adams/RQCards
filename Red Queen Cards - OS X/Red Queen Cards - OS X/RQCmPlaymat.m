@@ -12,11 +12,6 @@
 
 #pragma mark - RQC_MI_Playmatted methods
 
-- (RQC_E_GameState)currentBoardState
-{
-    return RQC_e_MTI;
-}
-
 - (void)playMAMP:(NSString *)colName
 {
 
