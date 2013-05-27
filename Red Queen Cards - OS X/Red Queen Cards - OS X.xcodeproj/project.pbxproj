@@ -105,9 +105,9 @@
 			isa = PBXGroup;
 			children = (
 				E9235BE71753FA33008A1E47 /* RQC_MI_Columnar.h */,
+				E9235BEC1753FBB2008A1E47 /* RQCmInteractionColumn.h */,
 				E9235BE81753FA33008A1E47 /* RQC_MI_Playmatted.h */,
 				E9235BE91753FB72008A1E47 /* RQCmPlaymat.h */,
-				E9235BEC1753FBB2008A1E47 /* RQCmInteractionColumn.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";

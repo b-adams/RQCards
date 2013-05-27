@@ -10,5 +10,6 @@
 #import <Foundation/Foundation.h>
 
 @interface RQCmPlaymat : NSObject <RQC_MI_Playmatted>
+@property (readwrite, assign) RQC_E_GameState currentBoardState;
 
 @end

@@ -10,5 +10,7 @@
 #import "RQC_MI_Columnar.h"
 
 @interface RQCmInteractionColumn : NSObject <RQC_MI_Columnar>
+@property (readwrite, assign) BOOL isMAMPAlarmTriggered;
+@property (readwrite, assign) BOOL isEffectorAlarmTriggered;
 
 @end
