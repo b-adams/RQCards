@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		E9235BE21753F9C1008A1E47 /* OCHamcrest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9235BE01753F9C1008A1E47 /* OCHamcrest.framework */; };
+		E9235BE31753F9C1008A1E47 /* OCMockito.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9235BE11753F9C1008A1E47 /* OCMockito.framework */; };
+		E9235BE51753F9D9008A1E47 /* OCHamcrest.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E9235BE01753F9C1008A1E47 /* OCHamcrest.framework */; };
+		E9235BE61753F9D9008A1E47 /* OCMockito.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = E9235BE11753F9C1008A1E47 /* OCMockito.framework */; };
 		E9EA33621753F7A4009CE02D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E9EA33611753F7A4009CE02D /* Cocoa.framework */; };
 		E9EA336C1753F7A4009CE02D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = E9EA336A1753F7A4009CE02D /* InfoPlist.strings */; };
 		E9EA336E1753F7A4009CE02D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = E9EA336D1753F7A4009CE02D /* main.m */; };
@@ -29,7 +33,23 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		E9235BE41753F9D5008A1E47 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				E9235BE51753F9D9008A1E47 /* OCHamcrest.framework in CopyFiles */,
+				E9235BE61753F9D9008A1E47 /* OCMockito.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		E9235BE01753F9C1008A1E47 /* OCHamcrest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OCHamcrest.framework; sourceTree = "<group>"; };
+		E9235BE11753F9C1008A1E47 /* OCMockito.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OCMockito.framework; sourceTree = "<group>"; };
 		E9EA335E1753F7A4009CE02D /* Red Queen Cards - OS X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Red Queen Cards - OS X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9EA33611753F7A4009CE02D /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		E9EA33641753F7A4009CE02D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -65,6 +85,8 @@
 			files = (
 				E9EA33831753F7A4009CE02D /* SenTestingKit.framework in Frameworks */,
 				E9EA33841753F7A4009CE02D /* Cocoa.framework in Frameworks */,
+				E9235BE21753F9C1008A1E47 /* OCHamcrest.framework in Frameworks */,
+				E9235BE31753F9C1008A1E47 /* OCMockito.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,6 +140,8 @@
 		E9EA33601753F7A4009CE02D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				E9235BE01753F9C1008A1E47 /* OCHamcrest.framework */,
+				E9235BE11753F9C1008A1E47 /* OCMockito.framework */,
 				E9EA33611753F7A4009CE02D /* Cocoa.framework */,
 				E9EA33821753F7A4009CE02D /* SenTestingKit.framework */,
 				E9EA33631753F7A4009CE02D /* Other Frameworks */,
@@ -202,6 +226,7 @@
 				E9EA337C1753F7A4009CE02D /* Sources */,
 				E9EA337D1753F7A4009CE02D /* Frameworks */,
 				E9EA337E1753F7A4009CE02D /* Resources */,
+				E9235BE41753F9D5008A1E47 /* CopyFiles */,
 				E9EA337F1753F7A4009CE02D /* ShellScript */,
 			);
 			buildRules = (
@@ -439,7 +464,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Red Queen Cards - OS X.app/Contents/MacOS/Red Queen Cards - OS X";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = "\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"\"$(SRCROOT)\"",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Red Queen Cards - OS X/Red Queen Cards - OS X-Prefix.pch";
 				INFOPLIST_FILE = "Red Queen Cards - OS XTests/Red Queen Cards - OS XTests-Info.plist";
@@ -454,7 +482,10 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/Red Queen Cards - OS X.app/Contents/MacOS/Red Queen Cards - OS X";
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = "\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"";
+				FRAMEWORK_SEARCH_PATHS = (
+					"\"$(DEVELOPER_LIBRARY_DIR)/Frameworks\"",
+					"\"$(SRCROOT)\"",
+				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "Red Queen Cards - OS X/Red Queen Cards - OS X-Prefix.pch";
 				INFOPLIST_FILE = "Red Queen Cards - OS XTests/Red Queen Cards - OS XTests-Info.plist";
