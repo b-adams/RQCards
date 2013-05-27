@@ -50,6 +50,8 @@
 /* Begin PBXFileReference section */
 		E9235BE01753F9C1008A1E47 /* OCHamcrest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OCHamcrest.framework; sourceTree = "<group>"; };
 		E9235BE11753F9C1008A1E47 /* OCMockito.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = OCMockito.framework; sourceTree = "<group>"; };
+		E9235BE71753FA33008A1E47 /* RQC_MI_Columnar.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RQC_MI_Columnar.h; sourceTree = "<group>"; };
+		E9235BE81753FA33008A1E47 /* RQC_MI_Playmatted.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RQC_MI_Playmatted.h; sourceTree = "<group>"; };
 		E9EA335E1753F7A4009CE02D /* Red Queen Cards - OS X.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Red Queen Cards - OS X.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E9EA33611753F7A4009CE02D /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		E9EA33641753F7A4009CE02D /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -96,6 +98,8 @@
 		E9C2C0321753F7E8001E129E /* Model */ = {
 			isa = PBXGroup;
 			children = (
+				E9235BE71753FA33008A1E47 /* RQC_MI_Columnar.h */,
+				E9235BE81753FA33008A1E47 /* RQC_MI_Playmatted.h */,
 			);
 			name = Model;
 			sourceTree = "<group>";
