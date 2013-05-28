@@ -43,27 +43,27 @@
                  options:(NSKeyValueObservingOptionOld |
                           NSKeyValueObservingOptionNew)
                  context:NULL];
-    [(id)sut addObserver:self
-              forKeyPath:@"currentBoardState"
-                 options:(NSKeyValueObservingOptionOld |
-                          NSKeyValueObservingOptionNew)
-                 context:NULL];
+//    [(id)sut addObserver:self
+//              forKeyPath:@"currentBoardState"
+//                 options:(NSKeyValueObservingOptionOld |
+//                          NSKeyValueObservingOptionNew)
+//                 context:NULL];
 }
--(void)observeValueForKeyPath:(NSString *)keyPath
-                     ofObject:(id)object
-                       change:(NSDictionary *)change
-                      context:(void *)context
-{
-    NSLog(@"Change dictionary: %@", change);
-}
+//-(void)observeValueForKeyPath:(NSString *)keyPath
+//                     ofObject:(id)object
+//                       change:(NSDictionary *)change
+//                      context:(void *)context
+//{
+//    NSLog(@"Change dictionary: %@", change);
+//}
 
 
 - (void)tearDown
 {
     [(id)sut removeObserver:secretary
                  forKeyPath:@"currentBoardState"];
-    [(id)sut removeObserver:self
-                 forKeyPath:@"currentBoardState"];
+//    [(id)sut removeObserver:self
+//                 forKeyPath:@"currentBoardState"];
     sut = nil;
     secretary = nil;
     [super tearDown];
@@ -149,22 +149,59 @@
 }
 
 //MAMP-A mampD-A MAMP-B mampD-C                 //Virulence
-//- (void)testPlayTwoMAMPsAndMismatchedDetectorsAllowsVirulence
-//{
-//    [sut playMAMP:@"a"];
-//    [sut playMAMP:@"b"];
-//    [sut playMAMPDetector:@"a"];
-//    [sut playMAMPDetector:'c'];
-//    
-//    assertThat(sut, hasProperty(@"currentBoardState", @(RQC_e_Virulence)));
-//}
+- (void)testPlayTwoMAMPsAndMismatchedDetectorsAllowsVirulence
+{
+    [sut playMAMP:@"a"];
+    [sut playMAMP:@"b"];
+    [sut playMAMPDetector:@"a"];
+    [sut playMAMPDetector:@"c"];
+    
+    assertThat(sut, hasProperty(@"currentBoardState", @(RQC_e_Virulence)));
+}
 
 //MAMP-A mampD-A MAMP-B mampD-B EFF-B1          //Virulence
+- (void)testTwoDetectionsButOneDisabledAllowsVirulence
+{
+    [sut playMAMP:@"a"];
+    [sut playMAMP:@"b"];
+    [sut playMAMPDetector:@"a"];
+    [sut playMAMPDetector:@"b"];
+    [sut playEffector:@"b"
+        variantNumber:1];
+    
+    assertThat(sut, hasProperty(@"currentBoardState", @(RQC_e_Virulence)));
+}
 
 //MAMP-A mampD-A MAMP-B mampD-B EFF-B1 effD-B2  //Virulence
+- (void)testMismatchedEffectorDetectionDoesNotTriggerETI
+{
+    [sut playMAMP:@"a"];
+    [sut playMAMP:@"b"];
+    [sut playMAMPDetector:@"a"];
+    [sut playMAMPDetector:@"b"];
+    [sut playEffector:@"b"
+        variantNumber:1];
+    [sut playEffectorDetector:@"b"
+                variantNumber:2];
+    
+    assertThat(sut, hasProperty(@"currentBoardState", isNot(@(RQC_e_ETI))));
+}
 //MAMP-A mampD-A MAMP-B mampD-B EFF-B1 effD-B1  //ETI
 
 //                              EFF-B2 effD-B2  //ETI
+- (void)testMatchedEffectorDetectionDoesTriggerETI
+{
+    [sut playMAMP:@"a"];
+    [sut playMAMP:@"b"];
+    [sut playMAMPDetector:@"a"];
+    [sut playMAMPDetector:@"b"];
+    [sut playEffector:@"b"
+        variantNumber:1];
+    [sut playEffectorDetector:@"b"
+                variantNumber:1];
+    
+    assertThat(sut, hasProperty(@"currentBoardState", is(@(RQC_e_ETI))));
+}
 
 
 
