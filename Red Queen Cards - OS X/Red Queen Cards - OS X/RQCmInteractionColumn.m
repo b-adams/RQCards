@@ -33,6 +33,18 @@ const int erSlots = 10;
     return self;
 }
 
+-(NSString *)description
+{
+    NSMutableString* fx = [NSMutableString string];
+    NSMutableString* rp = [NSMutableString string];
+    for(int i=0; i<erSlots; i+=1)
+    {
+        [fx appendFormat:@"%c", _Effectors[i]?'E':' '];
+        [rp appendFormat:@"%c", _RProteins[i]?'R':' '];
+    }
+    return [NSString stringWithFormat:@"COLUMN: MAMP:%ld PRR: %ld\nEffectors: %@\nRProteins: %@",
+            (unsigned long)_MAMP, (unsigned long)_PRR, fx, rp];
+}
 
 #pragma mark - conforming to RQC_MI_Columnar
 

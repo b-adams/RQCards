@@ -38,6 +38,22 @@ NSString *const KEY_ALARM_EFFECTOR = @"alarmEffector";
     return self;
 }
 
+-(NSString *)description
+{
+    NSString* boardStateString;
+    switch([self currentBoardState])
+           {
+               case RQC_e_Unviability:  boardStateString=@"Patho (Unviable)"; break;
+               case RQC_e_Virulence:    boardStateString=@"Patho (Virulent)"; break;
+               case RQC_e_Impotence:    boardStateString=@"Plant (Impotent)"; break;
+               case RQC_e_MTI:          boardStateString=@"Plant (MTI)"; break;
+               case RQC_e_ETI:          boardStateString=@"Plant (ETI)"; break;
+           }
+    return [NSString stringWithFormat:@"PLAYMAT: State[%d] %@ MAMPS %ld/%ld RPros %ld DATA: %@",
+            [self currentBoardState],
+            boardStateString, (unsigned long)_MAMPsMatched,
+            (unsigned long)_MAMPsPlayed, (unsigned long)_RProteinsPlayed, _columns];
+}
 -(id<RQC_MI_Columnar>)getColumnNamed:(NSString*) name
 {
     id<RQC_MI_Columnar> aColumn = nil;
