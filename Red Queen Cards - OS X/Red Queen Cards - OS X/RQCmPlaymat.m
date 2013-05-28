@@ -12,8 +12,8 @@
 const NSUInteger MAMP_MATCHES_TO_TRIGGER_MTI = 2;
 const NSUInteger MAMP_COUNT_TO_TRIGGER_VIRULENCE = 2;
 const NSUInteger MAX_RPROTEINS_BEFORE_UNVIABILITY_RISK = 3;
-NSString *const KEY_ALARM_MAMP = @"alarmMAMP";
-NSString *const KEY_ALARM_EFFECTOR = @"alarmEffector";
+NSString *const KEY_ALARM_MAMP = @"isMAMPAlarmTriggered";
+NSString *const KEY_ALARM_EFFECTOR = @"isEffectorAlarmTriggered";
 
 @implementation RQCmPlaymat
 {
