@@ -77,6 +77,16 @@ NSString *const KEY_ALARM_EFFECTOR = @"isEffectorAlarmTriggered";
                 forKey:name];
     return aColumn;
 }
+- (void)invalidate
+{
+    for(id aColumn in _columns)
+    {
+        [aColumn removeObserver:self forKeyPath:KEY_ALARM_EFFECTOR];// context:NULL];
+
+        [aColumn removeObserver:self forKeyPath:KEY_ALARM_MAMP];// context:NULL];
+
+    }
+}
 
 #pragma mark - conforming to RQC_MI_Playmatted
 
@@ -85,7 +95,7 @@ NSString *const KEY_ALARM_EFFECTOR = @"isEffectorAlarmTriggered";
     id<RQC_MI_Columnar> theColumn = [self getColumnNamed:colName];
 
     _MAMPsPlayed+=1; //Will need to be improved for duplicate MAMPs?
-    if(_MAMPsPlayed >= MAMP_COUNT_TO_TRIGGER_VIRULENCE)
+    if(_MAMPsPlayed == MAMP_COUNT_TO_TRIGGER_VIRULENCE)
         [self triggerVirulence];
     
     [theColumn enableMAMP];

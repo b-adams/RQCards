@@ -26,5 +26,6 @@ typedef enum {
 -(void) playEffectorDetector:(NSString*) colName
                variantNumber:(NSUInteger) variant;
 
+-(void) invalidate;
 
 @end
