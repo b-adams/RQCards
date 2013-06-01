@@ -85,7 +85,8 @@
 {
     [_theMat invalidate];
     [(id)_theMat removeObserver:self
-                     forKeyPath:@"currentBoardState"];//                        context:NULL];
+                     forKeyPath:@"currentBoardState"
+                        context:NULL];
 }
 
 #pragma mark - Model responses -
