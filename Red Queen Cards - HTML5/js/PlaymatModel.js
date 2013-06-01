@@ -13,11 +13,9 @@ function PlayMat()
 {
     /* Data setup */
 
-    this._columns = [];
-    this.clearBoard();
-
     this.clearBoard = function()
     {
+        this._columns = [];
         for(var i=0; i<NUMBER_OF_PLAYABLE_COLUMNS; i+=1)
         {
             this._columns[i] = {
@@ -112,4 +110,8 @@ function PlayMat()
     {
         return !(this.isPlantETIActive() || this.isPlantMTIActive());
     }
+
+    this.clearBoard();
+
+    return this;
 }
