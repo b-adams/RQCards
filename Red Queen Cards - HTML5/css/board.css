@@ -35,6 +35,8 @@
 	margin-top: 1px;
 	margin-bottom: 1px;
 	border: 1px solid #333;
+	border-radius: 10% / 20px;
+	padding: 1%;
 }
 .feature, .detector  
 { 
