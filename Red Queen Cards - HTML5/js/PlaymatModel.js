@@ -17,7 +17,7 @@ function PlayMat()
 
     /* Data setup */
 
-PlayMat.prototype..clearBoard = function()
+PlayMat.prototype.clearBoard = function()
     {
         this._columns = [];
         for(var i=0; i<NUMBER_OF_PLAYABLE_COLUMNS; i+=1)
@@ -33,7 +33,7 @@ PlayMat.prototype..clearBoard = function()
 
     /* Inputs */
 
-PlayMat.prototype..playCell     = function(colIndex)
+PlayMat.prototype.playCell     = function(colIndex)
     {
         if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Column "+colIndex+" too high");
         var theColumn = this._columns[colIndex];
@@ -61,7 +61,7 @@ PlayMat.prototype..playCell     = function(colIndex)
 
     /* Board state queries */
 
-PlayMat.prototype..isCellActive(type, colIndex)
+PlayMat.prototype.isCellActive(type, colIndex)
     {
         if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Too many columns:" +colIndex);
         var theColumn = this._columns[colIndex];
@@ -89,7 +89,7 @@ PlayMat.prototype..isCellActive(type, colIndex)
 
     /* Interaction state queries */
 
-PlayMat.prototype..isPlantETIActive = function()
+PlayMat.prototype.isPlantETIActive = function()
     {
         function columnActive(aColumn)
         {
@@ -99,7 +99,7 @@ PlayMat.prototype..isPlantETIActive = function()
         return this._columns.some(columnActive);
     }
 
-PlayMat.prototype..isPlantMTIActive = function()
+PlayMat.prototype.isPlantMTIActive = function()
     {
         function columnActive(aColumn)
         {
@@ -110,7 +110,7 @@ PlayMat.prototype..isPlantMTIActive = function()
         return this._columns.filter(columnActive).length >= MAMP_MATCHES_TO_TRIGGER_MTI;
     }
 
-PlayMat.prototype..isPathogenVirulent = function()
+PlayMat.prototype.isPathogenVirulent = function()
     {
         return !(this.isPlantETIActive() || this.isPlantMTIActive());
     }
