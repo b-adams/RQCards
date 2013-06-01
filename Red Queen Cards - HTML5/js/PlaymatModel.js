@@ -5,28 +5,87 @@
  * Time: 9:34 PM
  * To change this template use File | Settings | File Templates.
  */
-//Require InteractionColumn
 
 var MAMP_MATCHES_TO_TRIGGER_MTI = 2;
-
+var NUMBER_OF_PLAYABLE_COLUMNS = 8;
 
 function PlayMat()
 {
+    /* Data setup */
+
     this._columns = [];
-    for(var i=0; i<8; i+=1)
+    this.clearBoard();
+
+    this.clearBoard = function()
     {
-        this._columns[i] = {
-            _MAMP: false,
-            _PRR: false,
-            _Effectors: [false, false],
-            _RProteins: [false, false]
+        for(var i=0; i<NUMBER_OF_PLAYABLE_COLUMNS; i+=1)
+        {
+            this._columns[i] = {
+                _MAMP: false,
+                _PRR: false,
+                _Effectors: [false, false],
+                _RProteins: [false, false]
+            }
         }
     }
 
-    this.playFeature  = function(colIndex)          { this._columns[colIndex]._MAMP=true; }
-    this.playDetector = function(colIndex)          { this._columns[colIndex]._PRR=true; }
-    this.playEffector = function(colIndex, variant) { this._columns[colIndex]._Effectors[variant]=true; }
-    this.playAlarm    = function(colIndex, variant) { this._columns[colIndex]._RProteins[variant]=true; }
+    /* Inputs */
+
+    this.playCell     = function(colIndex)
+    {
+        if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Column "+colIndex+" too high");
+        var theColumn = this._columns[colIndex];
+
+        switch(type)
+        {
+            case "Feature":
+                theColumn._MAMP = true;
+                break;
+            case "Detector":
+                theColumn._PRR = true;
+                break;
+            case "Effector":
+                if(arguments.length<3) alert("Effector variant not specified");
+                theColumn._Effectors[arguments[2]] = true;
+                break;
+            case "Alarm":
+                if(arguments.length<3) alert("Alarm variant not specified");
+                theColumn._RProteins[arguments[2]] = true;
+                break;
+            default:
+                alert("Unknown cell type: "+type);
+        }
+    }
+
+    /* Board state queries */
+
+    this.isCellActive(type, colIndex)
+    {
+        if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Too many columns:" +colIndex);
+        var theColumn = this._columns[colIndex];
+
+        switch(type)
+        {
+            case "Feature":
+                return theColumn._MAMP;
+                break;
+            case "Detector":
+                return theColumn._PRR;
+                break;
+            case "Effector":
+                if(arguments.length<3) alert("Effector variant not specified");
+                return theColumn._Effectors[arguments[2]];
+                break;
+            case "Alarm":
+                if(arguments.length<3) alert("Alarm variant not specified");
+                return theColumn._RProteins[arguments[2]];
+                break;
+            default:
+                alert("Unknown cell type: "+type);
+        }
+    }
+
+    /* Interaction state queries */
 
     this.isPlantETIActive = function()
     {
