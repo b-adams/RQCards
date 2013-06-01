@@ -35,9 +35,26 @@
 	margin-top: 1px;
 	margin-bottom: 1px;
 	border: 1px solid #333;
-	border-radius: 10% / 20px;
+//	border-radius: 10% / 20px;
+	-webkit-animation: rectify 10s;
+	animation:rectify 10s;
 	padding: 1%;
 }
+@-webkit-keyframes 'rectify' {
+	from { border-radius: 10%/20px; }
+	to { border-radius: 20px/10%; 
+	background-color: #ffffff;
+}
+}
+@keyframes 'rectify' {
+	from { border-radius: 10%/20px; }
+	to { border-radius: 20px/10%; }
+}
+@keyframes 'rectify' {
+	from { border-radius: 10%/20px; }
+	to { border-radius: 20px/10%; }
+}
+
 .feature, .detector  
 { 
 	width:100%; 
