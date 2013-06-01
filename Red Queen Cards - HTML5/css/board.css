@@ -28,6 +28,7 @@
 	padding-right: 1px;
 	padding-left: 1px;
 }
+[class*="column"] + [class*="column"]:last-child { float: right; }
 
 .feature, .detector, .effector, .alarm
 {
