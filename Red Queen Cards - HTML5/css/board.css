@@ -36,21 +36,33 @@
 	margin-bottom: 1px;
 	border: 1px solid #333;
 //	border-radius: 10% / 20px;
-	-webkit-animation: rectify 10s;
-	animation:rectify 10s;
 	padding: 1%;
 }
+
+.feature:hover, .detector:hover, .effector:hover, .alarm:hover
+{
+	-webkit-animation: rectify 10s;
+	animation:rectify 10s;
+}
 @-webkit-keyframes 'rectify' {
-	from { border-radius: 10%/20px; }
+	from { border-radius: 10%/20px; 
+	background-color: rgb(255, 255, 255);
+}
+	25% {
+		border-radius: 20px/10%; 
+	background-color: rgb(0, 255, 255);
+	}
 	50% {
 		-webkit-transform: translateY(-30px);
+	background-color: rgb(255, 0, 255);
+	}
+	75% {
+	-webkit-transform: scale(1.1);
+	background-color: rgb(255, 255, 0);
 	}
 	to { 
-	border-radius: 20px/10%; 
-	background-color: #ffffff;
-	-webkit-transform: scale(1.1);
-	
-}
+	background-color: rgb(255, 255, 255);
+	}
 }
 @keyframes 'rectify' {
 	from { border-radius: 10%/20px; }
