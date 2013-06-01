@@ -42,8 +42,14 @@
 }
 @-webkit-keyframes 'rectify' {
 	from { border-radius: 10%/20px; }
-	to { border-radius: 20px/10%; 
+	50% {
+		-webkit-transform: translateY(-30px);
+	}
+	to { 
+	border-radius: 20px/10%; 
 	background-color: #ffffff;
+	-webkit-transform: scale(1.1);
+	
 }
 }
 @keyframes 'rectify' {
