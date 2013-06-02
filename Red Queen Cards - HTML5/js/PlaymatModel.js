@@ -6,10 +6,14 @@
  * To change this template use File | Settings | File Templates.
  */
 
-"use strict"; // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
+//"use strict"; // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
 
 var MAMP_MATCHES_TO_TRIGGER_MTI = 2;
 var NUMBER_OF_PLAYABLE_COLUMNS = 8;
+var TYPE_FEATURE = "Feature";
+var TYPE_DETECTOR = "Detector";
+var TYPE_EFFECTOR = "Effector";
+var TYPE_ALARM = "Alarm";
 
 function PlayMat()
 {
@@ -31,39 +35,38 @@ PlayMat.prototype.clearBoard = function()
             _RProteins: [false, false]
         }
     }
-}
-
+};
 /* Inputs */
 
-PlayMat.prototype.playCell     = function(colIndex)
+PlayMat.prototype.playCell = function(type, colIndex)
 {
     if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Column "+colIndex+" too high");
     var theColumn = this._columns[colIndex];
 
     switch(type)
     {
-        case "Feature":
+        case TYPE_FEATURE:
             theColumn._MAMP = true;
             break;
-        case "Detector":
+        case TYPE_DETECTOR:
             theColumn._PRR = true;
             break;
-        case "Effector":
+        case TYPE_EFFECTOR:
             if(arguments.length<3) alert("Effector variant not specified");
             theColumn._Effectors[arguments[2]] = true;
             break;
-        case "Alarm":
+        case TYPE_ALARM:
             if(arguments.length<3) alert("Alarm variant not specified");
             theColumn._RProteins[arguments[2]] = true;
             break;
         default:
             alert("Unknown cell type: "+type);
     }
-}
+};
 
 /* Board state queries */
 
-PlayMat.prototype.isCellActive(type, colIndex)
+PlayMat.prototype.isCellActive = function (type, colIndex)
 {
     if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Too many columns:" +colIndex);
     var theColumn = this._columns[colIndex];
@@ -87,7 +90,8 @@ PlayMat.prototype.isCellActive(type, colIndex)
         default:
             alert("Unknown cell type: "+type);
     }
-}
+    return -1;
+};
 
 /* Interaction state queries */
 
@@ -99,7 +103,7 @@ PlayMat.prototype.isPlantETIActive = function()
             ||  (aColumn._Effectors[1] && aColumn._RProteins[1]));
     }
     return this._columns.some(columnActive);
-}
+};
 
 PlayMat.prototype.isPlantMTIActive = function()
 {
@@ -110,10 +114,11 @@ PlayMat.prototype.isPlantMTIActive = function()
         return triggered && !disabled;
     }
     return this._columns.filter(columnActive).length >= MAMP_MATCHES_TO_TRIGGER_MTI;
-}
+};
 
 PlayMat.prototype.isPathogenVirulent = function()
 {
     return !(this.isPlantETIActive() || this.isPlantMTIActive());
-}
+};
+
 
