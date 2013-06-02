@@ -1,12 +1,12 @@
-[submodule "Red Queen Cards - HTML5/public/steal"]
-	path = Red Queen Cards - HTML5/public/steal
-	url = git://github.com/bitovi/steal.git
-[submodule "Red Queen Cards - HTML5/public/jquery"]
-	path = Red Queen Cards - HTML5/public/jquery
+[submodule "Red Queen Cards - HTML5/js/vendor/jquery"]
+	path = Red Queen Cards - HTML5/js/vendor/jquery
 	url = git@github.com:b-adams/jquerymx.git
-[submodule "Red Queen Cards - HTML5/public/documentjs"]
-	path = Red Queen Cards - HTML5/public/documentjs
-	url = git://github.com/bitovi/documentjs.git
-[submodule "Red Queen Cards - HTML5/public/funcunit"]
-	path = Red Queen Cards - HTML5/public/funcunit
-	url = git://github.com/bitovi/funcunit.git
+[submodule "Red Queen Cards - HTML5/js/vendor/documentjs"]
+	path = Red Queen Cards - HTML5/js/vendor/documentjs
+	url = git@github.com:b-adams/documentjs.git
+[submodule "Red Queen Cards - HTML5/js/vendor/steal"]
+	path = Red Queen Cards - HTML5/js/vendor/steal
+	url = git@github.com:b-adams/steal.git
+[submodule "Red Queen Cards - HTML5/js/vendor/funcunit"]
+	path = Red Queen Cards - HTML5/js/vendor/funcunit
+	url = git@github.com:b-adams/funcunit.git
