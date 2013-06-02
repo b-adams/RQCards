@@ -6,6 +6,8 @@
  * To change this template use File | Settings | File Templates.
  */
 
+"use strict"; // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
+
 var MAMP_MATCHES_TO_TRIGGER_MTI = 2;
 var NUMBER_OF_PLAYABLE_COLUMNS = 8;
 
