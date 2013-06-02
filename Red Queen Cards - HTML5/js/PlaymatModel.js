@@ -41,6 +41,12 @@ PlayMat.prototype.clearBoard = function()
 PlayMat.prototype.playCell = function(type, colIndex)
 {
     if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Column "+colIndex+" too high");
+
+    if(arguments.length<3)
+        console.log("Played "+type+" in column "+colIndex);
+    else
+        console.log("Played "+type+arguments[2]+" in column "+colIndex);
+
     var theColumn = this._columns[colIndex];
 
     switch(type)

@@ -41,7 +41,7 @@
 
 .feature:hover, .detector:hover, .effector:hover, .alarm:hover
 {
-	-webkit-animation: rectify 10s;
+//	-webkit-animation: rectify 10s;
 	animation:rectify 10s;
 }
 @-webkit-keyframes 'rectify' {
