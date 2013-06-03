@@ -61,7 +61,7 @@ function doPlay(theElement, type, colIndex)
     if(theModel.isPlantETIActive())         boardState="ETI";
     else if(theModel.isPlantMTIActive())    boardState="MTI";
     else                                    boardState="Virulence";
-
+    console.log("Setting board state to "+boardState);
     //theElement.append(":\n"+boardState);
 
     if(active)

@@ -29,6 +29,7 @@ PlayMat.prototype.clearBoard = function()
     this.stateOfMTI = false;
 
     this._columns = [];
+    this._columnActivities = [];
     for(var i=0; i<NUMBER_OF_PLAYABLE_COLUMNS; i+=1)
     {
         this._columns[i] = {
@@ -36,6 +37,14 @@ PlayMat.prototype.clearBoard = function()
             _PRR: false,
             _Effectors: [false, false],
             _RProteins: [false, false]
+        }
+        this._columnActivities[i] = {
+//            _FeatureDetected: false,
+            _DetectorTriggered: false,
+            _DetectorDisabled: false,
+            _EffectorsDisabling: [false, false],
+            _EffectorsDetected: [false, false],
+//           _AlarmsTriggered: [false, false]
         }
     }
 };
@@ -48,43 +57,63 @@ PlayMat.prototype.toggleCell = function(type, colIndex)
 
     var theColumn = this._columns[colIndex];
     var theNewValue;
+    var wide = (arguments.length < 3);
 
     switch(type)
     {
         case TYPE_FEATURE:
             theNewValue = !theColumn._MAMP;
             theColumn._MAMP = theNewValue;
-            this.updateMTIState();
             break;
         case TYPE_DETECTOR:
             theNewValue = !theColumn._PRR;
             theColumn._PRR = theNewValue;
-            this.updateMTIState();
             break;
         case TYPE_EFFECTOR:
-            if(arguments.length<3) alert("Effector variant not specified");
+            if(wide) alert("Effector variant not specified");
             theNewValue = !theColumn._Effectors[arguments[2]];
             theColumn._Effectors[arguments[2]] = theNewValue;
-            this.updateMTIState();
-            this.updateETIState();
             break;
         case TYPE_ALARM:
-            if(arguments.length<3) alert("Alarm variant not specified");
+            if(wide) alert("Alarm variant not specified");
             theNewValue = !theColumn._RProteins[arguments[2]];
             theColumn._RProteins[arguments[2]] = theNewValue;
-            this.updateETIState();
             break;
         default:
             alert("Unknown cell type: "+type);
     }
 
-    if(arguments.length<3)
-        console.log("Toggled "+type+" in column "+colIndex+" to "+theNewValue);
-    else
-        console.log("Toggled "+type+arguments[2]+" in column "+colIndex+" to "+theNewValue);
+    this.updateActivityInColumn(colIndex);
+
+    this.updateStatesAfterChanging(type);
+
+    if(wide) console.log("Toggled "+type+" in column "+colIndex+" to "+theNewValue);
+    else     console.log("Toggled "+type+arguments[2]+" in column "+colIndex+" to "+theNewValue);
+
     return theNewValue;
 };
 
+PlayMat.prototype.updateStatesAfterChanging = function(type)
+{
+    switch(type)
+    {
+        case TYPE_FEATURE:
+            this.updateMTIState();
+            break;
+        case TYPE_DETECTOR:
+            this.updateMTIState();
+            break;
+        case TYPE_EFFECTOR:
+            this.updateMTIState();
+            this.updateETIState();
+            break;
+        case TYPE_ALARM:
+            this.updateETIState();
+            break;
+        default:
+            alert("Unknown cell type: "+type);
+    }
+}
 /* Board state queries */
 
 PlayMat.prototype.isCellActive = function (type, colIndex)
@@ -122,13 +151,8 @@ PlayMat.prototype.isPlantETIActive = function()
 }
 PlayMat.prototype.updateETIState = function()
 {
-    function columnActive(aColumn)
-    {
-        return ((aColumn._Effectors[0] && aColumn._RProteins[0])
-            ||  (aColumn._Effectors[1] && aColumn._RProteins[1]));
-    }
-
-    this.stateOfETI = this._columns.some(columnActive);
+    this.stateOfETI = this._columnActivities.some(function(actSet) {
+        return actSet._EffectorsDetected; });
 };
 
 PlayMat.prototype.isPlantMTIActive = function()
@@ -137,13 +161,9 @@ PlayMat.prototype.isPlantMTIActive = function()
 }
 PlayMat.prototype.updateMTIState = function()
 {
-    function columnActive(aColumn)
-    {
-        var disabled = aColumn._Effectors[0] || aColumn._Effectors[1];
-        var triggered = aColumn._MAMP && aColumn._PRR;
-        return triggered && !disabled;
-    }
-    this.stateOfMTI = this._columns.filter(columnActive).length >= MAMP_MATCHES_TO_TRIGGER_MTI;
+    this.stateOfMTI = this._columnActivities.filter(function(actSet) {
+        return actSet._DetectorTriggered;
+    }).length >= MAMP_MATCHES_TO_TRIGGER_MTI;
 };
 
 PlayMat.prototype.isPathogenVirulent = function()
@@ -151,3 +171,44 @@ PlayMat.prototype.isPathogenVirulent = function()
     return !(this.stateOfETI || this.stateOfMTI);
 };
 
+/* Cell state query */
+
+PlayMat.prototype.updateActivityInColumn = function(colIndex)
+{
+    var theColumn = this._columns[colIndex];
+    var theList = this._columnActivities[colIndex];
+
+    for(var slot=0; slot<2; slot+=1)
+    {
+        theList._EffectorsDisabling[slot] = theColumn._PRR && theColumn._Effectors[slot];
+        theList._EffectorsDetected[slot] = theColumn._Effectors[slot] && theColumn._RProteins[slot];
+//      theActivityList._AlarmsTriggered[slot] = theActivityList._EffectorsDetected[slot];
+    }
+
+    theList._DetectorDisabled = theList._EffectorsDisabling[0] || theList._EffectorsDisabling[1];
+    theList._DetectorTriggered = theColumn._MAMP && theColumn._PRR && !theList._DetectorDisabled;
+//  result._FeatureDetected = result._DetectorTriggered;
+}
+
+PlayMat.prototype.triggeredDetectors = function()
+{
+    return this._columnActivities.map(function(anActivitySet) {
+        return anActivitySet._DetectorTriggered; });
+}
+
+PlayMat.prototype.disabledDetectors = function()
+{
+    return this._columnActivities.map(function(anActivitySet) {
+        return anActivitySet._DetectorDisabled; });
+}
+
+PlayMat.prototype.disablingEffectors = function()
+{
+    return this._columns.map(function(actSet) {
+        return (actSet._EffectorsDisabling[0] || actSet._EffectorsDisabling[1])});
+}
+PlayMat.prototype.triggeredAlarms = function()
+{
+    return this._columns.map(function(actSet) {
+        return (actSet._EffectorsDetected[0] || actSet._EffectorsDetected[1])});
+}
