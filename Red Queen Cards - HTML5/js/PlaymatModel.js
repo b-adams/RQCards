@@ -25,6 +25,9 @@ function PlayMat()
 
 PlayMat.prototype.clearBoard = function()
 {
+    this.stateOfETI = false;
+    this.stateOfMTI = false;
+
     this._columns = [];
     for(var i=0; i<NUMBER_OF_PLAYABLE_COLUMNS; i+=1)
     {
@@ -36,38 +39,50 @@ PlayMat.prototype.clearBoard = function()
         }
     }
 };
+
 /* Inputs */
 
-PlayMat.prototype.playCell = function(type, colIndex)
+PlayMat.prototype.toggleCell = function(type, colIndex)
 {
     if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Column "+colIndex+" too high");
 
-    if(arguments.length<3)
-        console.log("Played "+type+" in column "+colIndex);
-    else
-        console.log("Played "+type+arguments[2]+" in column "+colIndex);
-
     var theColumn = this._columns[colIndex];
+    var theNewValue;
 
     switch(type)
     {
         case TYPE_FEATURE:
-            theColumn._MAMP = true;
+            theNewValue = !theColumn._MAMP;
+            theColumn._MAMP = theNewValue;
+            this.updateMTIState();
             break;
         case TYPE_DETECTOR:
-            theColumn._PRR = true;
+            theNewValue = !theColumn._PRR;
+            theColumn._PRR = theNewValue;
+            this.updateMTIState();
             break;
         case TYPE_EFFECTOR:
             if(arguments.length<3) alert("Effector variant not specified");
-            theColumn._Effectors[arguments[2]] = true;
+            theNewValue = !theColumn._Effectors[arguments[2]];
+            theColumn._Effectors[arguments[2]] = theNewValue;
+            this.updateMTIState();
+            this.updateETIState();
             break;
         case TYPE_ALARM:
             if(arguments.length<3) alert("Alarm variant not specified");
-            theColumn._RProteins[arguments[2]] = true;
+            theNewValue = !theColumn._RProteins[arguments[2]];
+            theColumn._RProteins[arguments[2]] = theNewValue;
+            this.updateETIState();
             break;
         default:
             alert("Unknown cell type: "+type);
     }
+
+    if(arguments.length<3)
+        console.log("Toggled "+type+" in column "+colIndex+" to "+theNewValue);
+    else
+        console.log("Toggled "+type+arguments[2]+" in column "+colIndex+" to "+theNewValue);
+    return theNewValue;
 };
 
 /* Board state queries */
@@ -103,15 +118,24 @@ PlayMat.prototype.isCellActive = function (type, colIndex)
 
 PlayMat.prototype.isPlantETIActive = function()
 {
+    return this.stateOfETI;
+}
+PlayMat.prototype.updateETIState = function()
+{
     function columnActive(aColumn)
     {
         return ((aColumn._Effectors[0] && aColumn._RProteins[0])
             ||  (aColumn._Effectors[1] && aColumn._RProteins[1]));
     }
-    return this._columns.some(columnActive);
+
+    this.stateOfETI = this._columns.some(columnActive);
 };
 
 PlayMat.prototype.isPlantMTIActive = function()
+{
+    return this.stateOfMTI;
+}
+PlayMat.prototype.updateMTIState = function()
 {
     function columnActive(aColumn)
     {
@@ -119,12 +143,11 @@ PlayMat.prototype.isPlantMTIActive = function()
         var triggered = aColumn._MAMP && aColumn._PRR;
         return triggered && !disabled;
     }
-    return this._columns.filter(columnActive).length >= MAMP_MATCHES_TO_TRIGGER_MTI;
+    this.stateOfMTI = this._columns.filter(columnActive).length >= MAMP_MATCHES_TO_TRIGGER_MTI;
 };
 
 PlayMat.prototype.isPathogenVirulent = function()
 {
-    return !(this.isPlantETIActive() || this.isPlantMTIActive());
+    return !(this.stateOfETI || this.stateOfMTI);
 };
-
 

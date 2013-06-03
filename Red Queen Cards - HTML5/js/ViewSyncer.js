@@ -52,15 +52,28 @@ function connectElement(type, colIndex)
 
 function doPlay(theElement, type, colIndex)
 {
-    if(arguments.length<4)  theModel.playCell(type, colIndex);
-    else                    theModel.playCell(type, colIndex, arguments[3]);
-    if(theModel.isPlantETIActive()) boardState="ETI";
-    else if(theModel.isPlantMTIActive()) boardState="MTI";
-    else boardState="Virulence";
-    theElement.append(":\n"+boardState);
-    theElement.css("border-style", "solid");
-    theElement.css("border-width", "2px");
-    theElement.css("-webkit-animation", "rectify 10s");
+    var wide = (arguments.length < 4);
+
+    var active;
+    if(wide)  active = theModel.toggleCell(type, colIndex);
+    else      active = theModel.toggleCell(type, colIndex, arguments[3]);
+
+    if(theModel.isPlantETIActive())         boardState="ETI";
+    else if(theModel.isPlantMTIActive())    boardState="MTI";
+    else                                    boardState="Virulence";
+
+    //theElement.append(":\n"+boardState);
+
+    if(active)
+    {
+        theElement.css("border-style", "solid");
+        theElement.css("border-width", "2px");
+        theElement.css("-webkit-animation", "rectify 2s");
+    } else {
+        theElement.css("border-style", "dashed");
+        theElement.css("border-width", "1px");
+        theElement.css("-webkit-animation", "");
+    }
 }
 $(document).ready(function(){
     boardState="Ready for input";
