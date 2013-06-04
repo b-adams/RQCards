@@ -74,6 +74,7 @@ function doPlay(theElement, type, colIndex)
         theElement.css("border-width", "1px");
         theElement.css("-webkit-animation", "");
     }
+    window.document.title = ("Current state: "+boardState);
 }
 $(document).ready(function(){
     boardState="Ready for input";
