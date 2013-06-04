@@ -152,7 +152,7 @@ PlayMat.prototype.isPlantETIActive = function()
 PlayMat.prototype.updateETIState = function()
 {
     this.stateOfETI = this._columnActivities.some(function(actSet) {
-        return actSet._EffectorsDetected; });
+        return (actSet._EffectorsDetected[0] || actSet._EffectorsDetected[1]) });
 };
 
 PlayMat.prototype.isPlantMTIActive = function()
@@ -192,23 +192,23 @@ PlayMat.prototype.updateActivityInColumn = function(colIndex)
 
 PlayMat.prototype.triggeredDetectors = function()
 {
-    return this._columnActivities.map(function(anActivitySet) {
+    return this._columnActivities.filter(function(anActivitySet) {
         return anActivitySet._DetectorTriggered; });
 }
 
 PlayMat.prototype.disabledDetectors = function()
 {
-    return this._columnActivities.map(function(anActivitySet) {
+    return this._columnActivities.filter(function(anActivitySet) {
         return anActivitySet._DetectorDisabled; });
 }
 
 PlayMat.prototype.disablingEffectors = function()
 {
-    return this._columns.map(function(actSet) {
+    return this._columnActivities.filter(function(actSet) {
         return (actSet._EffectorsDisabling[0] || actSet._EffectorsDisabling[1])});
 }
 PlayMat.prototype.triggeredAlarms = function()
 {
-    return this._columns.map(function(actSet) {
+    return this._columnActivities.filter(function(actSet) {
         return (actSet._EffectorsDetected[0] || actSet._EffectorsDetected[1])});
 }
