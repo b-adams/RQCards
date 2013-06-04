@@ -10,3 +10,6 @@
 [submodule "Red Queen Cards - HTML5/js/vendor/funcunit"]
 	path = Red Queen Cards - HTML5/js/vendor/funcunit
 	url = git@github.com:b-adams/funcunit.git
+[submodule "Red Queen Cards - HTML5/js/vendor/jquery-ZenCoding"]
+	path = Red Queen Cards - HTML5/js/vendor/jquery-ZenCoding
+	url = git@github.com:b-adams/jquery-ZenCoding.git
