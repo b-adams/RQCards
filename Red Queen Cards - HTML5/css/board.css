@@ -39,15 +39,24 @@
 	opacity: 0.25;
 }
 
-@-webkit-keyframes 'rectify' {
+@-webkit-keyframes 'select' {
 	from { 
-		-webkit-transform: rotate(0deg) scale(1.0);
-	}
-	50% {
-		-webkit-transform: rotate(180deg) scale(0.5);
+		opacity: 0.5;
+		-webkit-transform: rotateX(180deg);
 	}
 	to { 
-		-webkit-transform: rotate(360deg) scale(1.0);
+		opacity: 1;
+		-webkit-transform: rotateX(360deg);
+	}
+}
+@-webkit-keyframes 'deselect' {
+	from { 
+		opacity: 1;
+		-webkit-transform: rotateX(360deg);
+	}
+	to { 
+		opacity: 0.5;
+		-webkit-transform: rotateX(180deg);
 	}
 }
 

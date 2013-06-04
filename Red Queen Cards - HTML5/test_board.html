@@ -25,9 +25,12 @@
 <![endif]-->
 
 <!-- Add your site or application content here -->
-<!-- div#wrap>div.board>(div.column#c$>((div.feature>{Feature $})+(div.detector>{Detector $})+(div.effector.e$>{Effector $})*2+(div.alarm.a$>{Alarm $})*2))*8 -->
+
+<div id="Randomizer" style="width: 100%; height: 50px; text-align: center;">RANDOMIZE</div>
+
+<!-- div#wrap>div#board>(div.column#c$>((div.feature>{Feature $})+(div.detector>{Detector $})+(div.effector.e$>{Effector $})*2+(div.alarm.a$>{Alarm $})*2))*8 -->
 <div id="wrap">
-    <div class="board">
+    <div id="board">
         <div class="column" id="c1">
             <div class="feature">Feature 1</div>
             <div class="detector">Detector 1</div>
@@ -98,6 +101,7 @@
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
 <script src="js/plugins.js"></script>
+<script src="js/vendor/jquery-ZenCoding/jQuery-ZenCoding.js"></script>
 <script src="js/main.js"></script>
 <script src="js/PlaymatModel.js"></script>
 <script src="js/ViewSyncer.js"></script>
