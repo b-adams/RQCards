@@ -69,10 +69,12 @@ function doPlay(theElement, type, colIndex)
         theElement.css("border-style", "solid");
         theElement.css("border-width", "2px");
         theElement.css("-webkit-animation", "rectify 2s");
+        theElement.css("opacity", "1");
     } else {
         theElement.css("border-style", "dashed");
         theElement.css("border-width", "1px");
         theElement.css("-webkit-animation", "");
+        theElement.css("opacity", "0.5");
     }
     window.document.title = ("Current state: "+boardState);
 }
