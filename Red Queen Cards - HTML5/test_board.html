@@ -26,7 +26,36 @@
 
 <!-- Add your site or application content here -->
 
-<div id="Randomizer" style="width: 100%; height: 50px; text-align: center;">RANDOMIZE</div>
+<table style="width:100%">
+    <tr>
+        <td style="width:20%">
+            <select id="comboBoard" style="width: 100%">
+                <option value="">Select current board state</option>
+                <option value="ETI">ETI (Alarm matches Effector)</option>
+                <option value="MTI">MTI (Two active detectors match features)</option>
+                <option value="Virulence">Virulence (None of the above)</option>
+            </select>
+        </td>
+        <td>
+            <div id="Quiz1">Level 1<br>Answers: 0 Correct: 0</div>
+        </td>
+        <td>
+            <div id="Quiz2">Level 2<br>Answers: 0 Correct: 0</div>
+        </td>
+        <td>
+            <div id="Quiz3">Level 3<br>Answers: 0 Correct: 0</div>
+        </td>
+        <td>
+            <div id="Quiz4">Level 4<br>Answers: 0 Correct: 0</div>
+        </td>
+    </tr>
+    <tr>
+        <td colspan=5>
+            <div id="ClearBoardButton">Clear Board</div>
+        </td>
+    </tr>
+</table>
+
 
 <!-- div#wrap>div#board>(div.column#c$>((div.feature>{Feature $})+(div.detector>{Detector $})+(div.effector.e$>{Effector $})*2+(div.alarm.a$>{Alarm $})*2))*8 -->
 <div id="wrap">

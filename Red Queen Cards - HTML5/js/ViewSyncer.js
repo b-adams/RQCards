@@ -13,6 +13,11 @@ var NUMBER_OF_DETECTORS = 8;
 var NUMBER_OF_EFFECTORS = 16;
 var NUMBER_OF_ALARMS = 16;
 var EFFECTORS_PER_DETECTOR = 2;
+var currentLevel = 0;
+var attempts = ["Level results",
+                {correct: 0, incorrect: 0},
+                {correct: 0, incorrect: 0},
+                {correct: 0, incorrect: 0}];
 
 //$("#wrap").append($.zc("#test>.ing>ul>(li>{!for:n:data!})*4", {data: [1,2,3,5]}));
 
@@ -72,7 +77,7 @@ function setElementActivity(active, theElement)
         theElement.css("border-width", "1px");
         theElement.css("-webkit-animation", "deselect 1s");
         theElement.css("-webkit-transform", "rotateX(180deg)");
-        theElement.css("opacity", "0.5");
+        theElement.css("opacity", "0.25");
     }
 }
 function updateBoardState()
@@ -154,10 +159,13 @@ function randomSelectionArray(picks, total)
 }
 function doRandomize(features, detectors, effectors, alarms)
 {
-    if(!features) features=4;
-    if(!detectors) detectors=4;
-    if(!effectors) effectors=4;
-    if(!alarms) alarms=4;
+    if(arguments.length==0)
+    {
+        features=4;
+        detectors=4;
+        effectors=4;
+        alarms=4;
+    }
 
     var randList;
     var i;
@@ -177,7 +185,7 @@ function doRandomize(features, detectors, effectors, alarms)
         for(var v=0; v<2; v+=1)
             doSet(0, randList[2*i+v], TYPE_EFFECTOR, i, v);
 
-    randList = randomSelectionArray(effectors, NUMBER_OF_ALARMS);
+    randList = randomSelectionArray(alarms, NUMBER_OF_ALARMS);
     for( i=0; i<NUMBER_OF_ALARMS/EFFECTORS_PER_DETECTOR; i+=1)
         for(var v=0; v<2; v+=1)
             doSet(0, randList[2*i+v], TYPE_ALARM, i, v);
@@ -215,6 +223,74 @@ function doQuizLevel1()
     }
 }
 
+function wrongSelectionInfoPopup(suppliedAnswer, correctAnswer)
+{
+    if(suppliedAnswer==correctAnswer) return; //Nothing wrong here
+    if(suppliedAnswer==null || suppliedAnswer=="") return; //No answer
+    var diagnosis = "Incorrect.\nYou selected "+suppliedAnswer;
+    switch(suppliedAnswer)
+    {
+        case "ETI":
+            diagnosis+=" but there are no effector-alarm matches.";
+            switch(correctAnswer)
+            {
+                case "MTI":
+                    diagnosis+="\nLook at the feature-detector row.";
+                    break;
+                case "Virulence":
+                    diagnosis+="\nWere you looking at detector-effector disablements?";
+                    break;
+            }
+            break;
+        case "MTI":
+            switch(correctAnswer)
+            {
+                case "ETI":
+                    diagnosis+=".\nKeep in mind that effector-alarm matches trump feature-detector ones.";
+                    break;
+                case "Virulence":
+                    diagnosis+=" but there are not enough *non-disabled* feature-detector matches.";
+                    break;
+            }
+            break;
+        case "Virulence":
+            switch(correctAnswer)
+            {
+                case "MTI":
+                    diagnosis+=".\nCheck again for active feature-detector matches.";
+                    break;
+                case "ETI":
+                    diagnosis+=".\nCheck again for effector-alarmmatches.";
+                    break;
+            }
+            break;
+    }
+    alert(diagnosis);
+}
+function setupLevel(whichLevel)
+{
+    if(whichLevel<1 || whichLevel>4)
+    {
+        alert("Invalid level "+whichLevel);
+        return;
+    }
+    currentLevel = whichLevel;
+    switch(currentLevel)
+    {
+        case 1: doRandomize(4,4,0,0); break;
+        case 2: doRandomize(4,4,4,0); break;
+        case 3: doRandomize(4,4,4,4); break;
+        case 4: doRandomize(4,4,4,4); break;
+    }
+}
+function updateQuizLabels(whichLevel)
+{
+    var quizBox = $("#Quiz"+whichLevel);
+    var right = attempts[whichLevel]["correct"];
+    var wrong = attempts[whichLevel]["incorrect"];
+    quizBox.html("Level "+whichLevel+"<br>Answers: "+(right+wrong)+" Correct: "+right);
+
+}
 $(document).ready(function(){
     boardState="Ready for input";
     for(var i=0; i<NUMBER_OF_PLAYABLE_COLUMNS; i+=1)
@@ -226,8 +302,34 @@ $(document).ready(function(){
         connectElement(TYPE_ALARM, i, 0);
         connectElement(TYPE_ALARM, i, 1);
     }
-    var randomButton = $("#Randomizer");
-    randomButton.click(function(){ doRandomize(4,4,4,4);});
+    $("#comboBoard").change(function(){
+        var answer = $(this).val();
+        if(answer==null || answer=="") return;
+        if( answer == boardState)
+        {
+            //alert("Correct!");
+            attempts[currentLevel]["correct"]+=1;
+            setupLevel(currentLevel);
+            $(this).val(""); //Reset box
+        }
+        else
+        {
+            attempts[currentLevel]["incorrect"]+=1;
+            wrongSelectionInfoPopup(answer, boardState);
+        }
+        updateQuizLabels(currentLevel);
+
+    });
+    $("#ClearBoardButton").click(function(){ doRandomize(0,0,0,0);});
+
+    $("#Quiz1").click(function(){ setupLevel(1); });
+    $("#Quiz2").click(function(){ setupLevel(2); });
+    $("#Quiz3").click(function(){ setupLevel(3); });
+    $("#Quiz4").click(function(){
+        setupLevel(4);
+        //Ask user to disable problem spots
+        //Refill randomly
+    });
     //$("#board > #c1 > .feature").click(function(){ alert("Clicky"); });
 });
 
