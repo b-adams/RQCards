@@ -51,33 +51,27 @@ PlayMat.prototype.clearBoard = function()
 
 /* Inputs */
 
-PlayMat.prototype.toggleCell = function(type, colIndex)
+PlayMat.prototype.setCell = function(newValue, type, colIndex)
 {
     if(colIndex>=NUMBER_OF_PLAYABLE_COLUMNS) alert("Column "+colIndex+" too high");
-
     var theColumn = this._columns[colIndex];
-    var theNewValue;
-    var wide = (arguments.length < 3);
+    var wide = (arguments.length < 4);
 
     switch(type)
     {
         case TYPE_FEATURE:
-            theNewValue = !theColumn._MAMP;
-            theColumn._MAMP = theNewValue;
+            theColumn._MAMP = newValue;
             break;
         case TYPE_DETECTOR:
-            theNewValue = !theColumn._PRR;
-            theColumn._PRR = theNewValue;
+            theColumn._PRR = newValue;
             break;
         case TYPE_EFFECTOR:
             if(wide) alert("Effector variant not specified");
-            theNewValue = !theColumn._Effectors[arguments[2]];
-            theColumn._Effectors[arguments[2]] = theNewValue;
+            theColumn._Effectors[arguments[3]] = newValue;
             break;
         case TYPE_ALARM:
             if(wide) alert("Alarm variant not specified");
-            theNewValue = !theColumn._RProteins[arguments[2]];
-            theColumn._RProteins[arguments[2]] = theNewValue;
+            theColumn._RProteins[arguments[3]] = newValue;
             break;
         default:
             alert("Unknown cell type: "+type);
@@ -87,8 +81,33 @@ PlayMat.prototype.toggleCell = function(type, colIndex)
 
     this.updateStatesAfterChanging(type);
 
-    if(wide) console.log("Toggled "+type+" in column "+colIndex+" to "+theNewValue);
-    else     console.log("Toggled "+type+arguments[2]+" in column "+colIndex+" to "+theNewValue);
+    if(wide) console.log("Set "+type+" in column "+colIndex+" to "+newValue);
+    else     console.log("Set "+type+arguments[3]+" in column "+colIndex+" to "+newValue);
+}
+PlayMat.prototype.toggleCell = function(type, colIndex)
+{
+    var theColumn = this._columns[colIndex];
+    var wide = (arguments.length < 3);
+    var theNewValue;
+
+    switch(type)
+    {
+        case TYPE_FEATURE:
+            theNewValue = !theColumn._MAMP;
+            break;
+        case TYPE_DETECTOR:
+            theNewValue = !theColumn._PRR;
+            break;
+        case TYPE_EFFECTOR:
+            theNewValue = !theColumn._Effectors[arguments[2]];
+            break;
+        case TYPE_ALARM:
+            theNewValue = !theColumn._RProteins[arguments[2]];
+            break;
+    }
+
+    if(wide) this.setCell(theNewValue, type, colIndex);
+    else     this.setCell(theNewValue, type, colIndex, arguments[2]);
 
     return theNewValue;
 };
