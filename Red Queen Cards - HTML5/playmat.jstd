@@ -1,0 +1,3 @@
+load:
+  - js/PlaymatModel.js
+  - test/TestPlaymatModel.js
