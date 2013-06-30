@@ -1,3 +1,5 @@
 load:
   - js/PlaymatModel.js
+
+test:
   - test/TestPlaymatModel.js

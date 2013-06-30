@@ -9,10 +9,10 @@
 TestCase("PlayMatModelTest", {
     "test initial": function() {
         var mat = new PlayMat();
-        assertEquals(false, mat.isCellActive(TYPE_FEATURE, 1));
+        assertFalse(mat.isCellActive(TYPE_FEATURE, 1));
     },
     "test toggle": function() {
         var pmat = new PlayMat();
-        assertEquals(true, pmat.toggleCell(TYPE_FEATURE, 1));
+        assertTrue(pmat.toggleCell(TYPE_FEATURE, 1));
     }
 });
