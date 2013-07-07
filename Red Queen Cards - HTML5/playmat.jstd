@@ -5,5 +5,3 @@ load:
 
 test:
   - test/PlayMatModelTest-coffee.js
-  - test/TestPlaymatModel.js
-  - test/PlayMatModelTest-jasmine.js
