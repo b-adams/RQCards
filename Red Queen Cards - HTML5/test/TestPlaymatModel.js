@@ -8,11 +8,11 @@
 
 TestCase("PlayMatModelTest", {
     "test initial": function() {
-        var mat = new PlayMat();
-        assertFalse(mat.isCellActive(TYPE_FEATURE, 1));
+        var sut = new PlayMat();
+        assertFalse(sut.isCellActive(TYPE_FEATURE, 1));
     },
     "test toggle": function() {
-        var pmat = new PlayMat();
-        assertTrue(pmat.toggleCell(TYPE_FEATURE, 1));
+        var sut = new PlayMat();
+        assertTrue(sut.toggleCell(TYPE_FEATURE, 1));
     }
 });

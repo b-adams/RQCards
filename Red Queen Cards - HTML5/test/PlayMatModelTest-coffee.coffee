@@ -1,23 +1,23 @@
 describe 'Model Playmat', ->
-  mat = null
+  sut = null
 
   beforeEach ->
-    mat = new PlayMat()
+    sut = new PlayMat()
 
   afterEach ->
-    mat = null
+    sut = null
 
   it 'starts with an inactive feature', ->
-    result = mat.isCellActive TYPE_FEATURE, 1
+    result = sut.isCellActive TYPE_FEATURE, 1
     expect(result).toBeFalsy()
 
   it 'allows features to be toggled on', ->
-    mat.toggleCell TYPE_FEATURE, 1
-    result = mat.isCellActive TYPE_FEATURE, 1
+    sut.toggleCell TYPE_FEATURE, 1
+    result = sut.isCellActive TYPE_FEATURE, 1
     expect(result).toBeTruthy()
 
   it 'allows features to be toggled back off', ->
-    mat.toggleCell TYPE_FEATURE, 1
-    mat.toggleCell TYPE_FEATURE, 1
-    result = mat.isCellActive TYPE_FEATURE, 1
+    sut.toggleCell TYPE_FEATURE, 1
+    sut.toggleCell TYPE_FEATURE, 1
+    result = sut.isCellActive TYPE_FEATURE, 1
     expect(result).toBeFalsy()
