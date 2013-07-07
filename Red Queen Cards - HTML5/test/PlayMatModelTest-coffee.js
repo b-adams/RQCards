@@ -14,6 +14,11 @@
       result = sut.isCellActive(TYPE_FEATURE, 1);
       return expect(result).toBeFalsy();
     });
+    it('calls setCell when toggling a cell', function() {
+      spyOn(sut, "setCell");
+      sut.toggleCell(TYPE_FEATURE, 1);
+      return expect(sut.setCell).toHaveBeenCalled;
+    });
     it('allows features to be toggled on', function() {
       var result;
       sut.toggleCell(TYPE_FEATURE, 1);
