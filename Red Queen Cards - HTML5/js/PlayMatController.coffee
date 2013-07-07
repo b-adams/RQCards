@@ -1,0 +1,183 @@
+###
+* Created with JetBrains WebStorm.
+* User: badams
+* Date: 2013-07-07
+* Time: 6:24 PM
+
+Protype view controller code for quiz-style board interaction
+Copyright (C) 2013 Bryant Adams
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see http://www.gnu.org/licenses/.
+
+###
+
+class PlayMatController
+  constructor: ->
+    @theModel = new PlayMat()
+    @boardState = "Uninitialized"
+    @NUMBER_OF_FEATURES = 8;
+    @NUMBER_OF_DETECTORS = 8;
+    @NUMBER_OF_EFFECTORS = 16;
+    @NUMBER_OF_ALARMS = 16;
+    @EFFECTORS_PER_DETECTOR = 2;
+    @currentLevel = 0;
+    @attempts = [
+      "Level results"
+      {correct: 0, incorrect: 0}
+      {correct: 0, incorrect: 0}
+      {correct: 0, incorrect: 0}
+    ]
+
+  getElement: (type, colIndex) ->
+    selector = "#board > #c"+(colIndex+1)+" > ."
+    switch type
+      when TYPE_FEATURE  then selector+="feature"
+      when TYPE_DETECTOR then selector+="detector"
+      when TYPE_EFFECTOR then selector+="e"+(arguments[2]+1)
+      when TYPE_ALARM    then selector+="a"+(arguments[2]+1)
+      else
+        alert "Bad element request"
+        selector=""
+    return $ selector
+
+  connectElement: (type, colIndex, theVariant...) ->
+    theFeature = getElement type, colIndex, theVariant...
+    theFeature.click -> doPlay theFeature, type, colIndex, theVariant...
+    theFeature.css "border-style", "dashed"
+
+  setElementActivity: (active, theElement) ->
+      theElement.css "border-style",      if active then "solid"          else "dashed"
+      theElement.css "border-width",      if active then "2px"            else "1px"
+      theElement.css "-webkit-animation", if active then "select 1s"      else "deselect 1s"
+      theElement.css "-webkit-transform", if active then "rotateX(0deg)"  else "rotateX(180deg)"
+      theElement.css "opacity",           if active then "1"              else "0.25"
+
+  updateBoardState: ->
+    @boardState = switch
+      when @theModel.isPlantETIActive() then "ETI"
+      when @theModel.isPlantMTIActive() then "MTI"
+      else                                   "Virulence"
+    console.log "Board: " + boardState
+    window.document.title = "Current state: " + boardState
+
+  doSet: (theElement, newValue, type, colIndex, theVariety...) ->
+    oldValue = theModel.isCellActive type, colIndex, theVariety...
+    if oldValue isnt newValue
+      theElement ?= getElement type, colIndex, theVariety...
+      theModel.setCell newValue, type, colIndex, theVariety...
+      updateBoardState()
+      setElementActivity newValue, theElement
+    return newValue
+
+
+  doPlay: (theElement, type, colIndex, theVariety...) ->
+    theElement ?= getElement type, colIndex, theVariety...
+    active = theModel.toggleCell type, colIndex, theVariety...
+    updateBoardState()
+    setElementActivity active, theElement
+    return active
+
+  randomSelectionArray: (picks, total) ->
+    picklist = (true for n in [0...picks]).concat (false for n in [picks...total])
+    for n in [0...total]
+      randIndex = Math.floor(i+(Math.random()*(total-i)))
+      [picklist[i], picklist[randIndex]] = [picklist[randIndex], picklist[i]]
+    return picklist
+
+  doRandomize: (features=4, detectors=4, effectors=4, alarms=4) ->
+    console.log "RANDOMIZING----------------------------------"
+
+    randList = randomSelectionArray features, NUMBER_OF_FEATURES
+    doSet 0, randVal, TYPE_FEATURE, i for randVal,i in randList
+
+    randList = randomSelectionArray detectors, NUMBER_OF_DETECTORS
+    doSet 0, randVal, TYPE_DETECTOR, i for randVal,i in randList
+
+    randList = randomSelectionArray effectors, NUMBER_OF_EFFECTORS
+    doSet 0, randVal, TYPE_EFFECTOR, i/2, i%2 for randVal,i in randList
+
+    randList = randomSelectionArray alarms, NUMBER_OF_ALARMS
+    doSet 0, randVal, TYPE_ALARM, i/2, i%2 for randVal,i in randList
+
+    console.log "RANDOMIZED-----------------------------------"
+
+  wrongSelectionInfoPopup: (suppliedAnswer, correctAnswer) ->
+    return if suppliedAnswer is correctAnswer #Nothing wrong here
+    return if not suppliedAnswer? #No answer provided
+    diagnosis = "Incorrect.\nYou selected "+suppliedAnswer
+
+    switch suppliedAnswer
+      when "ETI"
+        note = " but there are no effector-alarm matches."
+        switch correctAnswer
+          when "MTI"        then hint = note+"\nLook at the feature-detector row."
+          when "Virulence"  then hint = note+"\nWere you looking at detector-effector disablements?"
+          else "ERROR: How is "+correctAnswer+" possible?"
+      when "MTI" then switch correctAnswer
+          when "ETI"        then hint = ".\nKeep in mind that effector-alarm matches trump feature-detector ones."
+          when "Virulence"  then hint = " but there are not enough *non-disabled* feature-detector matches."
+          else "ERROR: How is "+correctAnswer+" possible?"
+      when "Virulence" then switch correctAnswer
+          when "MTI"        then hint = ".\nCheck again for active feature-detector matches."
+          when "ETI"        then hint = ".\nCheck again for effector-alarmmatches."
+          else "ERROR: How is "+correctAnswer+" possible?"
+      else
+        "ERROR: invalid answer"
+
+    alert diagnosis+hint
+
+  setupLevel: (whichLevel) ->
+    switch whichLevel
+      when 1 then doRandomize 4,4,0,0
+      when 2 then doRandomize 4,4,4,0
+      when 3 then doRandomize 4,4,4,4
+      else alert "Invalid level"
+
+  updateQuizLabels: (whichLevel) ->
+    quizBox = $ "#Quiz"+whichLevel
+    right = attempts[whichLevel]["correct"]
+    wrong = attempts[whichLevel]["incorrect"]
+    quizBox.html "Level #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}"
+    return
+
+
+$(document).ready ->
+  boardState="Ready for input";
+  for i in [0...NUMBER_OF_PLAYABLE_COLUMNS]
+    connectElement(TYPE_FEATURE,  i)
+    connectElement(TYPE_DETECTOR, i)
+    connectElement(TYPE_EFFECTOR, i, 0)
+    connectElement(TYPE_EFFECTOR, i, 1)
+    connectElement(TYPE_ALARM,    i, 0)
+    connectElement(TYPE_ALARM,    i, 1)
+
+  $("#comboBoard").change ->
+    answer = $(this).val();
+    return if not answer?                         # Switched to empty
+    if answer is boardState
+      attempts[currentLevel]["correct"] += 1      # Note success
+      setupLevel currentLevel                     # Reset current level
+      $(this).val("")                             # Reset answer box
+    else
+      attempts[currentLevel]["incorrect"] += 1    # Note failure
+      wrongSelectionInfoPopup answer, boardState  # Pop up a hint
+
+    updateQuizLabels currentLevel                 # Update correct/incorrect display
+
+  $("#ClearBoardButton").click -> doRandomize(0,0,0,0)
+
+  $("#Quiz1").click -> setupLevel 1
+  $("#Quiz2").click -> setupLevel 2
+  $("#Quiz3").click -> setupLevel 3
+  $("#Quiz4").click -> alert "Not yet implemented"
