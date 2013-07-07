@@ -3,7 +3,22 @@
  * User: badams
  * Date: 5/31/13
  * Time: 9:34 PM
- * To change this template use File | Settings | File Templates.
+
+ Data model for Red Queen playmat game mechanic
+ Copyright (C) 2013 Bryant Adams
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see http://www.gnu.org/licenses/.
  */
 
 //"use strict"; // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
@@ -37,15 +52,15 @@ PlayMat.prototype.clearBoard = function()
             _PRR: false,
             _Effectors: [false, false],
             _RProteins: [false, false]
-        }
+        };
         this._columnActivities[i] = {
 //            _FeatureDetected: false,
             _DetectorTriggered: false,
             _DetectorDisabled: false,
             _EffectorsDisabling: [false, false],
-            _EffectorsDetected: [false, false],
-//           _AlarmsTriggered: [false, false]
-        }
+//           _AlarmsTriggered: [false, false],
+            _EffectorsDetected: [false, false]
+        };
     }
 };
 
@@ -83,7 +98,7 @@ PlayMat.prototype.setCell = function(newValue, type, colIndex)
 
     if(wide) console.log("Set "+type+" in column "+colIndex+" to "+newValue);
     else     console.log("Set "+type+arguments[3]+" in column "+colIndex+" to "+newValue);
-}
+};
 PlayMat.prototype.toggleCell = function(type, colIndex)
 {
     var theColumn = this._columns[colIndex];
@@ -112,10 +127,8 @@ PlayMat.prototype.toggleCell = function(type, colIndex)
     return theNewValue;
 };
 
-PlayMat.prototype.updateStatesAfterChanging = function(type)
-{
-    switch(type)
-    {
+PlayMat.prototype.updateStatesAfterChanging = function (type) {
+    switch (type) {
         case TYPE_FEATURE:
             this.updateMTIState();
             break;
@@ -130,9 +143,9 @@ PlayMat.prototype.updateStatesAfterChanging = function(type)
             this.updateETIState();
             break;
         default:
-            alert("Unknown cell type: "+type);
+            alert("Unknown cell type: " + type);
     }
-}
+};
 /* Board state queries */
 
 PlayMat.prototype.isCellActive = function (type, colIndex)
@@ -167,7 +180,7 @@ PlayMat.prototype.isCellActive = function (type, colIndex)
 PlayMat.prototype.isPlantETIActive = function()
 {
     return this.stateOfETI;
-}
+};
 PlayMat.prototype.updateETIState = function()
 {
     this.stateOfETI = this._columnActivities.some(function(actSet) {
@@ -177,7 +190,7 @@ PlayMat.prototype.updateETIState = function()
 PlayMat.prototype.isPlantMTIActive = function()
 {
     return this.stateOfMTI;
-}
+};
 PlayMat.prototype.updateMTIState = function()
 {
     this.stateOfMTI = this._columnActivities.filter(function(actSet) {
@@ -207,27 +220,27 @@ PlayMat.prototype.updateActivityInColumn = function(colIndex)
     theList._DetectorDisabled = theList._EffectorsDisabling[0] || theList._EffectorsDisabling[1];
     theList._DetectorTriggered = theColumn._MAMP && theColumn._PRR && !theList._DetectorDisabled;
 //  result._FeatureDetected = result._DetectorTriggered;
-}
+};
 
 PlayMat.prototype.triggeredDetectors = function()
 {
     return this._columnActivities.filter(function(anActivitySet) {
         return anActivitySet._DetectorTriggered; });
-}
+};
 
 PlayMat.prototype.disabledDetectors = function()
 {
     return this._columnActivities.filter(function(anActivitySet) {
         return anActivitySet._DetectorDisabled; });
-}
+};
 
 PlayMat.prototype.disablingEffectors = function()
 {
     return this._columnActivities.filter(function(actSet) {
         return (actSet._EffectorsDisabling[0] || actSet._EffectorsDisabling[1])});
-}
+};
 PlayMat.prototype.triggeredAlarms = function()
 {
     return this._columnActivities.filter(function(actSet) {
         return (actSet._EffectorsDetected[0] || actSet._EffectorsDetected[1])});
-}
+};
