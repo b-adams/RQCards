@@ -1,5 +1,9 @@
 load:
+  - "test/jasmine-1.1.0.js"
+  - "test/JasmineAdapter-1.1.2.js"
   - js/PlaymatModel.js
 
 test:
+  - test/PlayMatModelTest-coffee.js
   - test/TestPlaymatModel.js
+  - test/PlayMatModelTest-jasmine.js
