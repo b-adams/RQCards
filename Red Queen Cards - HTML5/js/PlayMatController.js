@@ -31,11 +31,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     function PlayMatController() {
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
-      this.NUMBER_OF_FEATURES = 8;
-      this.NUMBER_OF_DETECTORS = 8;
-      this.NUMBER_OF_EFFECTORS = 16;
-      this.NUMBER_OF_ALARMS = 16;
-      this.EFFECTORS_PER_DETECTOR = 2;
       this.currentLevel = 0;
       this.attempts = [
         "Level results", {
@@ -278,12 +273,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     var boardState, i, _i;
     boardState = "Ready for input";
     for (i = _i = 0; 0 <= NUMBER_OF_PLAYABLE_COLUMNS ? _i < NUMBER_OF_PLAYABLE_COLUMNS : _i > NUMBER_OF_PLAYABLE_COLUMNS; i = 0 <= NUMBER_OF_PLAYABLE_COLUMNS ? ++_i : --_i) {
-      connectElement(TYPE_FEATURE, i);
-      connectElement(TYPE_DETECTOR, i);
-      connectElement(TYPE_EFFECTOR, i, 0);
-      connectElement(TYPE_EFFECTOR, i, 1);
-      connectElement(TYPE_ALARM, i, 0);
-      connectElement(TYPE_ALARM, i, 1);
+#      connectElement(TYPE_FEATURE, i);
+#      connectElement(TYPE_DETECTOR, i);
+#      connectElement(TYPE_EFFECTOR, i, 0);
+#      connectElement(TYPE_EFFECTOR, i, 1);
+#      connectElement(TYPE_ALARM, i, 0);
+#      connectElement(TYPE_ALARM, i, 1);
     }
     $("#comboBoard").change(function() {
       var answer;

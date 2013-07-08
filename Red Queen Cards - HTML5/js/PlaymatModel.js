@@ -23,12 +23,6 @@
 
 //"use strict"; // http://ejohn.org/blog/ecmascript-5-strict-mode-json-and-more/
 
-var MAMP_MATCHES_TO_TRIGGER_MTI = 2;
-var NUMBER_OF_PLAYABLE_COLUMNS = 8;
-var TYPE_FEATURE = "Feature";
-var TYPE_DETECTOR = "Detector";
-var TYPE_EFFECTOR = "Effector";
-var TYPE_ALARM = "Alarm";
 
 function PlayMat()
 {

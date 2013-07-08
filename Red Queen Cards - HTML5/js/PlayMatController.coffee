@@ -26,12 +26,7 @@ class PlayMatController
   constructor: ->
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
-    @NUMBER_OF_FEATURES = 8;
-    @NUMBER_OF_DETECTORS = 8;
-    @NUMBER_OF_EFFECTORS = 16;
-    @NUMBER_OF_ALARMS = 16;
-    @EFFECTORS_PER_DETECTOR = 2;
-    @currentLevel = 0;
+    @currentLevel = 0
     @attempts = [
       "Level results"
       {correct: 0, incorrect: 0}
