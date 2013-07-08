@@ -1,0 +1,26 @@
+<component name="libraryTable">
+  <library name="Generated files" type="javaScript">
+    <properties>
+      <sourceFilesUrls>
+        <item url="file://$PROJECT_DIR$/js/PlaymatModel.js" />
+        <item url="file://$PROJECT_DIR$/test/TestPlaymatController.js" />
+        <item url="file://$PROJECT_DIR$/js/vendor/steal/coffee/coffee.js" />
+        <item url="file://$PROJECT_DIR$/js/vendor/steal/test/files/32/gen.js" />
+        <item url="file://$PROJECT_DIR$/js/PlayMatController.js" />
+      </sourceFilesUrls>
+    </properties>
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/js/coffeetest.js" />
+      <root url="file://$PROJECT_DIR$/test/PlayMatModelTest-coffee.js" />
+      <root url="file://$PROJECT_DIR$/js/coffeetest.js" />
+      <root url="file://$PROJECT_DIR$/test/PlayMatModelTest-coffee.js" />
+      <root url="file://$PROJECT_DIR$/js/vendor/steal/test/files/32/gen.js" />
+      <root url="file://$PROJECT_DIR$/js/PlaymatModel.js" />
+      <root url="file://$PROJECT_DIR$/test/TestPlaymatController.js" />
+      <root url="file://$PROJECT_DIR$/js/vendor/steal/coffee/coffee.js" />
+      <root url="file://$PROJECT_DIR$/js/vendor/steal/test/files/32/gen.js" />
+      <root url="file://$PROJECT_DIR$/js/PlayMatController.js" />
+    </CLASSES>
+    <SOURCES />
+  </library>
+</component>
