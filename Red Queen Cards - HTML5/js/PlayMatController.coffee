@@ -164,6 +164,22 @@ class PlayMatController
     quizBox.html "Level #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}<br>ETI:#{endedETI} MTI:#{endedMTI} Virulence:#{endedBad}"
     return
 
+  processAnswer: (theAnswer) ->
+    return if not theAnswer                         # Switched to empty
+    self = this
+    correct = (theAnswer is @boardState)
+    if correct
+      @attempts[@currentLevel]["correct"] += 1   # Note success
+      @outcomes[@currentLevel][@boardState] += 1 # Update outcomes
+      self.setupLevel @currentLevel              # Reset current level
+    else
+      @attempts[@currentLevel]["incorrect"] += 1        # Note failure
+      self.wrongSelectionInfoPopup theAnswer, @boardState  # Pop up a hint
+
+    self.updateQuizLabels @currentLevel          # Update correct/incorrect display
+    return correct
+
+
 
 $(document).ready ->
   window.boardState = "Ready for input"
@@ -180,18 +196,8 @@ $(document).ready ->
 
   $("#comboBoard").change ->
     answer = $(this).val();
-    return if not answer?                         # Switched to empty
-    if answer is control.boardState
-      control.attempts[control.currentLevel]["correct"] += 1          # Note success
-      control.outcomes[control.currentLevel][control.boardState] += 1 # Update outcomes
-      control.setupLevel control.currentLevel                         # Reset current level
-      $(this).val("")                                                 # Reset answer box
-    else
-      control.attempts[control.currentLevel]["incorrect"] += 1    # Note failure
-      control.wrongSelectionInfoPopup answer, control.boardState  # Pop up a hint
-
-
-    control.updateQuizLabels control.currentLevel                 # Update correct/incorrect display
+    gotItRight = control.processAnswer answer
+    if gotItRight then $(this).val("")  # Reset answer selection
 
   $("#ClearBoardButton").click -> control.doRandomize(0,0,0,0)
 

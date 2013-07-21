@@ -294,6 +294,25 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       quizBox.html("Level " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right + "<br>ETI:" + endedETI + " MTI:" + endedMTI + " Virulence:" + endedBad);
     };
 
+    PlayMatController.prototype.processAnswer = function(theAnswer) {
+      var correct, self;
+      if (!theAnswer) {
+        return;
+      }
+      self = this;
+      correct = theAnswer === this.boardState;
+      if (correct) {
+        this.attempts[this.currentLevel]["correct"] += 1;
+        this.outcomes[this.currentLevel][this.boardState] += 1;
+        self.setupLevel(this.currentLevel);
+      } else {
+        this.attempts[this.currentLevel]["incorrect"] += 1;
+        self.wrongSelectionInfoPopup(theAnswer, this.boardState);
+      }
+      self.updateQuizLabels(this.currentLevel);
+      return correct;
+    };
+
     return PlayMatController;
 
   })();
@@ -312,21 +331,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       control.connectElement(TYPE_ALARM, i, 1);
     }
     $("#comboBoard").change(function() {
-      var answer;
+      var answer, gotItRight;
       answer = $(this).val();
-      if (answer == null) {
-        return;
+      gotItRight = control.processAnswer(answer);
+      if (gotItRight) {
+        return $(this).val("");
       }
-      if (answer === control.boardState) {
-        control.attempts[control.currentLevel]["correct"] += 1;
-        control.outcomes[control.currentLevel][control.boardState] += 1;
-        control.setupLevel(control.currentLevel);
-        $(this).val("");
-      } else {
-        control.attempts[control.currentLevel]["incorrect"] += 1;
-        control.wrongSelectionInfoPopup(answer, control.boardState);
-      }
-      return control.updateQuizLabels(control.currentLevel);
     });
     $("#ClearBoardButton").click(function() {
       return control.doRandomize(0, 0, 0, 0);
