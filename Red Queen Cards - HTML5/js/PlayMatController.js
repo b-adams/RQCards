@@ -253,21 +253,26 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       self = this;
       switch (whichLevel) {
         case 1:
-          return self.doRandomize(4, 4, 0, 0);
+          self.doRandomize(4, 4, 0, 0);
+          break;
         case 2:
-          return self.doRandomize(4, 4, 4, 0);
+          self.doRandomize(4, 4, 4, 0);
+          break;
         case 3:
-          return self.doRandomize(4, 4, 4, 4);
+          self.doRandomize(4, 4, 4, 4);
+          break;
         default:
-          return alert("Invalid level");
+          alert("Invalid level " + whichLevel);
+          return;
       }
+      return this.currentLevel = whichLevel;
     };
 
     PlayMatController.prototype.updateQuizLabels = function(whichLevel) {
       var quizBox, right, wrong;
       quizBox = $("#Quiz" + whichLevel);
-      right = attempts[whichLevel]["correct"];
-      wrong = attempts[whichLevel]["incorrect"];
+      right = this.attempts[whichLevel]["correct"];
+      wrong = this.attempts[whichLevel]["incorrect"];
       quizBox.html("Level " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right);
     };
 
@@ -294,15 +299,15 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       if (answer == null) {
         return;
       }
-      if (answer === boardState) {
-        attempts[currentLevel]["correct"] += 1;
-        control.setupLevel(currentLevel);
+      if (answer === control.boardState) {
+        control.attempts[control.currentLevel]["correct"] += 1;
+        control.setupLevel(control.currentLevel);
         $(this).val("");
       } else {
-        attempts[currentLevel]["incorrect"] += 1;
-        control.wrongSelectionInfoPopup(answer, boardState);
+        control.attempts[control.currentLevel]["incorrect"] += 1;
+        control.wrongSelectionInfoPopup(answer, control.boardState);
       }
-      return control.updateQuizLabels(currentLevel);
+      return control.updateQuizLabels(control.currentLevel);
     });
     $("#ClearBoardButton").click(function() {
       return control.doRandomize(0, 0, 0, 0);
@@ -317,7 +322,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return control.setupLevel(3);
     });
     return $("#Quiz4").click(function() {
-      return control.alert("Not yet implemented");
+      return alert("Not yet implemented");
     });
   });
 

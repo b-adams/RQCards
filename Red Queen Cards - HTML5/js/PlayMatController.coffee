@@ -142,12 +142,15 @@ class PlayMatController
       when 1 then self.doRandomize 4,4,0,0
       when 2 then self.doRandomize 4,4,4,0
       when 3 then self.doRandomize 4,4,4,4
-      else alert "Invalid level"
+      else
+        alert "Invalid level " + whichLevel
+        return
+    @currentLevel = whichLevel
 
   updateQuizLabels: (whichLevel) ->
     quizBox = $ "#Quiz"+whichLevel
-    right = attempts[whichLevel]["correct"]
-    wrong = attempts[whichLevel]["incorrect"]
+    right = @attempts[whichLevel]["correct"]
+    wrong = @attempts[whichLevel]["incorrect"]
     quizBox.html "Level #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}"
     return
 
@@ -168,19 +171,19 @@ $(document).ready ->
   $("#comboBoard").change ->
     answer = $(this).val();
     return if not answer?                         # Switched to empty
-    if answer is boardState
-      attempts[currentLevel]["correct"] += 1      # Note success
-      control.setupLevel currentLevel                     # Reset current level
+    if answer is control.boardState
+      control.attempts[control.currentLevel]["correct"] += 1      # Note success
+      control.setupLevel control.currentLevel                     # Reset current level
       $(this).val("")                             # Reset answer box
     else
-      attempts[currentLevel]["incorrect"] += 1    # Note failure
-      control.wrongSelectionInfoPopup answer, boardState  # Pop up a hint
+      control.attempts[control.currentLevel]["incorrect"] += 1    # Note failure
+      control.wrongSelectionInfoPopup answer, control.boardState  # Pop up a hint
 
-    control.updateQuizLabels currentLevel                 # Update correct/incorrect display
+    control.updateQuizLabels control.currentLevel                 # Update correct/incorrect display
 
   $("#ClearBoardButton").click -> control.doRandomize(0,0,0,0)
 
   $("#Quiz1").click -> control.setupLevel 1
   $("#Quiz2").click -> control.setupLevel 2
   $("#Quiz3").click -> control.setupLevel 3
-  $("#Quiz4").click -> control.alert "Not yet implemented"
+  $("#Quiz4").click -> alert "Not yet implemented"

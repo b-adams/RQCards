@@ -56,7 +56,7 @@ window.PlayMat = class PlayMat
 
     if colIndex>=NUMBER_OF_PLAYABLE_COLUMNS then alert "Column #{colIndex} too high"
 
-    theColumn = this._columns[colIndex];
+    theColumn = @_columns[colIndex];
 
     switch type
       when TYPE_FEATURE   then theColumn._MAMP = newValue
