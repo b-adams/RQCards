@@ -44,6 +44,21 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           incorrect: 0
         }
       ];
+      this.outcomes = [
+        "Level outcomes", {
+          ETI: 0,
+          MTI: 0,
+          Virulence: 0
+        }, {
+          ETI: 0,
+          MTI: 0,
+          Virulence: 0
+        }, {
+          ETI: 0,
+          MTI: 0,
+          Virulence: 0
+        }
+      ];
     }
 
     PlayMatController.prototype.getElement = function(type, colIndex) {
@@ -200,7 +215,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       if (suppliedAnswer === correctAnswer) {
         return;
       }
-      if (suppliedAnswer == null) {
+      if (suppliedAnswer === "" || (suppliedAnswer == null)) {
         return;
       }
       diagnosis = "Incorrect.\nYou selected " + suppliedAnswer;
@@ -269,11 +284,33 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatController.prototype.updateQuizLabels = function(whichLevel) {
-      var quizBox, right, wrong;
+      var endedBad, endedETI, endedMTI, quizBox, right, wrong;
       quizBox = $("#Quiz" + whichLevel);
       right = this.attempts[whichLevel]["correct"];
       wrong = this.attempts[whichLevel]["incorrect"];
-      quizBox.html("Level " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right);
+      endedMTI = this.outcomes[whichLevel]["MTI"];
+      endedETI = this.outcomes[whichLevel]["ETI"];
+      endedBad = this.outcomes[whichLevel]["Virulence"];
+      quizBox.html("Level " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right + "<br>ETI:" + endedETI + " MTI:" + endedMTI + " Virulence:" + endedBad);
+    };
+
+    PlayMatController.prototype.processAnswer = function(theAnswer) {
+      var correct, self;
+      if (!theAnswer) {
+        return;
+      }
+      self = this;
+      correct = theAnswer === this.boardState;
+      if (correct) {
+        this.attempts[this.currentLevel]["correct"] += 1;
+        this.outcomes[this.currentLevel][this.boardState] += 1;
+        self.setupLevel(this.currentLevel);
+      } else {
+        this.attempts[this.currentLevel]["incorrect"] += 1;
+        self.wrongSelectionInfoPopup(theAnswer, this.boardState);
+      }
+      self.updateQuizLabels(this.currentLevel);
+      return correct;
     };
 
     return PlayMatController;
@@ -294,20 +331,47 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       control.connectElement(TYPE_ALARM, i, 1);
     }
     $("#comboBoard").change(function() {
-      var answer;
+      var answer, gotItRight;
       answer = $(this).val();
-      if (answer == null) {
-        return;
+      gotItRight = control.processAnswer(answer);
+      if (gotItRight) {
+        return $(this).val("");
       }
-      if (answer === control.boardState) {
-        control.attempts[control.currentLevel]["correct"] += 1;
-        control.setupLevel(control.currentLevel);
-        $(this).val("");
-      } else {
-        control.attempts[control.currentLevel]["incorrect"] += 1;
-        control.wrongSelectionInfoPopup(answer, control.boardState);
+    });
+    $("#cheatyFace1").click(function() {
+      return control.processAnswer(control.boardState);
+    });
+    $("#cheatyFace2").click(function() {
+      var n, _j, _results;
+      _results = [];
+      for (n = _j = 0; _j < 10; n = ++_j) {
+        _results.push(control.processAnswer(control.boardState));
       }
-      return control.updateQuizLabels(control.currentLevel);
+      return _results;
+    });
+    $("#cheatyFace3").click(function() {
+      var n, _j, _results;
+      _results = [];
+      for (n = _j = 0; _j < 100; n = ++_j) {
+        _results.push(control.processAnswer(control.boardState));
+      }
+      return _results;
+    });
+    $("#cheatyFace4").click(function() {
+      var n, _j, _results;
+      _results = [];
+      for (n = _j = 0; _j < 1000; n = ++_j) {
+        _results.push(control.processAnswer(control.boardState));
+      }
+      return _results;
+    });
+    $("#cheatyFace5").click(function() {
+      var n, _j, _results;
+      _results = [];
+      for (n = _j = 0; _j < 10000; n = ++_j) {
+        _results.push(control.processAnswer(control.boardState));
+      }
+      return _results;
     });
     $("#ClearBoardButton").click(function() {
       return control.doRandomize(0, 0, 0, 0);

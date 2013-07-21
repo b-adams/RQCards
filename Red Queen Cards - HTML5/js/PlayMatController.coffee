@@ -33,6 +33,12 @@ class PlayMatController
       {correct: 0, incorrect: 0}
       {correct: 0, incorrect: 0}
     ]
+    @outcomes = [
+      "Level outcomes"
+      {ETI: 0, MTI: 0, Virulence: 0}
+      {ETI: 0, MTI: 0, Virulence: 0}
+      {ETI: 0, MTI: 0, Virulence: 0}
+    ]
 
   getElement: (type, colIndex) ->
     selector = "#board > #c"+(colIndex+1)+" > ."
@@ -113,7 +119,7 @@ class PlayMatController
 
   wrongSelectionInfoPopup: (suppliedAnswer, correctAnswer) ->
     return if suppliedAnswer is correctAnswer #Nothing wrong here
-    return if not suppliedAnswer? #No answer provided
+    return if suppliedAnswer is "" or not suppliedAnswer? #No answer provided
     diagnosis = "Incorrect.\nYou selected "+suppliedAnswer
 
     switch suppliedAnswer
@@ -151,8 +157,28 @@ class PlayMatController
     quizBox = $ "#Quiz"+whichLevel
     right = @attempts[whichLevel]["correct"]
     wrong = @attempts[whichLevel]["incorrect"]
-    quizBox.html "Level #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}"
+    endedMTI = @outcomes[whichLevel]["MTI"];
+    endedETI = @outcomes[whichLevel]["ETI"];
+    endedBad = @outcomes[whichLevel]["Virulence"];
+
+    quizBox.html "Level #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}<br>ETI:#{endedETI} MTI:#{endedMTI} Virulence:#{endedBad}"
     return
+
+  processAnswer: (theAnswer) ->
+    return if not theAnswer                         # Switched to empty
+    self = this
+    correct = (theAnswer is @boardState)
+    if correct
+      @attempts[@currentLevel]["correct"] += 1   # Note success
+      @outcomes[@currentLevel][@boardState] += 1 # Update outcomes
+      self.setupLevel @currentLevel              # Reset current level
+    else
+      @attempts[@currentLevel]["incorrect"] += 1        # Note failure
+      self.wrongSelectionInfoPopup theAnswer, @boardState  # Pop up a hint
+
+    self.updateQuizLabels @currentLevel          # Update correct/incorrect display
+    return correct
+
 
 
 $(document).ready ->
@@ -170,16 +196,14 @@ $(document).ready ->
 
   $("#comboBoard").change ->
     answer = $(this).val();
-    return if not answer?                         # Switched to empty
-    if answer is control.boardState
-      control.attempts[control.currentLevel]["correct"] += 1      # Note success
-      control.setupLevel control.currentLevel                     # Reset current level
-      $(this).val("")                             # Reset answer box
-    else
-      control.attempts[control.currentLevel]["incorrect"] += 1    # Note failure
-      control.wrongSelectionInfoPopup answer, control.boardState  # Pop up a hint
+    gotItRight = control.processAnswer answer
+    if gotItRight then $(this).val("")  # Reset answer selection
 
-    control.updateQuizLabels control.currentLevel                 # Update correct/incorrect display
+  $("#cheatyFace1").click -> control.processAnswer control.boardState
+  $("#cheatyFace2").click -> control.processAnswer control.boardState for n in [0...10]
+  $("#cheatyFace3").click -> control.processAnswer control.boardState for n in [0...100]
+  $("#cheatyFace4").click -> control.processAnswer control.boardState for n in [0...1000]
+  $("#cheatyFace5").click -> control.processAnswer control.boardState for n in [0...10000]
 
   $("#ClearBoardButton").click -> control.doRandomize(0,0,0,0)
 
