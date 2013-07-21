@@ -199,6 +199,12 @@ $(document).ready ->
     gotItRight = control.processAnswer answer
     if gotItRight then $(this).val("")  # Reset answer selection
 
+  $("#cheatyFace1").click -> control.processAnswer control.boardState
+  $("#cheatyFace2").click -> control.processAnswer control.boardState for n in [0...10]
+  $("#cheatyFace3").click -> control.processAnswer control.boardState for n in [0...100]
+  $("#cheatyFace4").click -> control.processAnswer control.boardState for n in [0...1000]
+  $("#cheatyFace5").click -> control.processAnswer control.boardState for n in [0...10000]
+
   $("#ClearBoardButton").click -> control.doRandomize(0,0,0,0)
 
   $("#Quiz1").click -> control.setupLevel 1

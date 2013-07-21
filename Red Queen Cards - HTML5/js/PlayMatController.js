@@ -338,6 +338,41 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         return $(this).val("");
       }
     });
+    $("#cheatyFace1").click(function() {
+      return control.processAnswer(control.boardState);
+    });
+    $("#cheatyFace2").click(function() {
+      var n, _j, _results;
+      _results = [];
+      for (n = _j = 0; _j < 10; n = ++_j) {
+        _results.push(control.processAnswer(control.boardState));
+      }
+      return _results;
+    });
+    $("#cheatyFace3").click(function() {
+      var n, _j, _results;
+      _results = [];
+      for (n = _j = 0; _j < 100; n = ++_j) {
+        _results.push(control.processAnswer(control.boardState));
+      }
+      return _results;
+    });
+    $("#cheatyFace4").click(function() {
+      var n, _j, _results;
+      _results = [];
+      for (n = _j = 0; _j < 1000; n = ++_j) {
+        _results.push(control.processAnswer(control.boardState));
+      }
+      return _results;
+    });
+    $("#cheatyFace5").click(function() {
+      var n, _j, _results;
+      _results = [];
+      for (n = _j = 0; _j < 10000; n = ++_j) {
+        _results.push(control.processAnswer(control.boardState));
+      }
+      return _results;
+    });
     $("#ClearBoardButton").click(function() {
       return control.doRandomize(0, 0, 0, 0);
     });
