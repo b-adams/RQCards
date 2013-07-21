@@ -47,8 +47,9 @@ class PlayMatController
     return $ selector
 
   connectElement: (type, colIndex, theVariant...) ->
-    theFeature = getElement type, colIndex, theVariant...
-    theFeature.click -> doPlay theFeature, type, colIndex, theVariant...
+    self = this
+    theFeature = self.getElement type, colIndex, theVariant...
+    theFeature.click -> self.doPlay theFeature, type, colIndex, theVariant...
     theFeature.css "border-style", "dashed"
 
   setElementActivity: (active, theElement) ->
@@ -63,47 +64,50 @@ class PlayMatController
       when @theModel.isPlantETIActive() then "ETI"
       when @theModel.isPlantMTIActive() then "MTI"
       else                                   "Virulence"
-    console.log "Board: " + boardState
-    window.document.title = "Current state: " + boardState
+    console.log "Board: " + @boardState
+    window.document.title = "Current state: " + @boardState
 
   doSet: (theElement, newValue, type, colIndex, theVariety...) ->
-    oldValue = theModel.isCellActive type, colIndex, theVariety...
+    self = this
+    oldValue = @theModel.isCellActive type, colIndex, theVariety...
     if oldValue isnt newValue
-      theElement ?= getElement type, colIndex, theVariety...
-      theModel.setCell newValue, type, colIndex, theVariety...
-      updateBoardState()
-      setElementActivity newValue, theElement
+      theElement ?= self.getElement type, colIndex, theVariety...
+      @theModel.setCell newValue, type, colIndex, theVariety...
+      self.updateBoardState()
+      self.setElementActivity newValue, theElement
     return newValue
 
 
   doPlay: (theElement, type, colIndex, theVariety...) ->
-    theElement ?= getElement type, colIndex, theVariety...
-    active = theModel.toggleCell type, colIndex, theVariety...
-    updateBoardState()
-    setElementActivity active, theElement
+    self = this
+    theElement ?= self.getElement type, colIndex, theVariety...
+    active = @theModel.toggleCell type, colIndex, theVariety...
+    self.updateBoardState()
+    self.setElementActivity active, theElement
     return active
 
   randomSelectionArray: (picks, total) ->
     picklist = (true for n in [0...picks]).concat (false for n in [picks...total])
-    for n in [0...total]
+    for i in [0...total]
       randIndex = Math.floor(i+(Math.random()*(total-i)))
       [picklist[i], picklist[randIndex]] = [picklist[randIndex], picklist[i]]
     return picklist
 
   doRandomize: (features=4, detectors=4, effectors=4, alarms=4) ->
+    self = this
     console.log "RANDOMIZING----------------------------------"
 
-    randList = randomSelectionArray features, NUMBER_OF_FEATURES
-    doSet 0, randVal, TYPE_FEATURE, i for randVal,i in randList
+    randList = self.randomSelectionArray features, NUMBER_OF_FEATURES
+    self.doSet null, randVal, TYPE_FEATURE, i for randVal,i in randList
 
-    randList = randomSelectionArray detectors, NUMBER_OF_DETECTORS
-    doSet 0, randVal, TYPE_DETECTOR, i for randVal,i in randList
+    randList = self.randomSelectionArray detectors, NUMBER_OF_DETECTORS
+    self.doSet null, randVal, TYPE_DETECTOR, i for randVal,i in randList
 
-    randList = randomSelectionArray effectors, NUMBER_OF_EFFECTORS
-    doSet 0, randVal, TYPE_EFFECTOR, i/2, i%2 for randVal,i in randList
+    randList = self.randomSelectionArray effectors, NUMBER_OF_EFFECTORS
+    self.doSet null, randVal, TYPE_EFFECTOR, i>>1, i%2 for randVal,i in randList
 
-    randList = randomSelectionArray alarms, NUMBER_OF_ALARMS
-    doSet 0, randVal, TYPE_ALARM, i/2, i%2 for randVal,i in randList
+    randList = self.randomSelectionArray alarms, NUMBER_OF_ALARMS
+    self.doSet null, randVal, TYPE_ALARM, i>>1, i%2 for randVal,i in randList
 
     console.log "RANDOMIZED-----------------------------------"
 
@@ -133,10 +137,11 @@ class PlayMatController
     alert diagnosis+hint
 
   setupLevel: (whichLevel) ->
+    self = this
     switch whichLevel
-      when 1 then doRandomize 4,4,0,0
-      when 2 then doRandomize 4,4,4,0
-      when 3 then doRandomize 4,4,4,4
+      when 1 then self.doRandomize 4,4,0,0
+      when 2 then self.doRandomize 4,4,4,0
+      when 3 then self.doRandomize 4,4,4,4
       else alert "Invalid level"
 
   updateQuizLabels: (whichLevel) ->
@@ -148,31 +153,34 @@ class PlayMatController
 
 
 $(document).ready ->
-  boardState="Ready for input";
+  window.boardState = "Ready for input"
+  window.controller = new PlayMatController()
+  control = window.controller
+
   for i in [0...NUMBER_OF_PLAYABLE_COLUMNS]
-    connectElement(TYPE_FEATURE,  i)
-    connectElement(TYPE_DETECTOR, i)
-    connectElement(TYPE_EFFECTOR, i, 0)
-    connectElement(TYPE_EFFECTOR, i, 1)
-    connectElement(TYPE_ALARM,    i, 0)
-    connectElement(TYPE_ALARM,    i, 1)
+    control.connectElement(TYPE_FEATURE,  i)
+    control.connectElement(TYPE_DETECTOR, i)
+    control.connectElement(TYPE_EFFECTOR, i, 0)
+    control.connectElement(TYPE_EFFECTOR, i, 1)
+    control.connectElement(TYPE_ALARM,    i, 0)
+    control.connectElement(TYPE_ALARM,    i, 1)
 
   $("#comboBoard").change ->
     answer = $(this).val();
     return if not answer?                         # Switched to empty
     if answer is boardState
       attempts[currentLevel]["correct"] += 1      # Note success
-      setupLevel currentLevel                     # Reset current level
+      control.setupLevel currentLevel                     # Reset current level
       $(this).val("")                             # Reset answer box
     else
       attempts[currentLevel]["incorrect"] += 1    # Note failure
-      wrongSelectionInfoPopup answer, boardState  # Pop up a hint
+      control.wrongSelectionInfoPopup answer, boardState  # Pop up a hint
 
-    updateQuizLabels currentLevel                 # Update correct/incorrect display
+    control.updateQuizLabels currentLevel                 # Update correct/incorrect display
 
-  $("#ClearBoardButton").click -> doRandomize(0,0,0,0)
+  $("#ClearBoardButton").click -> control.doRandomize(0,0,0,0)
 
-  $("#Quiz1").click -> setupLevel 1
-  $("#Quiz2").click -> setupLevel 2
-  $("#Quiz3").click -> setupLevel 3
-  $("#Quiz4").click -> alert "Not yet implemented"
+  $("#Quiz1").click -> control.setupLevel 1
+  $("#Quiz2").click -> control.setupLevel 2
+  $("#Quiz3").click -> control.setupLevel 3
+  $("#Quiz4").click -> control.alert "Not yet implemented"
