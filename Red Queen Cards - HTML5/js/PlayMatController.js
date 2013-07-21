@@ -44,6 +44,21 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           incorrect: 0
         }
       ];
+      this.outcomes = [
+        "Level outcomes", {
+          ETI: 0,
+          MTI: 0,
+          Virulence: 0
+        }, {
+          ETI: 0,
+          MTI: 0,
+          Virulence: 0
+        }, {
+          ETI: 0,
+          MTI: 0,
+          Virulence: 0
+        }
+      ];
     }
 
     PlayMatController.prototype.getElement = function(type, colIndex) {
@@ -200,7 +215,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       if (suppliedAnswer === correctAnswer) {
         return;
       }
-      if (suppliedAnswer == null) {
+      if (suppliedAnswer === "" || (suppliedAnswer == null)) {
         return;
       }
       diagnosis = "Incorrect.\nYou selected " + suppliedAnswer;
@@ -269,11 +284,14 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatController.prototype.updateQuizLabels = function(whichLevel) {
-      var quizBox, right, wrong;
+      var endedBad, endedETI, endedMTI, quizBox, right, wrong;
       quizBox = $("#Quiz" + whichLevel);
       right = this.attempts[whichLevel]["correct"];
       wrong = this.attempts[whichLevel]["incorrect"];
-      quizBox.html("Level " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right);
+      endedMTI = this.outcomes[whichLevel]["MTI"];
+      endedETI = this.outcomes[whichLevel]["ETI"];
+      endedBad = this.outcomes[whichLevel]["Virulence"];
+      quizBox.html("Level " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right + "<br>ETI:" + endedETI + " MTI:" + endedMTI + " Virulence:" + endedBad);
     };
 
     return PlayMatController;
@@ -301,6 +319,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       }
       if (answer === control.boardState) {
         control.attempts[control.currentLevel]["correct"] += 1;
+        control.outcomes[control.currentLevel][control.boardState] += 1;
         control.setupLevel(control.currentLevel);
         $(this).val("");
       } else {

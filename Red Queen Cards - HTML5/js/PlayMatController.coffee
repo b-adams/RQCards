@@ -33,6 +33,12 @@ class PlayMatController
       {correct: 0, incorrect: 0}
       {correct: 0, incorrect: 0}
     ]
+    @outcomes = [
+      "Level outcomes"
+      {ETI: 0, MTI: 0, Virulence: 0}
+      {ETI: 0, MTI: 0, Virulence: 0}
+      {ETI: 0, MTI: 0, Virulence: 0}
+    ]
 
   getElement: (type, colIndex) ->
     selector = "#board > #c"+(colIndex+1)+" > ."
@@ -113,7 +119,7 @@ class PlayMatController
 
   wrongSelectionInfoPopup: (suppliedAnswer, correctAnswer) ->
     return if suppliedAnswer is correctAnswer #Nothing wrong here
-    return if not suppliedAnswer? #No answer provided
+    return if suppliedAnswer is "" or not suppliedAnswer? #No answer provided
     diagnosis = "Incorrect.\nYou selected "+suppliedAnswer
 
     switch suppliedAnswer
@@ -151,7 +157,11 @@ class PlayMatController
     quizBox = $ "#Quiz"+whichLevel
     right = @attempts[whichLevel]["correct"]
     wrong = @attempts[whichLevel]["incorrect"]
-    quizBox.html "Level #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}"
+    endedMTI = @outcomes[whichLevel]["MTI"];
+    endedETI = @outcomes[whichLevel]["ETI"];
+    endedBad = @outcomes[whichLevel]["Virulence"];
+
+    quizBox.html "Level #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}<br>ETI:#{endedETI} MTI:#{endedMTI} Virulence:#{endedBad}"
     return
 
 
@@ -172,12 +182,14 @@ $(document).ready ->
     answer = $(this).val();
     return if not answer?                         # Switched to empty
     if answer is control.boardState
-      control.attempts[control.currentLevel]["correct"] += 1      # Note success
-      control.setupLevel control.currentLevel                     # Reset current level
-      $(this).val("")                             # Reset answer box
+      control.attempts[control.currentLevel]["correct"] += 1          # Note success
+      control.outcomes[control.currentLevel][control.boardState] += 1 # Update outcomes
+      control.setupLevel control.currentLevel                         # Reset current level
+      $(this).val("")                                                 # Reset answer box
     else
       control.attempts[control.currentLevel]["incorrect"] += 1    # Note failure
       control.wrongSelectionInfoPopup answer, control.boardState  # Pop up a hint
+
 
     control.updateQuizLabels control.currentLevel                 # Update correct/incorrect display
 
