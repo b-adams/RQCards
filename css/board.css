@@ -103,7 +103,7 @@ to {
 
 #Quiz1, #Quiz2, #Quiz3, #Quiz4
 {
-	width: 100%; height: 3em; text-align: center; 
+	width: 100%; height: 4em; text-align: center;
 }
 #Quiz1 { background-color: #00f000; }
 #Quiz2 { background-color: #40c000; }
