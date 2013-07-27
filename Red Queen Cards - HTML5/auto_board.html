@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<!--
+    Automatic Board layout for Red Queen Game
+    Copyright (C) 2013 Bryant Adams
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see http://www.gnu.org/licenses/.
+-->
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/main.css">
+    <script src="js/vendor/modernizr-2.6.2.min.js"></script>
+
+</head>
+<body>
+
+<!--[if lt IE 7]>
+<p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+<![endif]-->
+
+<!-- Add your site or application content here -->
+
+<table style="width:100%">
+    <tr>
+        <td style="width:20%">
+            <select id="comboBoard" style="width: 100%">
+                <option value="">Select current board state</option>
+                <option value="ETI">ETI (Alarm matches Effector)</option>
+                <option value="MTI">MTI (Two active detectors match features)</option>
+                <option value="Virulence">Virulence (None of the above)</option>
+            </select>
+
+        </td>
+        <td>
+            <div id="Quiz1">Level 1<br>Answers: 0 Correct: 0<br>ETI:0 MTI:0 Virulence:0</div>
+        </td>
+        <td>
+            <div id="Quiz2">Level 2<br>Answers: 0 Correct: 0<br>ETI:0 MTI:0 Virulence:0</div>
+        </td>
+        <td>
+            <div id="Quiz3">Level 3<br>Answers: 0 Correct: 0<br>ETI:0 MTI:0 Virulence:0</div>
+        </td>
+        <td>
+            <div id="Quiz4">Level 4<br>Answers: 0 Correct: 0<br>ETI:0 MTI:0 Virulence:0</div>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <button id="cheatyFace1" type="button">1</button><button id="cheatyFace2" type="button">10</button><button id="cheatyFace3" type="button">100</button><button id="cheatyFace4" type="button">1000</button><button id="cheatyFace5" type="button">10000</button>
+        </td>
+        <td colspan=4>
+            <div id="ClearBoardButton">Clear Board</div>
+        </td>
+    </tr>
+</table>
+
+
+<div id="boardWrapper"></div>
+
+<div id="license"><a href="http://www.gnu.org/licenses/agpl.html"><img src="agplv3-88x31.png"></a><a href="https://github.com/b-adams/RQCards">Source</a> for this project available under the <a href="http://www.gnu.org/licenses/agpl.html">AGPLv3</a></div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')</script>
+<script src="js/plugins.js"></script>
+<script src="js/vendor/jquery-ZenCoding/jQuery-ZenCoding.js"></script>
+<script src="js/main.js"></script>
+<script src="js/Constants.js"></script>
+<script src="js/PlatmatConstructor.js"></script>
+<script src="js/PlaymatModel.js"></script>
+<script src="js/PlayMatController.js"></script>
+
+<!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+<script>
+    var _gaq=[['_setAccount','UA-41487611-1'],['_trackPageview']];
+    (function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];
+        g.src='//www.google-analytics.com/ga.js';
+        s.parentNode.insertBefore(g,s)}(document,'script'));
+</script>
+
+<!-- Official script
+<script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-41487611-1', 'wells.edu');
+  ga('send', 'pageview');
+
+</script>
+-->
+</body>
+</html>
