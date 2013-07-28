@@ -5,6 +5,7 @@
         <item url="file://$PROJECT_DIR$/js/PlaymatModel.js" />
         <item url="file://$PROJECT_DIR$/test/TestPlaymatController.js" />
         <item url="file://$PROJECT_DIR$/js/vendor/steal/coffee/coffee.js" />
+        <item url="file://$PROJECT_DIR$/js/PlaymatBuilder.js" />
         <item url="file://$PROJECT_DIR$/js/PlayMatController.js" />
         <item url="file://$PROJECT_DIR$/js/PlatmatConstructor.js" />
       </sourceFilesUrls>
@@ -19,6 +20,7 @@
       <root url="file://$PROJECT_DIR$/js/PlaymatModel.js" />
       <root url="file://$PROJECT_DIR$/test/TestPlaymatController.js" />
       <root url="file://$PROJECT_DIR$/js/vendor/steal/coffee/coffee.js" />
+      <root url="file://$PROJECT_DIR$/js/PlaymatBuilder.js" />
       <root url="file://$PROJECT_DIR$/js/PlayMatController.js" />
       <root url="file://$PROJECT_DIR$/js/PlatmatConstructor.js" />
     </CLASSES>
