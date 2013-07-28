@@ -216,3 +216,5 @@ $(document).ready ->
 #TODO: Merge this with the PlaymatBuilder
 #Have the HTML designate in a script that window.boardContainerIdentifier = "boardControl" etc
 #Then have the controller's Document.ready look up that information and create the appropriate elements in appropriat elocations
+#Or.. perhaps it should always be IDs for boardWrapper, controlWrapper, and licenseWrapper? That would make
+#the whole process more self-contained. Just add a few DIVs and one JavaScript file and you're good to go...
