@@ -291,7 +291,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       endedMTI = this.outcomes[whichLevel]["MTI"];
       endedETI = this.outcomes[whichLevel]["ETI"];
       endedBad = this.outcomes[whichLevel]["Virulence"];
-      quizBox.html("Level " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right + "<br>ETI:" + endedETI + " MTI:" + endedMTI + " Virulence:" + endedBad);
+      quizBox.html("Training " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right + "<br>ETI:" + endedETI + " MTI:" + endedMTI + " Virulence:" + endedBad);
     };
 
     PlayMatController.prototype.processAnswer = function(theAnswer) {
