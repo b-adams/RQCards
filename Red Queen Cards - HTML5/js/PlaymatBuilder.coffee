@@ -17,13 +17,14 @@ window.createPlaymat = (controlSelector, boardSelector, licenseSelector) ->
 createBoard = (inElement) ->
   boardDiv = $(document.createElement('div')).attr("id", "board").appendTo inElement
   for i in [1..8]
-    aColumn = $(document.createElement('div')).attr("class", "column").attr("id","c"+i).appendTo boardDiv
-    $(document.createElement('div')).attr("class", "feature").text("Feature "+i).appendTo aColumn
-    $(document.createElement('div')).attr("class", "detector").text("Detector "+i).appendTo aColumn
-    $(document.createElement('div')).attr("class", "effector e1").text("Effector 1").appendTo aColumn
-    $(document.createElement('div')).attr("class", "effector e2").text("Effector 2").appendTo aColumn
-    $(document.createElement('div')).attr("class", "alarm e1").text("Alarm 1").appendTo aColumn
-    $(document.createElement('div')).attr("class", "alarm e2").text("Alarm 2").appendTo aColumn
+    letter = String.fromCharCode("A".charCodeAt(0) + i - 1)
+    aColumn = $(document.createElement('div')).attr("class", "column").attr("id","c#{i}").appendTo boardDiv
+    $(document.createElement('div')).attr("class", "feature").text("Feature #{letter}").appendTo aColumn
+    $(document.createElement('div')).attr("class", "detector").text("Detector #{letter}").appendTo aColumn
+    $(document.createElement('div')).attr("class", "effector e1").text("Effector #{letter}1").appendTo aColumn
+    $(document.createElement('div')).attr("class", "effector e2").text("Effector #{letter}2").appendTo aColumn
+    $(document.createElement('div')).attr("class", "alarm e1").text("Alarm #{letter}1").appendTo aColumn
+    $(document.createElement('div')).attr("class", "alarm e2").text("Alarm #{letter}2").appendTo aColumn
 
 createControls = (inElement) ->
   theTable = $(document.createElement('table')).attr("style", "width:100%").appendTo inElement
@@ -40,11 +41,11 @@ createControls = (inElement) ->
 
   for i in [1..3]
     aTD = $(document.createElement('td')).appendTo firstRow
-    $(document.createElement('div')).attr("id", "Quiz"+i).html("Level "+i+"<br>Answers: 0 Correct: 0<br>ETI:0 MTI:0 Virulence:0").appendTo aTD
+    $(document.createElement('div')).attr("id", "Quiz#{i}").html("Training #{i}<br>Answers: 0 Correct: 0<br>ETI:0 MTI:0 Virulence:0").appendTo aTD
 
   aTD = $(document.createElement('td')).appendTo secondRow
   for i in [0..4]
-    $(document.createElement('button')).attr("id", "cheatyFace"+(i+1)).attr("type", "button").text("10^"+i).appendTo aTD
+    $(document.createElement('button')).attr("id", "cheatyFace#{i+1}").attr("type", "button").text("10^#{i}").appendTo aTD
 
   aTD = $(document.createElement('td')).attr("colspan", 3).appendTo secondRow
   $(document.createElement('div')).attr("id", "ClearBoardButton").text("Clear Board").appendTo aTD

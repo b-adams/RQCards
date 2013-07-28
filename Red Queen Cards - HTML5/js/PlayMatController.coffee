@@ -161,7 +161,7 @@ class PlayMatController
     endedETI = @outcomes[whichLevel]["ETI"];
     endedBad = @outcomes[whichLevel]["Virulence"];
 
-    quizBox.html "Level #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}<br>ETI:#{endedETI} MTI:#{endedMTI} Virulence:#{endedBad}"
+    quizBox.html "Training #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}<br>ETI:#{endedETI} MTI:#{endedMTI} Virulence:#{endedBad}"
     return
 
   processAnswer: (theAnswer) ->
@@ -211,3 +211,8 @@ $(document).ready ->
   $("#Quiz2").click -> control.setupLevel 2
   $("#Quiz3").click -> control.setupLevel 3
   $("#Quiz4").click -> alert "Not yet implemented"
+
+
+#TODO: Merge this with the PlaymatBuilder
+#Have the HTML designate in a script that window.boardContainerIdentifier = "boardControl" etc
+#Then have the controller's Document.ready look up that information and create the appropriate elements in appropriat elocations

@@ -19,17 +19,18 @@
   };
 
   createBoard = function(inElement) {
-    var aColumn, boardDiv, i, _i, _results;
+    var aColumn, boardDiv, i, letter, _i, _results;
     boardDiv = $(document.createElement('div')).attr("id", "board").appendTo(inElement);
     _results = [];
     for (i = _i = 1; _i <= 8; i = ++_i) {
+      letter = String.fromCharCode("A".charCodeAt(0) + i - 1);
       aColumn = $(document.createElement('div')).attr("class", "column").attr("id", "c" + i).appendTo(boardDiv);
-      $(document.createElement('div')).attr("class", "feature").text("Feature " + i).appendTo(aColumn);
-      $(document.createElement('div')).attr("class", "detector").text("Detector " + i).appendTo(aColumn);
-      $(document.createElement('div')).attr("class", "effector e1").text("Effector 1").appendTo(aColumn);
-      $(document.createElement('div')).attr("class", "effector e2").text("Effector 2").appendTo(aColumn);
-      $(document.createElement('div')).attr("class", "alarm e1").text("Alarm 1").appendTo(aColumn);
-      _results.push($(document.createElement('div')).attr("class", "alarm e2").text("Alarm 2").appendTo(aColumn));
+      $(document.createElement('div')).attr("class", "feature").text("Feature " + letter).appendTo(aColumn);
+      $(document.createElement('div')).attr("class", "detector").text("Detector " + letter).appendTo(aColumn);
+      $(document.createElement('div')).attr("class", "effector e1").text("Effector " + letter + "1").appendTo(aColumn);
+      $(document.createElement('div')).attr("class", "effector e2").text("Effector " + letter + "2").appendTo(aColumn);
+      $(document.createElement('div')).attr("class", "alarm e1").text("Alarm " + letter + "1").appendTo(aColumn);
+      _results.push($(document.createElement('div')).attr("class", "alarm e2").text("Alarm " + letter + "2").appendTo(aColumn));
     }
     return _results;
   };
@@ -47,7 +48,7 @@
     $(document.createElement('option')).attr("value", "Virulence").text("Virulence (None of the above)").appendTo(selector);
     for (i = _i = 1; _i <= 3; i = ++_i) {
       aTD = $(document.createElement('td')).appendTo(firstRow);
-      $(document.createElement('div')).attr("id", "Quiz" + i).html("Level " + i + "<br>Answers: 0 Correct: 0<br>ETI:0 MTI:0 Virulence:0").appendTo(aTD);
+      $(document.createElement('div')).attr("id", "Quiz" + i).html("Training " + i + "<br>Answers: 0 Correct: 0<br>ETI:0 MTI:0 Virulence:0").appendTo(aTD);
     }
     aTD = $(document.createElement('td')).appendTo(secondRow);
     for (i = _j = 0; _j <= 4; i = ++_j) {
