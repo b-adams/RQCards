@@ -40,7 +40,7 @@ class PlayMatSolitaireController
       plant: 0
       pathogen: 0
     }
-    @currentElement = {
+    @selectedElement = {
       element: null
       type: -1
       colIndex: -1
@@ -82,37 +82,64 @@ class PlayMatSolitaireController
     console.log "Game: " + @boardState
     window.document.title = "Current state: " + @boardState
 
+  updateVictoryAndPressure: ->
+    this.updateBoardState
+    switch @boardState
+      when "ETI"
+        @pressurePoints["pathogen"] += 2
+        @victoryPoints["plant"] += 1
+      when "MTI"
+        @pressurePoints["pathogen"] += 1
+        @victoryPoints["plant"] += 1
+      else #Virulence
+        @pressurePoints["plant"] += 1
+        @victoryPoints["pathogen"] += 1
+    console.log "Pressure: " +@pressurePoints
+    console.log "Victory: " +@victoryPoints
+
   doDiscard: (theElement, type, colIndex, theVariety...) ->
     self = this
     oldValue = @theModel.isCellActive type, colIndex, theVariety...
     if oldValue isnt true
       return false #No discarding cards you don't have
-    theElement ?= self.getElement type, colIndex, theVariety...
-    @theModel.setCell false, type, colIndex, theVariety...
-    self.updateBoardState
-    self.setElementActivity false, theElement
-    return true
+    else
+      theElement ?= self.getElement type, colIndex, theVariety...
+      @theModel.setCell false, type, colIndex, theVariety...
+      this.updateVictoryAndPressure
+      switch type
+        when TYPE_FEATURE  then @distribution["features"] -= 1
+        when TYPE_DETECTOR then @distribution["detectors"] -= 1
+        when TYPE_ALARM    then @distribution["alarms"] -= 1
+        when TYPE_EFFECTOR then @distribution["effectors"] -= 1
+      self.setElementActivity false, theElement
+      return true #Discard successful
 
   doSelect: (theElement, type, colIndex, theVariety...) ->
     #Reset current selected element
-    oldModel = @currentElement["element"]
-    console.log "Selecting" + type
-    if oldModel isnt null
-      oldState = @theModel.isCellActive @currentElement["type"], @currentElement["colIndex"], @currentElement["variety"]
-      this.setElementActivity oldState, @currentElement["element"]
+    if @selectedElement["element"] isnt null
+      oldState = @theModel.isCellActive @selectedElement["type"], @selectedElement["colIndex"], @selectedElement["variety"]
+      this.setElementActivity oldState, @selectedElement["element"]
 
-    #Set up new selected element
-    this.setElementActivity true, theElement
-    theElement.css "border-style", "dotted"
-    theElement.css "border-width", "3px"
-    theElement.css "text-shadow",  "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF"
+    selectionState = @theModel.isCellActive type, colIndex, theVariety
+    # Don't bother selecting inactive elements, you can't discard or replace them
+    if selectionState
+      #Set up new selected element
+      theElement.css "border-style", "dotted"
+      theElement.css "border-width", "3px"
+      theElement.css "text-shadow",  "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF"
+      theElement.css "opacity",      "1"
 
+      #Remember for future use
+      @selectedElement["element"] = theElement
+      @selectedElement["type"] = type
+      @selectedElement["colIndex"] = colIndex
+      @selectedElement["variety"] = theVariety
+    else
+      @selectedElement["element"] = null
+      @selectedElement["type"] = -1
+      @selectedElement["colIndex"] = -1
+      @selectedElement["variety"] = -1
 
-    #Remember for future use
-    @currentElement["element"] = theElement
-    @currentElement["type"] = type
-    @currentElement["colIndex"] = colIndex
-    @currentElement["variety"] = theVariety
 
   doSet: (theElement, newValue, type, colIndex, theVariety...) ->
     self = this
@@ -173,28 +200,6 @@ class PlayMatSolitaireController
         "ERROR: invalid answer"
 
     alert diagnosis+hint
-
-  setupLevel: (whichLevel) ->
-    self = this
-    switch whichLevel
-      when 1 then self.doRandomize 4,4,0,0
-      when 2 then self.doRandomize 4,4,4,0
-      when 3 then self.doRandomize 4,4,4,4
-      else
-        alert "Invalid level " + whichLevel
-        return
-    @currentLevel = whichLevel
-
-  updateQuizLabels: (whichLevel) ->
-    quizBox = $ "#Quiz"+whichLevel
-    right = @attempts[whichLevel]["correct"]
-    wrong = @attempts[whichLevel]["incorrect"]
-    endedMTI = @outcomes[whichLevel]["MTI"];
-    endedETI = @outcomes[whichLevel]["ETI"];
-    endedBad = @outcomes[whichLevel]["Virulence"];
-
-    quizBox.html "Training #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}<br>ETI:#{endedETI} MTI:#{endedMTI} Virulence:#{endedBad}"
-    return
 
   processAnswer: (theAnswer) ->
     return if not theAnswer                         # Switched to empty

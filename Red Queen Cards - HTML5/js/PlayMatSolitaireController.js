@@ -45,7 +45,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         plant: 0,
         pathogen: 0
       };
-      this.currentElement = {
+      this.selectedElement = {
         element: null,
         type: -1,
         colIndex: -1,
@@ -111,6 +111,25 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return window.document.title = "Current state: " + this.boardState;
     };
 
+    PlayMatSolitaireController.prototype.updateVictoryAndPressure = function() {
+      this.updateBoardState;
+      switch (this.boardState) {
+        case "ETI":
+          this.pressurePoints["pathogen"] += 2;
+          this.victoryPoints["plant"] += 1;
+          break;
+        case "MTI":
+          this.pressurePoints["pathogen"] += 1;
+          this.victoryPoints["plant"] += 1;
+          break;
+        default:
+          this.pressurePoints["plant"] += 1;
+          this.victoryPoints["pathogen"] += 1;
+      }
+      console.log("Pressure: " + this.pressurePoints);
+      return console.log("Victory: " + this.victoryPoints);
+    };
+
     PlayMatSolitaireController.prototype.doDiscard = function() {
       var colIndex, oldValue, self, theElement, theVariety, type, _ref, _ref1;
       theElement = arguments[0], type = arguments[1], colIndex = arguments[2], theVariety = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
@@ -118,33 +137,53 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       oldValue = (_ref = this.theModel).isCellActive.apply(_ref, [type, colIndex].concat(__slice.call(theVariety)));
       if (oldValue !== true) {
         return false;
+      } else {
+        if (theElement == null) {
+          theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
+        }
+        (_ref1 = this.theModel).setCell.apply(_ref1, [false, type, colIndex].concat(__slice.call(theVariety)));
+        this.updateVictoryAndPressure;
+        switch (type) {
+          case TYPE_FEATURE:
+            this.distribution["features"] -= 1;
+            break;
+          case TYPE_DETECTOR:
+            this.distribution["detectors"] -= 1;
+            break;
+          case TYPE_ALARM:
+            this.distribution["alarms"] -= 1;
+            break;
+          case TYPE_EFFECTOR:
+            this.distribution["effectors"] -= 1;
+        }
+        self.setElementActivity(false, theElement);
+        return true;
       }
-      if (theElement == null) {
-        theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
-      }
-      (_ref1 = this.theModel).setCell.apply(_ref1, [false, type, colIndex].concat(__slice.call(theVariety)));
-      self.updateBoardState;
-      self.setElementActivity(false, theElement);
-      return true;
     };
 
     PlayMatSolitaireController.prototype.doSelect = function() {
-      var colIndex, oldModel, oldState, theElement, theVariety, type;
+      var colIndex, oldState, selectionState, theElement, theVariety, type;
       theElement = arguments[0], type = arguments[1], colIndex = arguments[2], theVariety = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
-      oldModel = this.currentElement["element"];
-      console.log("Selecting" + type);
-      if (oldModel !== null) {
-        oldState = this.theModel.isCellActive(this.currentElement["type"], this.currentElement["colIndex"], this.currentElement["variety"]);
-        this.setElementActivity(oldState, this.currentElement["element"]);
+      if (this.selectedElement["element"] !== null) {
+        oldState = this.theModel.isCellActive(this.selectedElement["type"], this.selectedElement["colIndex"], this.selectedElement["variety"]);
+        this.setElementActivity(oldState, this.selectedElement["element"]);
       }
-      this.setElementActivity(true, theElement);
-      theElement.css("border-style", "dotted");
-      theElement.css("border-width", "3px");
-      theElement.css("text-shadow", "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF");
-      this.currentElement["element"] = theElement;
-      this.currentElement["type"] = type;
-      this.currentElement["colIndex"] = colIndex;
-      return this.currentElement["variety"] = theVariety;
+      selectionState = this.theModel.isCellActive(type, colIndex, theVariety);
+      if (selectionState) {
+        theElement.css("border-style", "dotted");
+        theElement.css("border-width", "3px");
+        theElement.css("text-shadow", "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF");
+        theElement.css("opacity", "1");
+        this.selectedElement["element"] = theElement;
+        this.selectedElement["type"] = type;
+        this.selectedElement["colIndex"] = colIndex;
+        return this.selectedElement["variety"] = theVariety;
+      } else {
+        this.selectedElement["element"] = null;
+        this.selectedElement["type"] = -1;
+        this.selectedElement["colIndex"] = -1;
+        return this.selectedElement["variety"] = -1;
+      }
     };
 
     PlayMatSolitaireController.prototype.doSet = function() {
@@ -265,37 +304,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           "ERROR: invalid answer";
       }
       return alert(diagnosis + hint);
-    };
-
-    PlayMatSolitaireController.prototype.setupLevel = function(whichLevel) {
-      var self;
-      self = this;
-      switch (whichLevel) {
-        case 1:
-          self.doRandomize(4, 4, 0, 0);
-          break;
-        case 2:
-          self.doRandomize(4, 4, 4, 0);
-          break;
-        case 3:
-          self.doRandomize(4, 4, 4, 4);
-          break;
-        default:
-          alert("Invalid level " + whichLevel);
-          return;
-      }
-      return this.currentLevel = whichLevel;
-    };
-
-    PlayMatSolitaireController.prototype.updateQuizLabels = function(whichLevel) {
-      var endedBad, endedETI, endedMTI, quizBox, right, wrong;
-      quizBox = $("#Quiz" + whichLevel);
-      right = this.attempts[whichLevel]["correct"];
-      wrong = this.attempts[whichLevel]["incorrect"];
-      endedMTI = this.outcomes[whichLevel]["MTI"];
-      endedETI = this.outcomes[whichLevel]["ETI"];
-      endedBad = this.outcomes[whichLevel]["Virulence"];
-      quizBox.html("Training " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right + "<br>ETI:" + endedETI + " MTI:" + endedMTI + " Virulence:" + endedBad);
     };
 
     PlayMatSolitaireController.prototype.processAnswer = function(theAnswer) {
