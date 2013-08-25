@@ -37,8 +37,8 @@ createBoard = (inElement) ->
     $(document.createElement('div')).attr("class", "detector").text("Detector #{letter}").appendTo aColumn
     $(document.createElement('div')).attr("class", "effector e1").text("Effector #{letter}1").appendTo aColumn
     $(document.createElement('div')).attr("class", "effector e2").text("Effector #{letter}2").appendTo aColumn
-    $(document.createElement('div')).attr("class", "alarm e1").text("Alarm #{letter}1").appendTo aColumn
-    $(document.createElement('div')).attr("class", "alarm e2").text("Alarm #{letter}2").appendTo aColumn
+    $(document.createElement('div')).attr("class", "alarm a1").text("Alarm #{letter}1").appendTo aColumn
+    $(document.createElement('div')).attr("class", "alarm a2").text("Alarm #{letter}2").appendTo aColumn
 
 createSolitaireControls = (inElement) ->
   theTable = $(document.createElement('table')).attr("style", "width:100%").attr("border", 1).appendTo inElement
