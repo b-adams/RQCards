@@ -31,6 +31,26 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     function PlayMatSolitaireController() {
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
+      this.distribution = {
+        features: 4,
+        detectors: 4,
+        effectors: 4,
+        alarms: 4
+      };
+      this.pressurePoints = {
+        plant: 0,
+        pathogen: 0
+      };
+      this.victoryPoints = {
+        plant: 0,
+        pathogen: 0
+      };
+      this.currentElement = {
+        element: null,
+        type: -1,
+        colIndex: -1,
+        variety: -1
+      };
     }
 
     PlayMatSolitaireController.prototype.getElement = function(type, colIndex) {
@@ -62,7 +82,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       self = this;
       theFeature = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariant)));
       theFeature.click(function() {
-        return self.doPlay.apply(self, [theFeature, type, colIndex].concat(__slice.call(theVariant)));
+        return self.doSelect.apply(self, [theFeature, type, colIndex].concat(__slice.call(theVariant)));
       });
       return theFeature.css("border-style", "dashed");
     };
@@ -72,7 +92,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       theElement.css("border-width", active ? "2px" : "1px");
       theElement.css("-webkit-animation", active ? "select 1s" : "deselect 1s");
       theElement.css("-webkit-transform", active ? "rotateX(0deg)" : "rotateX(180deg)");
-      return theElement.css("opacity", active ? "1" : "0.25");
+      theElement.css("opacity", active ? "1" : "0.25");
+      return theElement.css("text-shadow", "0 0 0em #87F");
     };
 
     PlayMatSolitaireController.prototype.updateBoardState = function() {
@@ -102,9 +123,28 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
       }
       (_ref1 = this.theModel).setCell.apply(_ref1, [false, type, colIndex].concat(__slice.call(theVariety)));
-      self.updateBoardState();
+      self.updateBoardState;
       self.setElementActivity(false, theElement);
       return true;
+    };
+
+    PlayMatSolitaireController.prototype.doSelect = function() {
+      var colIndex, oldModel, oldState, theElement, theVariety, type;
+      theElement = arguments[0], type = arguments[1], colIndex = arguments[2], theVariety = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
+      oldModel = this.currentElement["element"];
+      console.log("Selecting" + type);
+      if (oldModel !== null) {
+        oldState = this.theModel.isCellActive(this.currentElement["type"], this.currentElement["colIndex"], this.currentElement["variety"]);
+        this.setElementActivity(oldState, this.currentElement["element"]);
+      }
+      this.setElementActivity(true, theElement);
+      theElement.css("border-style", "dotted");
+      theElement.css("border-width", "3px");
+      theElement.css("text-shadow", "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF");
+      this.currentElement["element"] = theElement;
+      this.currentElement["type"] = type;
+      this.currentElement["colIndex"] = colIndex;
+      return this.currentElement["variety"] = theVariety;
     };
 
     PlayMatSolitaireController.prototype.doSet = function() {
@@ -121,19 +161,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         self.setElementActivity(newValue, theElement);
       }
       return newValue;
-    };
-
-    PlayMatSolitaireController.prototype.doPlay = function() {
-      var active, colIndex, self, theElement, theVariety, type, _ref;
-      theElement = arguments[0], type = arguments[1], colIndex = arguments[2], theVariety = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
-      self = this;
-      if (theElement == null) {
-        theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
-      }
-      active = (_ref = this.theModel).toggleCell.apply(_ref, [type, colIndex].concat(__slice.call(theVariety)));
-      self.updateBoardState();
-      self.setElementActivity(active, theElement);
-      return active;
     };
 
     PlayMatSolitaireController.prototype.randomSelectionArray = function(picks, total) {
@@ -160,38 +187,26 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return picklist;
     };
 
-    PlayMatSolitaireController.prototype.doRandomize = function(features, detectors, effectors, alarms) {
+    PlayMatSolitaireController.prototype.doRandomize = function() {
       var i, randList, randVal, self, _i, _j, _k, _l, _len, _len1, _len2, _len3;
-      if (features == null) {
-        features = 4;
-      }
-      if (detectors == null) {
-        detectors = 4;
-      }
-      if (effectors == null) {
-        effectors = 4;
-      }
-      if (alarms == null) {
-        alarms = 4;
-      }
       self = this;
       console.log("RANDOMIZING----------------------------------");
-      randList = self.randomSelectionArray(features, NUMBER_OF_FEATURES);
+      randList = self.randomSelectionArray(this.distribution["features"], NUMBER_OF_FEATURES);
       for (i = _i = 0, _len = randList.length; _i < _len; i = ++_i) {
         randVal = randList[i];
         self.doSet(null, randVal, TYPE_FEATURE, i);
       }
-      randList = self.randomSelectionArray(detectors, NUMBER_OF_DETECTORS);
+      randList = self.randomSelectionArray(this.distribution["detectors"], NUMBER_OF_DETECTORS);
       for (i = _j = 0, _len1 = randList.length; _j < _len1; i = ++_j) {
         randVal = randList[i];
         self.doSet(null, randVal, TYPE_DETECTOR, i);
       }
-      randList = self.randomSelectionArray(effectors, NUMBER_OF_EFFECTORS);
+      randList = self.randomSelectionArray(this.distribution["effectors"], NUMBER_OF_EFFECTORS);
       for (i = _k = 0, _len2 = randList.length; _k < _len2; i = ++_k) {
         randVal = randList[i];
         self.doSet(null, randVal, TYPE_EFFECTOR, i >> 1, i % 2);
       }
-      randList = self.randomSelectionArray(alarms, NUMBER_OF_ALARMS);
+      randList = self.randomSelectionArray(this.distribution["alarms"], NUMBER_OF_ALARMS);
       for (i = _l = 0, _len3 = randList.length; _l < _len3; i = ++_l) {
         randVal = randList[i];
         self.doSet(null, randVal, TYPE_ALARM, i >> 1, i % 2);
@@ -307,76 +322,20 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
   })();
 
   $(document).ready(function() {
-    var control, i, _i;
+    var control, i, _i, _results;
     window.boardState = "Ready for input";
-    window.controller = new PlayMatController();
+    window.controller = new PlayMatSolitaireController();
     control = window.controller;
+    _results = [];
     for (i = _i = 0; 0 <= NUMBER_OF_PLAYABLE_COLUMNS ? _i < NUMBER_OF_PLAYABLE_COLUMNS : _i > NUMBER_OF_PLAYABLE_COLUMNS; i = 0 <= NUMBER_OF_PLAYABLE_COLUMNS ? ++_i : --_i) {
       control.connectElement(TYPE_FEATURE, i);
       control.connectElement(TYPE_DETECTOR, i);
       control.connectElement(TYPE_EFFECTOR, i, 0);
       control.connectElement(TYPE_EFFECTOR, i, 1);
       control.connectElement(TYPE_ALARM, i, 0);
-      control.connectElement(TYPE_ALARM, i, 1);
+      _results.push(control.connectElement(TYPE_ALARM, i, 1));
     }
-    $("#comboBoard").change(function() {
-      var answer, gotItRight;
-      answer = $(this).val();
-      gotItRight = control.processAnswer(answer);
-      if (gotItRight) {
-        return $(this).val("");
-      }
-    });
-    $("#cheatyFace1").click(function() {
-      return control.processAnswer(control.boardState);
-    });
-    $("#cheatyFace2").click(function() {
-      var n, _j, _results;
-      _results = [];
-      for (n = _j = 0; _j < 10; n = ++_j) {
-        _results.push(control.processAnswer(control.boardState));
-      }
-      return _results;
-    });
-    $("#cheatyFace3").click(function() {
-      var n, _j, _results;
-      _results = [];
-      for (n = _j = 0; _j < 100; n = ++_j) {
-        _results.push(control.processAnswer(control.boardState));
-      }
-      return _results;
-    });
-    $("#cheatyFace4").click(function() {
-      var n, _j, _results;
-      _results = [];
-      for (n = _j = 0; _j < 1000; n = ++_j) {
-        _results.push(control.processAnswer(control.boardState));
-      }
-      return _results;
-    });
-    $("#cheatyFace5").click(function() {
-      var n, _j, _results;
-      _results = [];
-      for (n = _j = 0; _j < 10000; n = ++_j) {
-        _results.push(control.processAnswer(control.boardState));
-      }
-      return _results;
-    });
-    $("#ClearBoardButton").click(function() {
-      return control.doRandomize(0, 0, 0, 0);
-    });
-    $("#Quiz1").click(function() {
-      return control.setupLevel(1);
-    });
-    $("#Quiz2").click(function() {
-      return control.setupLevel(2);
-    });
-    $("#Quiz3").click(function() {
-      return control.setupLevel(3);
-    });
-    return $("#Quiz4").click(function() {
-      return alert("Not yet implemented");
-    });
+    return _results;
   });
 
 }).call(this);

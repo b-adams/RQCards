@@ -26,7 +26,26 @@ class PlayMatSolitaireController
   constructor: ->
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
-    
+    @distribution = {
+      features: 4
+      detectors: 4
+      effectors: 4
+      alarms: 4
+    }
+    @pressurePoints = {
+      plant: 0
+      pathogen: 0
+    }
+    @victoryPoints = {
+      plant: 0
+      pathogen: 0
+    }
+    @currentElement = {
+      element: null
+      type: -1
+      colIndex: -1
+      variety: -1
+    }
 
   getElement: (type, colIndex) ->
     selector = "#board > #c"+(colIndex+1)+" > ."
@@ -43,7 +62,7 @@ class PlayMatSolitaireController
   connectElement: (type, colIndex, theVariant...) ->
     self = this
     theFeature = self.getElement type, colIndex, theVariant...
-    theFeature.click -> self.doPlay theFeature, type, colIndex, theVariant...
+    theFeature.click -> self.doSelect theFeature, type, colIndex, theVariant...
     theFeature.css "border-style", "dashed"
 
   setElementActivity: (active, theElement) ->
@@ -52,6 +71,8 @@ class PlayMatSolitaireController
       theElement.css "-webkit-animation", if active then "select 1s"      else "deselect 1s"
       theElement.css "-webkit-transform", if active then "rotateX(0deg)"  else "rotateX(180deg)"
       theElement.css "opacity",           if active then "1"              else "0.25"
+      theElement.css "text-shadow",       "0 0 0em #87F"
+
 
   updateBoardState: ->
     @boardState = switch
@@ -68,10 +89,30 @@ class PlayMatSolitaireController
       return false #No discarding cards you don't have
     theElement ?= self.getElement type, colIndex, theVariety...
     @theModel.setCell false, type, colIndex, theVariety...
-    self.updateBoardState()
+    self.updateBoardState
     self.setElementActivity false, theElement
     return true
 
+  doSelect: (theElement, type, colIndex, theVariety...) ->
+    #Reset current selected element
+    oldModel = @currentElement["element"]
+    console.log "Selecting" + type
+    if oldModel isnt null
+      oldState = @theModel.isCellActive @currentElement["type"], @currentElement["colIndex"], @currentElement["variety"]
+      this.setElementActivity oldState, @currentElement["element"]
+
+    #Set up new selected element
+    this.setElementActivity true, theElement
+    theElement.css "border-style", "dotted"
+    theElement.css "border-width", "3px"
+    theElement.css "text-shadow",  "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF"
+
+
+    #Remember for future use
+    @currentElement["element"] = theElement
+    @currentElement["type"] = type
+    @currentElement["colIndex"] = colIndex
+    @currentElement["variety"] = theVariety
 
   doSet: (theElement, newValue, type, colIndex, theVariety...) ->
     self = this
@@ -83,15 +124,6 @@ class PlayMatSolitaireController
       self.setElementActivity newValue, theElement
     return newValue
 
-
-  doPlay: (theElement, type, colIndex, theVariety...) ->
-    self = this
-    theElement ?= self.getElement type, colIndex, theVariety...
-    active = @theModel.toggleCell type, colIndex, theVariety...
-    self.updateBoardState()
-    self.setElementActivity active, theElement
-    return active
-
   randomSelectionArray: (picks, total) ->
     picklist = (true for n in [0...picks]).concat (false for n in [picks...total])
     for i in [0...total]
@@ -99,20 +131,20 @@ class PlayMatSolitaireController
       [picklist[i], picklist[randIndex]] = [picklist[randIndex], picklist[i]]
     return picklist
 
-  doRandomize: (features=4, detectors=4, effectors=4, alarms=4) ->
+  doRandomize: ->
     self = this
     console.log "RANDOMIZING----------------------------------"
 
-    randList = self.randomSelectionArray features, NUMBER_OF_FEATURES
+    randList = self.randomSelectionArray @distribution["features"], NUMBER_OF_FEATURES
     self.doSet null, randVal, TYPE_FEATURE, i for randVal,i in randList
 
-    randList = self.randomSelectionArray detectors, NUMBER_OF_DETECTORS
+    randList = self.randomSelectionArray @distribution["detectors"], NUMBER_OF_DETECTORS
     self.doSet null, randVal, TYPE_DETECTOR, i for randVal,i in randList
 
-    randList = self.randomSelectionArray effectors, NUMBER_OF_EFFECTORS
+    randList = self.randomSelectionArray @distribution["effectors"], NUMBER_OF_EFFECTORS
     self.doSet null, randVal, TYPE_EFFECTOR, i>>1, i%2 for randVal,i in randList
 
-    randList = self.randomSelectionArray alarms, NUMBER_OF_ALARMS
+    randList = self.randomSelectionArray @distribution["alarms"], NUMBER_OF_ALARMS
     self.doSet null, randVal, TYPE_ALARM, i>>1, i%2 for randVal,i in randList
 
     console.log "RANDOMIZED-----------------------------------"
@@ -183,7 +215,7 @@ class PlayMatSolitaireController
 
 $(document).ready ->
   window.boardState = "Ready for input"
-  window.controller = new PlayMatController()
+  window.controller = new PlayMatSolitaireController()
   control = window.controller
 
   for i in [0...NUMBER_OF_PLAYABLE_COLUMNS]
@@ -194,27 +226,20 @@ $(document).ready ->
     control.connectElement(TYPE_ALARM,    i, 0)
     control.connectElement(TYPE_ALARM,    i, 1)
 
-  $("#comboBoard").change ->
-    answer = $(this).val();
-    gotItRight = control.processAnswer answer
-    if gotItRight then $(this).val("")  # Reset answer selection
-
-  $("#cheatyFace1").click -> control.processAnswer control.boardState
-  $("#cheatyFace2").click -> control.processAnswer control.boardState for n in [0...10]
-  $("#cheatyFace3").click -> control.processAnswer control.boardState for n in [0...100]
-  $("#cheatyFace4").click -> control.processAnswer control.boardState for n in [0...1000]
-  $("#cheatyFace5").click -> control.processAnswer control.boardState for n in [0...10000]
-
-  $("#ClearBoardButton").click -> control.doRandomize(0,0,0,0)
-
-  $("#Quiz1").click -> control.setupLevel 1
-  $("#Quiz2").click -> control.setupLevel 2
-  $("#Quiz3").click -> control.setupLevel 3
-  $("#Quiz4").click -> alert "Not yet implemented"
-
-
-#TODO: Merge this with the PlaymatBuilder
-#Have the HTML designate in a script that window.boardContainerIdentifier = "boardControl" etc
-#Then have the controller's Document.ready look up that information and create the appropriate elements in appropriat elocations
-#Or.. perhaps it should always be IDs for boardWrapper, controlWrapper, and licenseWrapper? That would make
-#the whole process more self-contained. Just add a few DIVs and one JavaScript file and you're good to go...
+#  $("#comboBoard").change ->
+#    answer = $(this).val();
+#    gotItRight = control.processAnswer answer
+#    if gotItRight then $(this).val("")  # Reset answer selection
+#
+#  $("#cheatyFace1").click -> control.processAnswer control.boardState
+#  $("#cheatyFace2").click -> control.processAnswer control.boardState for n in [0...10]
+#  $("#cheatyFace3").click -> control.processAnswer control.boardState for n in [0...100]
+#  $("#cheatyFace4").click -> control.processAnswer control.boardState for n in [0...1000]
+#  $("#cheatyFace5").click -> control.processAnswer control.boardState for n in [0...10000]
+#
+#  $("#ClearBoardButton").click -> control.doRandomize(0,0,0,0)
+#
+#  $("#Quiz1").click -> control.setupLevel 1
+#  $("#Quiz2").click -> control.setupLevel 2
+#  $("#Quiz3").click -> control.setupLevel 3
+#  $("#Quiz4").click -> alert "Not yet implemented"
