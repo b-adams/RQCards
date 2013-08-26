@@ -116,6 +116,28 @@ window.PlayMat = class PlayMat
       else alert "Unknown cell type: #{type}"
     return -1
 
+  countActiveCellsOfType: (type) ->
+    actives = 0
+    switch type
+      when TYPE_FEATURE
+        for theColumn in @_columns
+          if theColumn._MAMP then actives += 1
+      when TYPE_DETECTOR
+        for theColumn in @_columns
+          if theColumn._PRR then actives += 1
+      when TYPE_ALARM
+        for theColumn in @_columns
+          if theColumn._RProteins[0] then actives += 1
+          if theColumn._RProteins[1] then actives += 1
+      when TYPE_EFFECTOR
+        for theColumn in @_columns
+          if theColumn._Effectors[0] then actives += 1
+          if theColumn._Effectors[1] then actives += 1
+      else alert "Unknown cell type: #{type}"
+    return actives
+
+
+
 # Interaction state queries
 
   isPlantETIActive: -> @stateOfETI

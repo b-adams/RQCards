@@ -33,8 +33,8 @@ class PlayMatSolitaireController
       alarms: 4
     }
     @pressurePoints = {
-      plant: 0
-      pathogen: 0
+      plant: 2
+      pathogen: 2
     }
     @victoryPoints = {
       plant: 0
@@ -45,6 +45,26 @@ class PlayMatSolitaireController
       type: -1
       colIndex: -1
       variety: -1
+    }
+    @costBoxen = {
+      plant: null
+      pathogen: null
+    }
+    @goButtons = {
+      plant: null
+      pathogen: null
+    }
+    @actionChoices = {
+      plant: null
+      pathogen: null
+    }
+    @pressureBoxen = {
+      plant: null
+      pathogen: null
+    }
+    @victoryBoxen = {
+      plant: null
+      pathogen: null
     }
 
   getElement: (type, colIndex) ->
@@ -79,21 +99,68 @@ class PlayMatSolitaireController
       when @theModel.isPlantETIActive() then "ETI"
       when @theModel.isPlantMTIActive() then "MTI"
       else                                   "Virulence"
+
     console.log "Game: " + @boardState
     window.document.title = "Current state: " + @boardState
+
+  updateForAction: (playerSide) ->
+    actionType = @actionChoices[playerSide].val()
+    elementType = @selectedElement["type"]
+    switch actionType
+      when ACTION_DRAW_A
+        actionType = ACTION_DRAW
+        elementType = TYPE_ALARM
+      when ACTION_DRAW_D
+        actionType = ACTION_DRAW
+        elementType = TYPE_DETECTOR
+      when ACTION_DRAW_E
+        actionType = ACTION_DRAW
+        elementType = TYPE_EFFECTOR
+      when ACTION_DRAW_F
+        actionType = ACTION_DRAW
+        elementType = TYPE_FEATURE
+    console.log "Preparing for "+actionType+"("+elementType+") action by "+playerSide
+
+    cost = this.costForAction actionType, elementType
+    @costBoxen[playerSide].html("Cost: "+cost)
+    if cost > @pressurePoints[playerSide]
+      @goButtons[playerSide].attr("disabled", "disabled")
+    else
+      @goButtons[playerSide].removeAttr("disabled")
 
   updateVictoryAndPressure: ->
     this.updateBoardState
     switch @boardState
       when "ETI"
-        @pressurePoints["pathogen"] += 2
-        @victoryPoints["plant"] += 1
+        @pressurePoints[SIDE_PATHOGEN] += 2
+        @victoryPoints[SIDE_PLANT] += 1
+        alert "Plant wins (ETI).\nPathogen +2pp\nPlant +1vp"
+        @actionChoices[SIDE_PLANT].attr("disabled", true)
+        @actionChoices[SIDE_PLANT].hide()
+        @actionChoices[SIDE_PATHOGEN].attr("disabled", false)
+        @actionChoices[SIDE_PATHOGEN].show()
       when "MTI"
-        @pressurePoints["pathogen"] += 1
-        @victoryPoints["plant"] += 1
+        @pressurePoints[SIDE_PATHOGEN] += 1
+        @victoryPoints[SIDE_PLANT] += 1
+        alert "Plant wins (MTI).\nPathogen +1pp\nPlant +1vp"
+        @actionChoices[SIDE_PLANT].attr("disabled", true)
+        @actionChoices[SIDE_PLANT].hide()
+        @actionChoices[SIDE_PATHOGEN].attr("disabled", false)
+        @actionChoices[SIDE_PATHOGEN].show()
       else #Virulence
-        @pressurePoints["plant"] += 1
-        @victoryPoints["pathogen"] += 1
+        @pressurePoints[SIDE_PLANT] += 1
+        @victoryPoints[SIDE_PATHOGEN] += 1
+        alert "Pathogen wins (Virulence).\nPlant +1pp\nPathoven +1vp"
+        @actionChoices[SIDE_PATHOGEN].attr("disabled", true)
+        @actionChoices[SIDE_PATHOGEN].hide()
+        @actionChoices[SIDE_PLANT].attr("disabled", false)
+        @actionChoices[SIDE_PLANT].show()
+
+    @victoryBoxen[SIDE_PLANT].html("Victory: "+@victoryPoints[SIDE_PLANT])
+    @victoryBoxen[SIDE_PATHOGEN].html("Victory: "+@victoryPoints[SIDE_PATHOGEN])
+    @pressureBoxen[SIDE_PLANT].html("Pressure: "+@pressurePoints[SIDE_PLANT])
+    @pressureBoxen[SIDE_PATHOGEN].html("Pressure: "+@pressurePoints[SIDE_PATHOGEN])
+
     console.log "Pressure: " +@pressurePoints
     console.log "Victory: " +@victoryPoints
 
@@ -105,7 +172,7 @@ class PlayMatSolitaireController
     else
       theElement ?= self.getElement type, colIndex, theVariety...
       @theModel.setCell false, type, colIndex, theVariety...
-      this.updateVictoryAndPressure
+      this.updateVictoryAndPressure()
       switch type
         when TYPE_FEATURE  then @distribution["features"] -= 1
         when TYPE_DETECTOR then @distribution["detectors"] -= 1
@@ -113,6 +180,40 @@ class PlayMatSolitaireController
         when TYPE_EFFECTOR then @distribution["effectors"] -= 1
       self.setElementActivity false, theElement
       return true #Discard successful
+
+  doDiscardSelected: ->
+    this.doDiscard @selectedElement["element"], @selectedElement["type"], @selectedElement["colIndex"], @selectedElement["variety"]
+
+#  randomSelectionArray: (picks, total) ->
+#    picklist = (true for n in [0...picks]).concat (false for n in [picks...total])
+#    for i in [0...total]
+#      randIndex = Math.floor(i+(Math.random()*(total-i)))
+#      [picklist[i], picklist[randIndex]] = [picklist[randIndex], picklist[i]]
+#    return picklist
+  #This is a terrible method, but good enough for now. Use something based on above
+  selectInactiveElementOfType: (type) ->
+    console.log "Searching for inactive "+type
+    occupied = true
+    colIndex = 0
+    variety = 0
+    while (occupied) and (colIndex <= NUMBER_OF_PLAYABLE_COLUMNS)
+      variety += 1
+      if variety > 1
+        variety = 0
+        colIndex += 1
+      occupied = @theModel.isCellActive type, colIndex, variety
+      console.log "Col"+colIndex+" var"+variety+" is "+(if occupied then "occupied" else "free")
+
+    if occupied then alert "Could not find unoccupied cell"
+    @selectedElement["element"] = this.getElement type, colIndex, variety
+    @selectedElement["type"] = type
+    @selectedElement["colIndex"] = colIndex
+    @selectedElement["variety"] = variety
+
+  doDraw: (type) ->
+    this.selectInactiveElementOfType type
+    this.doSet @selectedElement["element"], true, type, @selectedElement["colIndex"], @selectedElement["variety"]
+    this.updateVictoryAndPressure()
 
   doSelect: (theElement, type, colIndex, theVariety...) ->
     #Reset current selected element
@@ -176,47 +277,68 @@ class PlayMatSolitaireController
 
     console.log "RANDOMIZED-----------------------------------"
 
-  wrongSelectionInfoPopup: (suppliedAnswer, correctAnswer) ->
-    return if suppliedAnswer is correctAnswer #Nothing wrong here
-    return if suppliedAnswer is "" or not suppliedAnswer? #No answer provided
-    diagnosis = "Incorrect.\nYou selected "+suppliedAnswer
+  costForAction: (actionType, elementType) ->
+    existingAlarms = @theModel.countActiveCellsOfType TYPE_ALARM
+    existingDetectors = @theModel.countActiveCellsOfType TYPE_DETECTOR
+    existingFeatures = @theModel.countActiveCellsOfType TYPE_FEATURE
+    existingEffectors = @theModel.countActiveCellsOfType TYPE_EFFECTOR
+    roomForEffectors = existingEffectors < existingFeatures
 
-    switch suppliedAnswer
-      when "ETI"
-        note = " but there are no effector-alarm matches."
-        switch correctAnswer
-          when "MTI"        then hint = note+"\nLook at the feature-detector row."
-          when "Virulence"  then hint = note+"\nWere you looking at detector-effector disablements?"
-          else "ERROR: How is "+correctAnswer+" possible?"
-      when "MTI" then switch correctAnswer
-          when "ETI"        then hint = ".\nKeep in mind that effector-alarm matches trump feature-detector ones."
-          when "Virulence"  then hint = " but there are not enough *non-disabled* feature-detector matches."
-          else "ERROR: How is "+correctAnswer+" possible?"
-      when "Virulence" then switch correctAnswer
-          when "MTI"        then hint = ".\nCheck again for active feature-detector matches."
-          when "ETI"        then hint = ".\nCheck again for effector-alarmmatches."
-          else "ERROR: How is "+correctAnswer+" possible?"
-      else
-        "ERROR: invalid answer"
+    switch elementType
+      when TYPE_ALARM
+        drawCost = 1 * (1+existingAlarms) * (1+existingAlarms)
+        discardCost = 1
+      when TYPE_DETECTOR
+        drawCost = 2 * (1+existingDetectors)
+        discardCost = 2
+      when TYPE_FEATURE
+        drawCost = 1
+        discardCost = if roomForEffectors then 1 else 2
+        if existingFeatures is 2 then discardCost *= 3
+        if existingFeatures < 2 then discardCost *= 100
+      when TYPE_EFFECTOR
+        drawCost = if roomForEffectors then 1 else 2
+        discardCost = 1
 
-    alert diagnosis+hint
+    console.log "Draw cost: "+drawCost+" Discard cost: "+discardCost
 
-  processAnswer: (theAnswer) ->
-    return if not theAnswer                         # Switched to empty
-    self = this
-    correct = (theAnswer is @boardState)
-    if correct
-      @attempts[@currentLevel]["correct"] += 1   # Note success
-      @outcomes[@currentLevel][@boardState] += 1 # Update outcomes
-      self.setupLevel @currentLevel              # Reset current level
-    else
-      @attempts[@currentLevel]["incorrect"] += 1        # Note failure
-      self.wrongSelectionInfoPopup theAnswer, @boardState  # Pop up a hint
+    cost = switch actionType
+      when ACTION_DISCARD then discardCost
+      when ACTION_REPLACE then drawCost+discardCost
+      when ACTION_DRAW then drawCost
 
-    self.updateQuizLabels @currentLevel          # Update correct/incorrect display
-    return correct
+    console.log "Cost of action "+actionType+" is "+cost
+    return cost
 
+  processAction: (whichSide) ->
+    console.log "Processing action for "+whichSide
+    action = @actionChoices[whichSide].val()
+    type = @selectedElement["type"]
 
+    switch action
+      when ACTION_DRAW_A
+        type = TYPE_ALARM
+        action = ACTION_DRAW
+      when ACTION_DRAW_E
+        type = TYPE_EFFECTOR
+        action = ACTION_DRAW
+      when ACTION_DRAW_F
+        type = TYPE_FEATURE
+        action = ACTION_DRAW
+      when ACTION_DRAW_D
+        type = TYPE_DETECTOR
+        action = ACTION_DRAW
+
+    switch action
+      when ACTION_DISCARD
+        this.doDiscardSelected()
+      when ACTION_DRAW then this.doDraw type
+      when ACTION_REPLACE
+        this.doDraw type
+        this.doDiscardSelected()
+        #Draw before discard to prevent re-drawing the same card
+
+    @pressurePoints[whichSide] -= this.costForAction action, type
 
 $(document).ready ->
   window.boardState = "Ready for input"
@@ -231,20 +353,38 @@ $(document).ready ->
     control.connectElement(TYPE_ALARM,    i, 0)
     control.connectElement(TYPE_ALARM,    i, 1)
 
+  control.costBoxen[SIDE_PLANT] = $("#"+ID_PLANT_COST)
+  control.goButtons[SIDE_PLANT] = $("#"+ID_PLANT_ENGAGE)
+  control.actionChoices[SIDE_PLANT] = $("#"+ID_PLANT_ACTIONS)
+
+  control.costBoxen[SIDE_PATHOGEN] = $("#"+ID_PATHO_COST)
+  control.goButtons[SIDE_PATHOGEN] = $("#"+ID_PATHO_ENGAGE)
+  control.actionChoices[SIDE_PATHOGEN] = $("#"+ID_PATHO_ACTIONS)
+
+  control.pressureBoxen[SIDE_PLANT] = $("#"+ID_PLANT_PRESSURE)
+  control.victoryBoxen[SIDE_PLANT] = $("#"+ID_PLANT_VICTORY)
+  control.pressureBoxen[SIDE_PATHOGEN] = $("#"+ID_PATHO_PRESSURE)
+  control.victoryBoxen[SIDE_PATHOGEN] = $("#"+ID_PATHO_VICTORY)
+
+  control.costBoxen[SIDE_PLANT].html "Cost: 0"
+  control.costBoxen[SIDE_PATHOGEN].html "Cost: 0"
+
+  control.goButtons[SIDE_PLANT].click ->
+    control.processAction SIDE_PLANT
+
+  control.goButtons[SIDE_PATHOGEN].click ->
+    control.processAction SIDE_PATHOGEN
+
+  control.actionChoices[SIDE_PATHOGEN].change ->
+    control.updateForAction SIDE_PATHOGEN
+
+  control.actionChoices[SIDE_PLANT].change ->
+    control.updateForAction SIDE_PLANT
+
+  control.doRandomize()
+  control.updateVictoryAndPressure()
+
 #  $("#comboBoard").change ->
 #    answer = $(this).val();
 #    gotItRight = control.processAnswer answer
 #    if gotItRight then $(this).val("")  # Reset answer selection
-#
-#  $("#cheatyFace1").click -> control.processAnswer control.boardState
-#  $("#cheatyFace2").click -> control.processAnswer control.boardState for n in [0...10]
-#  $("#cheatyFace3").click -> control.processAnswer control.boardState for n in [0...100]
-#  $("#cheatyFace4").click -> control.processAnswer control.boardState for n in [0...1000]
-#  $("#cheatyFace5").click -> control.processAnswer control.boardState for n in [0...10000]
-#
-#  $("#ClearBoardButton").click -> control.doRandomize(0,0,0,0)
-#
-#  $("#Quiz1").click -> control.setupLevel 1
-#  $("#Quiz2").click -> control.setupLevel 2
-#  $("#Quiz3").click -> control.setupLevel 3
-#  $("#Quiz4").click -> alert "Not yet implemented"

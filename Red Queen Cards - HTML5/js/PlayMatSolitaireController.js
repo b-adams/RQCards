@@ -38,8 +38,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         alarms: 4
       };
       this.pressurePoints = {
-        plant: 0,
-        pathogen: 0
+        plant: 2,
+        pathogen: 2
       };
       this.victoryPoints = {
         plant: 0,
@@ -50,6 +50,26 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         type: -1,
         colIndex: -1,
         variety: -1
+      };
+      this.costBoxen = {
+        plant: null,
+        pathogen: null
+      };
+      this.goButtons = {
+        plant: null,
+        pathogen: null
+      };
+      this.actionChoices = {
+        plant: null,
+        pathogen: null
+      };
+      this.pressureBoxen = {
+        plant: null,
+        pathogen: null
+      };
+      this.victoryBoxen = {
+        plant: null,
+        pathogen: null
       };
     }
 
@@ -111,21 +131,71 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return window.document.title = "Current state: " + this.boardState;
     };
 
+    PlayMatSolitaireController.prototype.updateForAction = function(playerSide) {
+      var actionType, cost, elementType;
+      actionType = this.actionChoices[playerSide].val();
+      elementType = this.selectedElement["type"];
+      switch (actionType) {
+        case ACTION_DRAW_A:
+          actionType = ACTION_DRAW;
+          elementType = TYPE_ALARM;
+          break;
+        case ACTION_DRAW_D:
+          actionType = ACTION_DRAW;
+          elementType = TYPE_DETECTOR;
+          break;
+        case ACTION_DRAW_E:
+          actionType = ACTION_DRAW;
+          elementType = TYPE_EFFECTOR;
+          break;
+        case ACTION_DRAW_F:
+          actionType = ACTION_DRAW;
+          elementType = TYPE_FEATURE;
+      }
+      console.log("Preparing for " + actionType + "(" + elementType + ") action by " + playerSide);
+      cost = this.costForAction(actionType, elementType);
+      this.costBoxen[playerSide].html("Cost: " + cost);
+      if (cost > this.pressurePoints[playerSide]) {
+        return this.goButtons[playerSide].attr("disabled", "disabled");
+      } else {
+        return this.goButtons[playerSide].removeAttr("disabled");
+      }
+    };
+
     PlayMatSolitaireController.prototype.updateVictoryAndPressure = function() {
       this.updateBoardState;
       switch (this.boardState) {
         case "ETI":
-          this.pressurePoints["pathogen"] += 2;
-          this.victoryPoints["plant"] += 1;
+          this.pressurePoints[SIDE_PATHOGEN] += 2;
+          this.victoryPoints[SIDE_PLANT] += 1;
+          alert("Plant wins (ETI).\nPathogen +2pp\nPlant +1vp");
+          this.actionChoices[SIDE_PLANT].attr("disabled", true);
+          this.actionChoices[SIDE_PLANT].hide();
+          this.actionChoices[SIDE_PATHOGEN].attr("disabled", false);
+          this.actionChoices[SIDE_PATHOGEN].show();
           break;
         case "MTI":
-          this.pressurePoints["pathogen"] += 1;
-          this.victoryPoints["plant"] += 1;
+          this.pressurePoints[SIDE_PATHOGEN] += 1;
+          this.victoryPoints[SIDE_PLANT] += 1;
+          alert("Plant wins (MTI).\nPathogen +1pp\nPlant +1vp");
+          this.actionChoices[SIDE_PLANT].attr("disabled", true);
+          this.actionChoices[SIDE_PLANT].hide();
+          this.actionChoices[SIDE_PATHOGEN].attr("disabled", false);
+          this.actionChoices[SIDE_PATHOGEN].show();
           break;
         default:
-          this.pressurePoints["plant"] += 1;
-          this.victoryPoints["pathogen"] += 1;
+          this.pressurePoints[SIDE_PLANT] += 1;
+          this.victoryPoints[SIDE_PATHOGEN] += 1;
+          alert("Pathogen wins (Virulence).\nPlant +1pp\nPathoven +1vp");
+          this.actionChoices[SIDE_PATHOGEN].attr("disabled", true);
+          this.actionChoices[SIDE_PATHOGEN].hide();
+          this.actionChoices[SIDE_PLANT].attr("disabled", false);
+          this.actionChoices[SIDE_PLANT].show();
       }
+      this.victoryBoxen[SIDE_PLANT].html("Victory: " + this.victoryPoints[SIDE_PLANT]);
+      this.victoryBoxen[SIDE_PATHOGEN].html("Victory: " + this.victoryPoints[SIDE_PATHOGEN]);
+      this.pressureBoxen[SIDE_PLANT].html("Pressure: " + this.pressurePoints[SIDE_PLANT]);
+      this.pressureBoxen[SIDE_PATHOGEN].html("Pressure: " + this.pressurePoints[SIDE_PATHOGEN]);
       console.log("Pressure: " + this.pressurePoints);
       return console.log("Victory: " + this.victoryPoints);
     };
@@ -142,7 +212,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
         }
         (_ref1 = this.theModel).setCell.apply(_ref1, [false, type, colIndex].concat(__slice.call(theVariety)));
-        this.updateVictoryAndPressure;
+        this.updateVictoryAndPressure();
         switch (type) {
           case TYPE_FEATURE:
             this.distribution["features"] -= 1;
@@ -159,6 +229,40 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         self.setElementActivity(false, theElement);
         return true;
       }
+    };
+
+    PlayMatSolitaireController.prototype.doDiscardSelected = function() {
+      return this.doDiscard(this.selectedElement["element"], this.selectedElement["type"], this.selectedElement["colIndex"], this.selectedElement["variety"]);
+    };
+
+    PlayMatSolitaireController.prototype.selectInactiveElementOfType = function(type) {
+      var colIndex, occupied, variety;
+      console.log("Searching for inactive " + type);
+      occupied = true;
+      colIndex = 0;
+      variety = 0;
+      while (occupied && (colIndex <= NUMBER_OF_PLAYABLE_COLUMNS)) {
+        variety += 1;
+        if (variety > 1) {
+          variety = 0;
+          colIndex += 1;
+        }
+        occupied = this.theModel.isCellActive(type, colIndex, variety);
+        console.log("Col" + colIndex + " var" + variety + " is " + (occupied ? "occupied" : "free"));
+      }
+      if (occupied) {
+        alert("Could not find unoccupied cell");
+      }
+      this.selectedElement["element"] = this.getElement(type, colIndex, variety);
+      this.selectedElement["type"] = type;
+      this.selectedElement["colIndex"] = colIndex;
+      return this.selectedElement["variety"] = variety;
+    };
+
+    PlayMatSolitaireController.prototype.doDraw = function(type) {
+      this.selectInactiveElementOfType(type);
+      this.doSet(this.selectedElement["element"], true, type, this.selectedElement["colIndex"], this.selectedElement["variety"]);
+      return this.updateVictoryAndPressure();
     };
 
     PlayMatSolitaireController.prototype.doSelect = function() {
@@ -253,76 +357,85 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return console.log("RANDOMIZED-----------------------------------");
     };
 
-    PlayMatSolitaireController.prototype.wrongSelectionInfoPopup = function(suppliedAnswer, correctAnswer) {
-      var diagnosis, hint, note;
-      if (suppliedAnswer === correctAnswer) {
-        return;
-      }
-      if (suppliedAnswer === "" || (suppliedAnswer == null)) {
-        return;
-      }
-      diagnosis = "Incorrect.\nYou selected " + suppliedAnswer;
-      switch (suppliedAnswer) {
-        case "ETI":
-          note = " but there are no effector-alarm matches.";
-          switch (correctAnswer) {
-            case "MTI":
-              hint = note + "\nLook at the feature-detector row.";
-              break;
-            case "Virulence":
-              hint = note + "\nWere you looking at detector-effector disablements?";
-              break;
-            default:
-              "ERROR: How is " + correctAnswer + " possible?";
+    PlayMatSolitaireController.prototype.costForAction = function(actionType, elementType) {
+      var cost, discardCost, drawCost, existingAlarms, existingDetectors, existingEffectors, existingFeatures, roomForEffectors;
+      existingAlarms = this.theModel.countActiveCellsOfType(TYPE_ALARM);
+      existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
+      existingFeatures = this.theModel.countActiveCellsOfType(TYPE_FEATURE);
+      existingEffectors = this.theModel.countActiveCellsOfType(TYPE_EFFECTOR);
+      roomForEffectors = existingEffectors < existingFeatures;
+      switch (elementType) {
+        case TYPE_ALARM:
+          drawCost = 1 * (1 + existingAlarms) * (1 + existingAlarms);
+          discardCost = 1;
+          break;
+        case TYPE_DETECTOR:
+          drawCost = 2 * (1 + existingDetectors);
+          discardCost = 2;
+          break;
+        case TYPE_FEATURE:
+          drawCost = 1;
+          discardCost = roomForEffectors ? 1 : 2;
+          if (existingFeatures === 2) {
+            discardCost *= 3;
+          }
+          if (existingFeatures < 2) {
+            discardCost *= 100;
           }
           break;
-        case "MTI":
-          switch (correctAnswer) {
-            case "ETI":
-              hint = ".\nKeep in mind that effector-alarm matches trump feature-detector ones.";
-              break;
-            case "Virulence":
-              hint = " but there are not enough *non-disabled* feature-detector matches.";
-              break;
-            default:
-              "ERROR: How is " + correctAnswer + " possible?";
-          }
-          break;
-        case "Virulence":
-          switch (correctAnswer) {
-            case "MTI":
-              hint = ".\nCheck again for active feature-detector matches.";
-              break;
-            case "ETI":
-              hint = ".\nCheck again for effector-alarmmatches.";
-              break;
-            default:
-              "ERROR: How is " + correctAnswer + " possible?";
-          }
-          break;
-        default:
-          "ERROR: invalid answer";
+        case TYPE_EFFECTOR:
+          drawCost = roomForEffectors ? 1 : 2;
+          discardCost = 1;
       }
-      return alert(diagnosis + hint);
+      console.log("Draw cost: " + drawCost + " Discard cost: " + discardCost);
+      cost = (function() {
+        switch (actionType) {
+          case ACTION_DISCARD:
+            return discardCost;
+          case ACTION_REPLACE:
+            return drawCost + discardCost;
+          case ACTION_DRAW:
+            return drawCost;
+        }
+      })();
+      console.log("Cost of action " + actionType + " is " + cost);
+      return cost;
     };
 
-    PlayMatSolitaireController.prototype.processAnswer = function(theAnswer) {
-      var correct, self;
-      if (!theAnswer) {
-        return;
+    PlayMatSolitaireController.prototype.processAction = function(whichSide) {
+      var action, type;
+      console.log("Processing action for " + whichSide);
+      action = this.actionChoices[whichSide].val();
+      type = this.selectedElement["type"];
+      switch (action) {
+        case ACTION_DRAW_A:
+          type = TYPE_ALARM;
+          action = ACTION_DRAW;
+          break;
+        case ACTION_DRAW_E:
+          type = TYPE_EFFECTOR;
+          action = ACTION_DRAW;
+          break;
+        case ACTION_DRAW_F:
+          type = TYPE_FEATURE;
+          action = ACTION_DRAW;
+          break;
+        case ACTION_DRAW_D:
+          type = TYPE_DETECTOR;
+          action = ACTION_DRAW;
       }
-      self = this;
-      correct = theAnswer === this.boardState;
-      if (correct) {
-        this.attempts[this.currentLevel]["correct"] += 1;
-        this.outcomes[this.currentLevel][this.boardState] += 1;
-        self.setupLevel(this.currentLevel);
-      } else {
-        this.attempts[this.currentLevel]["incorrect"] += 1;
-        self.wrongSelectionInfoPopup(theAnswer, this.boardState);
+      switch (action) {
+        case ACTION_DISCARD:
+          this.doDiscardSelected();
+          break;
+        case ACTION_DRAW:
+          this.doDraw(type);
+          break;
+        case ACTION_REPLACE:
+          this.doDraw(type);
+          this.doDiscardSelected();
       }
-      self.updateQuizLabels(this.currentLevel);
-      return correct;
+      return this.pressurePoints[whichSide] -= this.costForAction(action, type);
     };
 
     return PlayMatSolitaireController;
@@ -330,20 +443,44 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
   })();
 
   $(document).ready(function() {
-    var control, i, _i, _results;
+    var control, i, _i;
     window.boardState = "Ready for input";
     window.controller = new PlayMatSolitaireController();
     control = window.controller;
-    _results = [];
     for (i = _i = 0; 0 <= NUMBER_OF_PLAYABLE_COLUMNS ? _i < NUMBER_OF_PLAYABLE_COLUMNS : _i > NUMBER_OF_PLAYABLE_COLUMNS; i = 0 <= NUMBER_OF_PLAYABLE_COLUMNS ? ++_i : --_i) {
       control.connectElement(TYPE_FEATURE, i);
       control.connectElement(TYPE_DETECTOR, i);
       control.connectElement(TYPE_EFFECTOR, i, 0);
       control.connectElement(TYPE_EFFECTOR, i, 1);
       control.connectElement(TYPE_ALARM, i, 0);
-      _results.push(control.connectElement(TYPE_ALARM, i, 1));
+      control.connectElement(TYPE_ALARM, i, 1);
     }
-    return _results;
+    control.costBoxen[SIDE_PLANT] = $("#" + ID_PLANT_COST);
+    control.goButtons[SIDE_PLANT] = $("#" + ID_PLANT_ENGAGE);
+    control.actionChoices[SIDE_PLANT] = $("#" + ID_PLANT_ACTIONS);
+    control.costBoxen[SIDE_PATHOGEN] = $("#" + ID_PATHO_COST);
+    control.goButtons[SIDE_PATHOGEN] = $("#" + ID_PATHO_ENGAGE);
+    control.actionChoices[SIDE_PATHOGEN] = $("#" + ID_PATHO_ACTIONS);
+    control.pressureBoxen[SIDE_PLANT] = $("#" + ID_PLANT_PRESSURE);
+    control.victoryBoxen[SIDE_PLANT] = $("#" + ID_PLANT_VICTORY);
+    control.pressureBoxen[SIDE_PATHOGEN] = $("#" + ID_PATHO_PRESSURE);
+    control.victoryBoxen[SIDE_PATHOGEN] = $("#" + ID_PATHO_VICTORY);
+    control.costBoxen[SIDE_PLANT].html("Cost: 0");
+    control.costBoxen[SIDE_PATHOGEN].html("Cost: 0");
+    control.goButtons[SIDE_PLANT].click(function() {
+      return control.processAction(SIDE_PLANT);
+    });
+    control.goButtons[SIDE_PATHOGEN].click(function() {
+      return control.processAction(SIDE_PATHOGEN);
+    });
+    control.actionChoices[SIDE_PATHOGEN].change(function() {
+      return control.updateForAction(SIDE_PATHOGEN);
+    });
+    control.actionChoices[SIDE_PLANT].change(function() {
+      return control.updateForAction(SIDE_PLANT);
+    });
+    control.doRandomize();
+    return control.updateVictoryAndPressure();
   });
 
 }).call(this);

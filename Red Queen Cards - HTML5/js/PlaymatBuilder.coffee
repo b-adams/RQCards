@@ -47,36 +47,36 @@ createSolitaireControls = (inElement) ->
   $(document.createElement('td')).attr("colspan", 2).text("PATHOGEN").appendTo theRow
 
   theRow = $(document.createElement('tr')).appendTo theTable
-  $(document.createElement('td')).text("Victories: N").appendTo theRow
-  $(document.createElement('td')).text("Pressure: M").appendTo theRow
-  $(document.createElement('td')).text("Victories: N").appendTo theRow
-  $(document.createElement('td')).text("Pressure: M").appendTo theRow
+  $(document.createElement('td')).text("Victories: 0").attr("id", ID_PLANT_VICTORY).appendTo theRow
+  $(document.createElement('td')).text("Pressure: 2").attr("id", ID_PLANT_PRESSURE).appendTo theRow
+  $(document.createElement('td')).text("Victories: 0").attr("id", ID_PATHO_VICTORY).appendTo theRow
+  $(document.createElement('td')).text("Pressure: 2").attr("id", ID_PATHO_PRESSURE).appendTo theRow
 
 
   theRow = $(document.createElement('tr')).appendTo theTable
   plantControls = $(document.createElement('td')).appendTo theRow
-  $(document.createElement('span')).html("Cost: X").appendTo plantControls
+  $(document.createElement('span')).html("Cost: X").attr("id", ID_PLANT_COST).appendTo plantControls
 
   plantControls = $(document.createElement('td')).appendTo theRow
-  selector = $(document.createElement('select')).attr("style", "width:80%").attr("id", "plantAction").appendTo plantControls
-  $(document.createElement('option')).attr("value", "").text("Select Action").appendTo selector
-  $(document.createElement('option')).attr("value", "P1").text("Discard Selected").appendTo selector
-  $(document.createElement('option')).attr("value", "P2").text("Replace Selected").appendTo selector
-  $(document.createElement('option')).attr("value", "P3").text("Draw Detector").appendTo selector
-  $(document.createElement('option')).attr("value", "P4").text("Draw Alarm").appendTo selector
-  $(document.createElement('button')).attr("type", "button").attr("id", "pathoGo").attr("style", "width:20%").text("GoX").appendTo plantControls
+  selector = $(document.createElement('select')).attr("style", "width:80%").attr("id", ID_PLANT_ACTIONS).appendTo plantControls
+  $(document.createElement('option')).attr("value", "").text("Select Plant Action").appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DISCARD).text(ACTION_DISCARD).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DRAW_D).text(ACTION_DRAW_D).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DRAW_A).text(ACTION_DRAW_A).appendTo selector
+  $(document.createElement('button')).attr("type", "button").attr("id", ID_PLANT_ENGAGE).attr("style", "width:20%").text("Plant Go").appendTo plantControls
 
   pathoControls = $(document.createElement('td')).appendTo theRow
-  $(document.createElement('span')).html("Cost: Y").appendTo pathoControls
+  $(document.createElement('span')).html("Cost: Y").attr("id", ID_PATHO_COST).appendTo pathoControls
 
   pathoControls = $(document.createElement('td')).appendTo theRow
-  selector = $(document.createElement('select')).attr("style", "width:80%").attr("id", "pathoAction").appendTo pathoControls
-  $(document.createElement('option')).attr("value", "").text("Select Action").appendTo selector
-  $(document.createElement('option')).attr("value", "P1").text("Discard Selected").appendTo selector
-  $(document.createElement('option')).attr("value", "P2").text("Replace Selected").appendTo selector
-  $(document.createElement('option')).attr("value", "P3").text("Draw Feature").appendTo selector
-  $(document.createElement('option')).attr("value", "P$").text("Draw Effector").appendTo selector
-  $(document.createElement('button')).attr("type", "button").attr("id", "pathoGo").attr("style", "width:20%").text("GoY").appendTo pathoControls
+  selector = $(document.createElement('select')).attr("style", "width:80%").attr("id", ID_PATHO_ACTIONS).appendTo pathoControls
+  $(document.createElement('option')).attr("value", "").text("Select Pathogen Action").appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DISCARD).text(ACTION_DISCARD).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DRAW_F).text(ACTION_DRAW_F).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DRAW_E).text(ACTION_DRAW_E).appendTo selector
+  $(document.createElement('button')).attr("type", "button").attr("id", ID_PATHO_ENGAGE).attr("style", "width:20%").text("Pathogen Go").appendTo pathoControls
 
 
 
