@@ -526,15 +526,15 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return control.processAction(SIDE_PATHOGEN);
     });
     control.actionChoices[SIDE_PATHOGEN].change(function() {
-      console.log("Change Patho");
       return control.updateGoButton(SIDE_PATHOGEN);
     });
     control.actionChoices[SIDE_PLANT].change(function() {
-      console.log("Change Plant");
       return control.updateGoButton(SIDE_PLANT);
     });
     control.doRandomize();
-    return control.moveToNextTurn();
+    control.moveToNextTurn();
+    control.updateGoButton(SIDE_PLANT);
+    return control.updateGoButton(SIDE_PATHOGEN);
   });
 
 }).call(this);

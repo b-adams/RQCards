@@ -427,15 +427,15 @@ $(document).ready ->
     control.processAction SIDE_PATHOGEN
 
   control.actionChoices[SIDE_PATHOGEN].change ->
-    console.log "Change Patho"
     control.updateGoButton SIDE_PATHOGEN
 
   control.actionChoices[SIDE_PLANT].change ->
-    console.log "Change Plant"
     control.updateGoButton SIDE_PLANT
 
   control.doRandomize()
   control.moveToNextTurn()
+  control.updateGoButton SIDE_PLANT
+  control.updateGoButton SIDE_PATHOGEN
 
 #  $("#comboBoard").change ->
 #    answer = $(this).val();

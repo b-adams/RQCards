@@ -56,24 +56,27 @@ createSolitaireControls = (inElement) ->
 
   theRow = $(document.createElement('tr')).appendTo theTable
 
-  plantControls = $(document.createElement('td')).appendTo theRow
+  plantControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
   selector = $(document.createElement('select')).attr("style", "width:100%").attr("id", ID_PLANT_ACTIONS).appendTo plantControls
   $(document.createElement('option')).attr("value", "").text("Select Plant Action").appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DISCARD).text(ACTION_DISCARD).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DRAW_D).text(ACTION_DRAW_D).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DRAW_A).text(ACTION_DRAW_A).appendTo selector
-  plantControls = $(document.createElement('td')).appendTo theRow
-  $(document.createElement('button')).attr("type", "button").attr("id", ID_PLANT_ENGAGE).attr("style", "width:100%").text("Plant Go").appendTo plantControls
 
-  pathoControls = $(document.createElement('td')).appendTo theRow
+  pathoControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
   selector = $(document.createElement('select')).attr("style", "width:100%").attr("id", ID_PATHO_ACTIONS).appendTo pathoControls
   $(document.createElement('option')).attr("value", "").text("Select Pathogen Action").appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DISCARD).text(ACTION_DISCARD).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DRAW_F).text(ACTION_DRAW_F).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DRAW_E).text(ACTION_DRAW_E).appendTo selector
-  pathoControls = $(document.createElement('td')).appendTo theRow
+
+  theRow = $(document.createElement('tr')).appendTo theTable
+  plantControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
+  $(document.createElement('button')).attr("type", "button").attr("id", ID_PLANT_ENGAGE).attr("style", "width:100%").text("Plant Go").appendTo plantControls
+
+  pathoControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
   $(document.createElement('button')).attr("type", "button").attr("id", ID_PATHO_ENGAGE).attr("style", "width:100%").text("Pathogen Go").appendTo pathoControls
 
 
