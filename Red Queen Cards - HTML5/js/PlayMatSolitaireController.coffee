@@ -26,6 +26,8 @@ class PlayMatSolitaireController
   constructor: ->
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
+    @iteration = 0
+    @currentPlayer = "Uninitialized"
     @distribution = {
       features: 4
       detectors: 4
@@ -45,10 +47,6 @@ class PlayMatSolitaireController
       type: -1
       colIndex: -1
       variety: -1
-    }
-    @costBoxen = {
-      plant: null
-      pathogen: null
     }
     @goButtons = {
       plant: null
@@ -103,10 +101,25 @@ class PlayMatSolitaireController
     console.log "Game: " + @boardState
     window.document.title = "Current state: " + @boardState
 
-  updateForAction: (playerSide) ->
-    actionType = @actionChoices[playerSide].val()
-    elementType = @selectedElement["type"]
+  updateGoButton: (whoseSide) ->
+    @goButtons[whoseSide].removeAttr("disabled")
+    actionType = @actionChoices[whoseSide].val()
+    requiresSelection = actionType is ACTION_DISCARD or actionType is ACTION_REPLACE
+    hasSelection = @selectedElement["element"] isnt null
+
+    if requiresSelection and not hasSelection
+      @goButtons[whoseSide].html("Selection Required")
+      @goButtons[whoseSide].attr("disabled", "disabled")
+      @goButtons[whoseSide].css "background", "red"
+      return
+
     switch actionType
+      when ACTION_DRAW
+        elementType = @selectedElement["type"]
+      when ACTION_DISCARD
+        elementType = @selectedElement["type"]
+      when ACTION_REPLACE
+        elementType = @selectedElement["type"]
       when ACTION_DRAW_A
         actionType = ACTION_DRAW
         elementType = TYPE_ALARM
@@ -119,50 +132,63 @@ class PlayMatSolitaireController
       when ACTION_DRAW_F
         actionType = ACTION_DRAW
         elementType = TYPE_FEATURE
-    console.log "Preparing for "+actionType+"("+elementType+") action by "+playerSide
+      else
+        @goButtons[whoseSide].html("Action Required")
+        @goButtons[whoseSide].attr("disabled", "disabled")
+        @goButtons[whoseSide].css "background", "grey"
+        return
 
     cost = this.costForAction actionType, elementType
-    @costBoxen[playerSide].html("Cost: "+cost)
-    if cost > @pressurePoints[playerSide]
-      @goButtons[playerSide].attr("disabled", "disabled")
-    else
-      @goButtons[playerSide].removeAttr("disabled")
+    if cost > @pressurePoints[whoseSide]
+      #@goButtons[whoseSide].attr("disabled", "disabled")
+      @goButtons[whoseSide].html("Need "+cost+"pp")
+      @goButtons[whoseSide].css "background", "yellow"
+      return
 
-  updateVictoryAndPressure: ->
-    this.updateBoardState
+    @goButtons[whoseSide].html("Go (Spend: "+cost+"pp)")
+    @goButtons[whoseSide].css "background", "green"
+
+
+  moveToNextTurn: ->
+    this.updateBoardState()
+    firstPhaseFilter = if @iteration is 0 then 0 else 1
+    message = "ERROR: Message not instantiated"
+
     switch @boardState
       when "ETI"
-        @pressurePoints[SIDE_PATHOGEN] += 2
-        @victoryPoints[SIDE_PLANT] += 1
-        alert "Plant wins (ETI).\nPathogen +2pp\nPlant +1vp"
-        @actionChoices[SIDE_PLANT].attr("disabled", true)
-        @actionChoices[SIDE_PLANT].hide()
-        @actionChoices[SIDE_PATHOGEN].attr("disabled", false)
-        @actionChoices[SIDE_PATHOGEN].show()
+        winner = SIDE_PLANT
+        loser =  SIDE_PATHOGEN
+        pressureForLoser = 2
+        victoryForWinner = 1
+        message = "Plant wins round "+@iteration+" (ETI).\nPathogen +2pp\nPlant +1vp"
       when "MTI"
-        @pressurePoints[SIDE_PATHOGEN] += 1
-        @victoryPoints[SIDE_PLANT] += 1
-        alert "Plant wins (MTI).\nPathogen +1pp\nPlant +1vp"
-        @actionChoices[SIDE_PLANT].attr("disabled", true)
-        @actionChoices[SIDE_PLANT].hide()
-        @actionChoices[SIDE_PATHOGEN].attr("disabled", false)
-        @actionChoices[SIDE_PATHOGEN].show()
+        winner = SIDE_PLANT
+        loser =  SIDE_PATHOGEN
+        pressureForLoser = 1
+        victoryForWinner = 1
+        message = "Plant wins round "+@iteration+" (MTI).\nPathogen +1pp\nPlant +1vp"
       else #Virulence
-        @pressurePoints[SIDE_PLANT] += 1
-        @victoryPoints[SIDE_PATHOGEN] += 1
-        alert "Pathogen wins (Virulence).\nPlant +1pp\nPathoven +1vp"
-        @actionChoices[SIDE_PATHOGEN].attr("disabled", true)
-        @actionChoices[SIDE_PATHOGEN].hide()
-        @actionChoices[SIDE_PLANT].attr("disabled", false)
-        @actionChoices[SIDE_PLANT].show()
+        winner = SIDE_PATHOGEN
+        loser =  SIDE_PLANT
+        pressureForLoser = 1
+        victoryForWinner = 1
+        message = "Pathogen wins round "+@iteration+" (Virulence).\nPlant +1pp\nPathoven +1vp"
+
+    @currentPlayer = loser
+    alert message if firstPhaseFilter isnt 0
+    @pressurePoints[loser] += pressureForLoser*firstPhaseFilter
+    @victoryPoints[winner] += victoryForWinner*firstPhaseFilter
+    @actionChoices[winner].hide()
+    @actionChoices[loser].show()
+    @goButtons[winner].hide()
+    @goButtons[loser].show()
 
     @victoryBoxen[SIDE_PLANT].html("Victory: "+@victoryPoints[SIDE_PLANT])
     @victoryBoxen[SIDE_PATHOGEN].html("Victory: "+@victoryPoints[SIDE_PATHOGEN])
     @pressureBoxen[SIDE_PLANT].html("Pressure: "+@pressurePoints[SIDE_PLANT])
     @pressureBoxen[SIDE_PATHOGEN].html("Pressure: "+@pressurePoints[SIDE_PATHOGEN])
 
-    console.log "Pressure: " +@pressurePoints
-    console.log "Victory: " +@victoryPoints
+    @iteration += 1
 
   doDiscard: (theElement, type, colIndex, theVariety...) ->
     self = this
@@ -172,13 +198,13 @@ class PlayMatSolitaireController
     else
       theElement ?= self.getElement type, colIndex, theVariety...
       @theModel.setCell false, type, colIndex, theVariety...
-      this.updateVictoryAndPressure()
       switch type
         when TYPE_FEATURE  then @distribution["features"] -= 1
         when TYPE_DETECTOR then @distribution["detectors"] -= 1
         when TYPE_ALARM    then @distribution["alarms"] -= 1
         when TYPE_EFFECTOR then @distribution["effectors"] -= 1
       self.setElementActivity false, theElement
+      #this.moveToNextTurn()
       return true #Discard successful
 
   doDiscardSelected: ->
@@ -193,37 +219,66 @@ class PlayMatSolitaireController
   #This is a terrible method, but good enough for now. Use something based on above
   selectInactiveElementOfType: (type) ->
     console.log "Searching for inactive "+type
-    occupied = true
     colIndex = 0
     variety = 0
-    while (occupied) and (colIndex <= NUMBER_OF_PLAYABLE_COLUMNS)
+    occupied = true
+    while (occupied) and (colIndex < NUMBER_OF_PLAYABLE_COLUMNS)
+      occupied = @theModel.isCellActive type, colIndex, variety
+      console.log "Col"+colIndex+" var"+variety+" is "+(if occupied then "occupied" else "free")
+
       variety += 1
       if variety > 1
         variety = 0
         colIndex += 1
-      occupied = @theModel.isCellActive type, colIndex, variety
-      console.log "Col"+colIndex+" var"+variety+" is "+(if occupied then "occupied" else "free")
 
-    if occupied then alert "Could not find unoccupied cell"
-    @selectedElement["element"] = this.getElement type, colIndex, variety
-    @selectedElement["type"] = type
-    @selectedElement["colIndex"] = colIndex
-    @selectedElement["variety"] = variety
+    if occupied
+      alert "Could not find unoccupied cell"
+      this.clearCurrentSelection()
+    else
+      @selectedElement["element"] = this.getElement type, colIndex, variety
+      @selectedElement["type"] = type
+      @selectedElement["colIndex"] = colIndex
+      @selectedElement["variety"] = variety
 
   doDraw: (type) ->
     this.selectInactiveElementOfType type
     this.doSet @selectedElement["element"], true, type, @selectedElement["colIndex"], @selectedElement["variety"]
-    this.updateVictoryAndPressure()
+    #this.moveToNextTurn()
 
-  doSelect: (theElement, type, colIndex, theVariety...) ->
-    #Reset current selected element
+  isTypeOnSideOf: (type, side) ->
+    switch type
+      when TYPE_ALARM    then return (side is SIDE_PLANT)
+      when TYPE_DETECTOR then return (side is SIDE_PLANT)
+      when TYPE_EFFECTOR then return (side is SIDE_PATHOGEN)
+      when TYPE_FEATURE  then return (side is SIDE_PATHOGEN)
+      else return false
+
+  clearCurrentSelection: ->
     if @selectedElement["element"] isnt null
       oldState = @theModel.isCellActive @selectedElement["type"], @selectedElement["colIndex"], @selectedElement["variety"]
       this.setElementActivity oldState, @selectedElement["element"]
 
+    @selectedElement["element"] = null
+    @selectedElement["type"] = -1
+    @selectedElement["colIndex"] = -1
+    @selectedElement["variety"] = -1
+    this.updateGoButton @currentPlayer
+
+
+  doSelect: (theElement, type, colIndex, theVariety...) ->
+    #Reject if it's not for the right side
+
+    this.clearCurrentSelection()
+
+    if not this.isTypeOnSideOf type, @currentPlayer
+#      alert "It is the "+@losingPlayer+" turn, and a "+type+" is not under "+@losingPlayer+" control."
+      return
+
     selectionState = @theModel.isCellActive type, colIndex, theVariety
+
     # Don't bother selecting inactive elements, you can't discard or replace them
     if selectionState
+      console.log "Selecting "+theElement+": "+type+":"+colIndex+":"+theVariety
       #Set up new selected element
       theElement.css "border-style", "dotted"
       theElement.css "border-width", "3px"
@@ -235,11 +290,8 @@ class PlayMatSolitaireController
       @selectedElement["type"] = type
       @selectedElement["colIndex"] = colIndex
       @selectedElement["variety"] = theVariety
-    else
-      @selectedElement["element"] = null
-      @selectedElement["type"] = -1
-      @selectedElement["colIndex"] = -1
-      @selectedElement["variety"] = -1
+
+      this.updateGoButton @currentPlayer
 
 
   doSet: (theElement, newValue, type, colIndex, theVariety...) ->
@@ -306,6 +358,7 @@ class PlayMatSolitaireController
       when ACTION_DISCARD then discardCost
       when ACTION_REPLACE then drawCost+discardCost
       when ACTION_DRAW then drawCost
+      else -1
 
     console.log "Cost of action "+actionType+" is "+cost
     return cost
@@ -339,6 +392,8 @@ class PlayMatSolitaireController
         #Draw before discard to prevent re-drawing the same card
 
     @pressurePoints[whichSide] -= this.costForAction action, type
+    this.clearCurrentSelection()
+    this.moveToNextTurn()
 
 $(document).ready ->
   window.boardState = "Ready for input"
@@ -353,11 +408,9 @@ $(document).ready ->
     control.connectElement(TYPE_ALARM,    i, 0)
     control.connectElement(TYPE_ALARM,    i, 1)
 
-  control.costBoxen[SIDE_PLANT] = $("#"+ID_PLANT_COST)
   control.goButtons[SIDE_PLANT] = $("#"+ID_PLANT_ENGAGE)
   control.actionChoices[SIDE_PLANT] = $("#"+ID_PLANT_ACTIONS)
 
-  control.costBoxen[SIDE_PATHOGEN] = $("#"+ID_PATHO_COST)
   control.goButtons[SIDE_PATHOGEN] = $("#"+ID_PATHO_ENGAGE)
   control.actionChoices[SIDE_PATHOGEN] = $("#"+ID_PATHO_ACTIONS)
 
@@ -366,8 +419,6 @@ $(document).ready ->
   control.pressureBoxen[SIDE_PATHOGEN] = $("#"+ID_PATHO_PRESSURE)
   control.victoryBoxen[SIDE_PATHOGEN] = $("#"+ID_PATHO_VICTORY)
 
-  control.costBoxen[SIDE_PLANT].html "Cost: 0"
-  control.costBoxen[SIDE_PATHOGEN].html "Cost: 0"
 
   control.goButtons[SIDE_PLANT].click ->
     control.processAction SIDE_PLANT
@@ -376,13 +427,15 @@ $(document).ready ->
     control.processAction SIDE_PATHOGEN
 
   control.actionChoices[SIDE_PATHOGEN].change ->
-    control.updateForAction SIDE_PATHOGEN
+    console.log "Change Patho"
+    control.updateGoButton SIDE_PATHOGEN
 
   control.actionChoices[SIDE_PLANT].change ->
-    control.updateForAction SIDE_PLANT
+    console.log "Change Plant"
+    control.updateGoButton SIDE_PLANT
 
   control.doRandomize()
-  control.updateVictoryAndPressure()
+  control.moveToNextTurn()
 
 #  $("#comboBoard").change ->
 #    answer = $(this).val();
