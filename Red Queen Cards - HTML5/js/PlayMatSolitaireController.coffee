@@ -217,33 +217,47 @@ class PlayMatSolitaireController
 #      [picklist[i], picklist[randIndex]] = [picklist[randIndex], picklist[i]]
 #    return picklist
   #This is a terrible method, but good enough for now. Use something based on above
-  selectInactiveElementOfType: (type) ->
+  getRandomInactiveElementOfType: (type) ->
     console.log "Searching for inactive "+type
-    colIndex = 0
-    variety = 0
+    startCol = Math.floor Math.random()*NUMBER_OF_PLAYABLE_COLUMNS
+    startVar = Math.floor Math.random()*2 #TODO: Constant for Number of Varieties
+    colIndex = startCol
+    variety = startVar
     occupied = true
-    while (occupied) and (colIndex < NUMBER_OF_PLAYABLE_COLUMNS)
+    notLooped = true
+    while occupied and notLooped
       occupied = @theModel.isCellActive type, colIndex, variety
       console.log "Col"+colIndex+" var"+variety+" is "+(if occupied then "occupied" else "free")
 
-      variety += 1
-      if variety > 1
-        variety = 0
-        colIndex += 1
+      ## Increment to next Col,Var option
+      if occupied
+        variety += 1
+        if variety >= 2 #TODO: Constant for Number of Varieties
+          variety = 0
+          colIndex += 1
+          if colIndex >= NUMBER_OF_PLAYABLE_COLUMNS
+            colIndex = 0
+
+      notLooped = colIndex isnt startCol or variety isnt startVar
+
 
     if occupied
       alert "Could not find unoccupied cell"
       this.clearCurrentSelection()
+      return null
+
     else
-      @selectedElement["element"] = this.getElement type, colIndex, variety
-      @selectedElement["type"] = type
-      @selectedElement["colIndex"] = colIndex
-      @selectedElement["variety"] = variety
+      return {
+        element: this.getElement type, colIndex, variety
+        type: type
+        colIndex: colIndex
+        variety: variety
+      }
 
   doDraw: (type) ->
-    this.selectInactiveElementOfType type
-    this.doSet @selectedElement["element"], true, type, @selectedElement["colIndex"], @selectedElement["variety"]
-    #this.moveToNextTurn()
+    anElement = this.getRandomInactiveElementOfType type
+    if anElement is null then return
+    this.doSet anElement["element"], true, type, anElement["colIndex"], anElement["variety"]
 
   isTypeOnSideOf: (type, side) ->
     switch type

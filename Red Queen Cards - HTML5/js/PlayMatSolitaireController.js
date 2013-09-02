@@ -258,38 +258,61 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.doDiscardSelected = function() {
+      console.log("doDiscardSelected");
       return this.doDiscard(this.selectedElement["element"], this.selectedElement["type"], this.selectedElement["colIndex"], this.selectedElement["variety"]);
     };
 
-    PlayMatSolitaireController.prototype.selectInactiveElementOfType = function(type) {
-      var colIndex, occupied, variety;
+    PlayMatSolitaireController.prototype.getRandomInactiveElementOfType = function(type) {
+      var colIndex, elementInfo, notLooped, occupied, startCol, startVar, variety;
       console.log("Searching for inactive " + type);
-      colIndex = 0;
-      variety = 0;
+      startCol = Math.floor(Math.random() * NUMBER_OF_PLAYABLE_COLUMNS);
+      startVar = Math.floor(Math.random() * 2);
+      colIndex = startCol;
+      variety = startVar;
       occupied = true;
-      while (occupied && (colIndex < NUMBER_OF_PLAYABLE_COLUMNS)) {
-        occupied = this.theModel.isCellActive(type, colIndex, variety);
-        console.log("Col" + colIndex + " var" + variety + " is " + (occupied ? "occupied" : "free"));
-        variety += 1;
-        if (variety > 1) {
-          variety = 0;
-          colIndex += 1;
+      notLooped = true;
+      elementInfo = (function() {
+        var _results;
+        _results = [];
+        while (occupied && notLooped) {
+          occupied = this.theModel.isCellActive(type, colIndex, variety);
+          console.log("Col" + colIndex + " var" + variety + " is " + (occupied ? "occupied" : "free"));
+          if (occupied) {
+            variety += 1;
+            if (variety >= 2) {
+              variety = 0;
+              colIndex += 1;
+              if (colIndex >= NUMBER_OF_PLAYABLE_COLUMNS) {
+                colIndex = 0;
+              }
+            }
+          }
+          _results.push(notLooped = colIndex !== startCol || variety !== startVar);
         }
-      }
+        return _results;
+      }).call(this);
       if (occupied) {
         alert("Could not find unoccupied cell");
-        return this.clearCurrentSelection();
+        this.clearCurrentSelection();
+        return null;
       } else {
-        this.selectedElement["element"] = this.getElement(type, colIndex, variety);
-        this.selectedElement["type"] = type;
-        this.selectedElement["colIndex"] = colIndex;
-        return this.selectedElement["variety"] = variety;
+        return {
+          element: this.getElement(type, colIndex, variety),
+          type: type,
+          colIndex: colIndex,
+          variety: variety
+        };
       }
     };
 
     PlayMatSolitaireController.prototype.doDraw = function(type) {
-      this.selectInactiveElementOfType(type);
-      return this.doSet(this.selectedElement["element"], true, type, this.selectedElement["colIndex"], this.selectedElement["variety"]);
+      var anElement;
+      console.log("doDraw " + type);
+      anElement = this.getRandomInactiveElementOfType(type);
+      if (anElement === null) {
+        return;
+      }
+      return this.doSet(anElement["element"], true, type, anElement["colIndex"], anElement["variety"]);
     };
 
     PlayMatSolitaireController.prototype.isTypeOnSideOf = function(type, side) {
@@ -486,6 +509,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           this.doDraw(type);
           break;
         case ACTION_REPLACE:
+          console.log("processAction - " + action);
           this.doDraw(type);
           this.doDiscardSelected();
       }
