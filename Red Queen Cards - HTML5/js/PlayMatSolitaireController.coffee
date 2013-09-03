@@ -163,26 +163,28 @@ class PlayMatSolitaireController
     this.updateBoardState()
     firstPhaseFilter = if @iteration is 0 then 0 else 1
     message = "ERROR: Message not instantiated"
+    rewards = this.rewardsForRound()
 
     switch @boardState
       when "ETI"
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
         pressureForLoser = 2
-        victoryForWinner = 1
-        message = "Plant wins round "+@iteration+" (ETI).\nPathogen +2pp\nPlant +1vp"
+        victoryForWinner = rewards[SIDE_PLANT]
       when "MTI"
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
         pressureForLoser = 1
-        victoryForWinner = 1
-        message = "Plant wins round "+@iteration+" (MTI).\nPathogen +1pp\nPlant +1vp"
+        victoryForWinner = rewards[SIDE_PLANT]
       else #Virulence
         winner = SIDE_PATHOGEN
         loser =  SIDE_PLANT
         pressureForLoser = 1
-        victoryForWinner = 1
-        message = "Pathogen wins round "+@iteration+" (Virulence).\nPlant +1pp\nPathoven +1vp"
+        victoryForWinner = rewards[SIDE_PATHOGEN]
+
+    message = winner + " wins round "+@iteration+" ("+@boardState+")\n"
+    message += loser + ": +"+pressureForLoser+"pp\n"
+    message += winner + ": +"+victoryForWinner+"vp"
 
     @currentPlayer = loser
     alert message if firstPhaseFilter isnt 0
@@ -354,6 +356,22 @@ class PlayMatSolitaireController
     self.doSet null, randVal, TYPE_ALARM, i>>1, i%2 for randVal,i in randList
 
     #console.log "RANDOMIZED-----------------------------------"
+
+  rewardsForRound: ->
+    existingAlarms = @theModel.countActiveCellsOfType TYPE_ALARM
+    existingDetectors = @theModel.countActiveCellsOfType TYPE_DETECTOR
+
+    existingFeatures = @theModel.countActiveCellsOfType TYPE_FEATURE
+    existingEffectors = @theModel.countActiveCellsOfType TYPE_EFFECTOR
+
+    plantRewards = 12
+    plantExpenses = 2*existingDetectors + existingAlarms
+    pathoRewards = 2*(existingFeatures-2)
+    pathoExpenses = existingEffectors-2
+    return {
+      plant: plantRewards-plantExpenses
+      pathogen: pathoRewards-pathoExpenses
+    }
 
   costForAction: (actionType, elementType) ->
     detectionCostLimiter = 8

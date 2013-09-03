@@ -193,32 +193,33 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.moveToNextTurn = function() {
-      var firstPhaseFilter, loser, message, pressureForLoser, victoryForWinner, winner;
+      var firstPhaseFilter, loser, message, pressureForLoser, rewards, victoryForWinner, winner;
       this.updateBoardState();
       firstPhaseFilter = this.iteration === 0 ? 0 : 1;
       message = "ERROR: Message not instantiated";
+      rewards = this.rewardsForRound();
       switch (this.boardState) {
         case "ETI":
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
           pressureForLoser = 2;
-          victoryForWinner = 1;
-          message = "Plant wins round " + this.iteration + " (ETI).\nPathogen +2pp\nPlant +1vp";
+          victoryForWinner = rewards[SIDE_PLANT];
           break;
         case "MTI":
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
           pressureForLoser = 1;
-          victoryForWinner = 1;
-          message = "Plant wins round " + this.iteration + " (MTI).\nPathogen +1pp\nPlant +1vp";
+          victoryForWinner = rewards[SIDE_PLANT];
           break;
         default:
           winner = SIDE_PATHOGEN;
           loser = SIDE_PLANT;
           pressureForLoser = 1;
-          victoryForWinner = 1;
-          message = "Pathogen wins round " + this.iteration + " (Virulence).\nPlant +1pp\nPathoven +1vp";
+          victoryForWinner = rewards[SIDE_PATHOGEN];
       }
+      message = winner + " wins round " + this.iteration + " (" + this.boardState + ")\n";
+      message += loser + ": +" + pressureForLoser + "pp\n";
+      message += winner + ": +" + victoryForWinner + "vp";
       this.currentPlayer = loser;
       if (firstPhaseFilter !== 0) {
         alert(message);
@@ -431,6 +432,22 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         _results.push(self.doSet(null, randVal, TYPE_ALARM, i >> 1, i % 2));
       }
       return _results;
+    };
+
+    PlayMatSolitaireController.prototype.rewardsForRound = function() {
+      var existingAlarms, existingDetectors, existingEffectors, existingFeatures, pathoExpenses, pathoRewards, plantExpenses, plantRewards;
+      existingAlarms = this.theModel.countActiveCellsOfType(TYPE_ALARM);
+      existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
+      existingFeatures = this.theModel.countActiveCellsOfType(TYPE_FEATURE);
+      existingEffectors = this.theModel.countActiveCellsOfType(TYPE_EFFECTOR);
+      plantRewards = 12;
+      plantExpenses = 2 * existingDetectors + existingAlarms;
+      pathoRewards = 2 * (existingFeatures - 2);
+      pathoExpenses = existingEffectors - 2;
+      return {
+        plant: plantRewards - plantExpenses,
+        pathogen: pathoRewards - pathoExpenses
+      };
     };
 
     PlayMatSolitaireController.prototype.costForAction = function(actionType, elementType) {
