@@ -177,6 +177,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           return;
       }
       cost = this.costForAction(actionType, elementType);
+      if (cost < 0) {
+        this.goButtons[whoseSide].attr("disabled", "disabled");
+        this.goButtons[whoseSide].html("Disallowed");
+        this.goButtons[whoseSide].css("background", "orange");
+        return;
+      }
       if (cost > this.pressurePoints[whoseSide]) {
         this.goButtons[whoseSide].html("Need " + cost + "pp");
         this.goButtons[whoseSide].css("background", "yellow");
@@ -454,11 +460,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         case TYPE_FEATURE:
           drawCost = 1;
           discardCost = roomForEffectors ? 1 : 2;
-          if (existingFeatures === 2) {
-            discardCost *= 3;
-          }
-          if (existingFeatures < 2) {
-            discardCost *= 100;
+          if (existingFeatures <= 2) {
+            discardCost = -1;
           }
           break;
         case TYPE_EFFECTOR:

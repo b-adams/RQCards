@@ -144,6 +144,11 @@ class PlayMatSolitaireController
         return
 
     cost = this.costForAction actionType, elementType
+    if cost < 0
+      @goButtons[whoseSide].attr("disabled", "disabled")
+      @goButtons[whoseSide].html("Disallowed")
+      @goButtons[whoseSide].css "background", "orange"
+      return
     if cost > @pressurePoints[whoseSide]
       #@goButtons[whoseSide].attr("disabled", "disabled")
       @goButtons[whoseSide].html("Need "+cost+"pp")
@@ -372,8 +377,7 @@ class PlayMatSolitaireController
       when TYPE_FEATURE
         drawCost = 1
         discardCost = if roomForEffectors then 1 else 2
-        if existingFeatures is 2 then discardCost *= 3
-        if existingFeatures < 2 then discardCost *= 100
+        if existingFeatures <= 2 then discardCost = -1
       when TYPE_EFFECTOR
         drawCost = if roomForEffectors then 1 else 2
         discardCost = 1
