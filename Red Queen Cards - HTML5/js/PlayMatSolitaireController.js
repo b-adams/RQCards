@@ -379,8 +379,89 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         (_ref1 = this.theModel).setCell.apply(_ref1, [newValue, type, colIndex].concat(__slice.call(theVariety)));
         self.updateBoardState();
         self.setElementActivity(newValue, theElement);
+        this.updateInteractions.apply(this, [theElement, newValue, type, colIndex].concat(__slice.call(theVariety)));
       }
       return newValue;
+    };
+
+    PlayMatSolitaireController.prototype.updateInteractions = function() {
+      var aVariety, active, colIndex, theElement, theVariety, triggerElement, triggerState, triggerType, type, _i, _len, _ref, _ref1, _ref2, _results;
+      theElement = arguments[0], active = arguments[1], type = arguments[2], colIndex = arguments[3], theVariety = 5 <= arguments.length ? __slice.call(arguments, 4) : [];
+      switch (type) {
+        case TYPE_FEATURE:
+          triggerType = TYPE_DETECTOR;
+          triggerElement = this.getElement(triggerType, colIndex);
+          triggerState = this.theModel.isCellActive(triggerType, colIndex);
+          if (active && triggerState) {
+            theElement.addClass("detected");
+            return triggerElement.addClass("detecting");
+          } else {
+            theElement.removeClass("detected");
+            return triggerElement.removeClass("detecting");
+          }
+          break;
+        case TYPE_DETECTOR:
+          triggerType = TYPE_FEATURE;
+          triggerElement = this.getElement(triggerType, colIndex);
+          triggerState = this.theModel.isCellActive(triggerType, colIndex);
+          if (active && triggerState) {
+            triggerElement.addClass("detected");
+            theElement.addClass("detecting");
+          } else {
+            triggerElement.removeClass("detected");
+            theElement.removeClass("detecting");
+          }
+          triggerType = TYPE_EFFECTOR;
+          _ref = [0, 1];
+          _results = [];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            aVariety = _ref[_i];
+            triggerElement = this.getElement(triggerType, colIndex, aVariety);
+            triggerState = this.theModel.isCellActive(triggerType, colIndex, aVariety);
+            if (active && triggerState) {
+              theElement.addClass("disabled" + aVariety);
+              _results.push(triggerElement.addClass("disabling"));
+            } else {
+              theElement.removeClass("disabled" + aVariety);
+              _results.push(triggerElement.removeClass("disabling"));
+            }
+          }
+          return _results;
+          break;
+        case TYPE_EFFECTOR:
+          triggerType = TYPE_DETECTOR;
+          triggerElement = this.getElement(triggerType, colIndex);
+          triggerState = this.theModel.isCellActive(triggerType, colIndex);
+          if (active && triggerState) {
+            triggerElement.addClass("disabled" + theVariety);
+            theElement.addClass("disabling");
+          } else {
+            triggerElement.removeClass("disabled" + theVariety);
+            theElement.removeClass("disabling");
+          }
+          triggerType = TYPE_ALARM;
+          triggerElement = this.getElement.apply(this, [triggerType, colIndex].concat(__slice.call(theVariety)));
+          triggerState = (_ref1 = this.theModel).isCellActive.apply(_ref1, [triggerType, colIndex].concat(__slice.call(theVariety)));
+          if (active && triggerState) {
+            theElement.addClass("alarming");
+            return triggerElement.addClass("alarmed");
+          } else {
+            theElement.removeClass("alarming");
+            return triggerElement.removeClass("alarmed");
+          }
+          break;
+        case TYPE_ALARM:
+          triggerType = TYPE_EFFECTOR;
+          triggerElement = this.getElement.apply(this, [triggerType, colIndex].concat(__slice.call(theVariety)));
+          triggerState = (_ref2 = this.theModel).isCellActive.apply(_ref2, [triggerType, colIndex].concat(__slice.call(theVariety)));
+          if (active && triggerState) {
+            triggerElement.addClass("alarming");
+            return theElement.addClass("alarmed");
+          } else {
+            triggerElement.removeClass("alarming");
+            return theElement.removeClass("alarmed");
+          }
+      }
     };
 
     PlayMatSolitaireController.prototype.randomSelectionArray = function(picks, total) {

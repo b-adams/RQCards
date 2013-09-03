@@ -330,7 +330,75 @@ class PlayMatSolitaireController
       @theModel.setCell newValue, type, colIndex, theVariety...
       self.updateBoardState()
       self.setElementActivity newValue, theElement
+      this.updateInteractions theElement, newValue, type, colIndex, theVariety...
     return newValue
+
+  updateInteractions: (theElement, active, type, colIndex, theVariety...) ->
+    switch type
+      when TYPE_FEATURE
+        triggerType = TYPE_DETECTOR
+        triggerElement = this.getElement triggerType, colIndex
+        triggerState = @theModel.isCellActive triggerType, colIndex
+        if active and triggerState
+          theElement.addClass("detected")
+          triggerElement.addClass("detecting")
+        else
+          theElement.removeClass("detected")
+          triggerElement.removeClass("detecting")
+
+      when TYPE_DETECTOR
+        triggerType = TYPE_FEATURE
+        triggerElement = this.getElement triggerType, colIndex
+        triggerState = @theModel.isCellActive triggerType, colIndex
+        if active and triggerState
+          triggerElement.addClass("detected")
+          theElement.addClass("detecting")
+        else
+          triggerElement.removeClass("detected")
+          theElement.removeClass("detecting")
+
+        triggerType = TYPE_EFFECTOR
+        for aVariety in [0,1]
+          triggerElement = this.getElement triggerType, colIndex, aVariety
+          triggerState = @theModel.isCellActive triggerType, colIndex, aVariety
+          if active and triggerState
+            theElement.addClass("disabled"+aVariety)
+            triggerElement.addClass("disabling")
+          else
+            theElement.removeClass("disabled"+aVariety)
+            triggerElement.removeClass("disabling")
+
+      when TYPE_EFFECTOR
+        triggerType = TYPE_DETECTOR
+        triggerElement = this.getElement triggerType, colIndex
+        triggerState = @theModel.isCellActive triggerType, colIndex
+        if active and triggerState
+          triggerElement.addClass("disabled"+theVariety)
+          theElement.addClass("disabling")
+        else
+          triggerElement.removeClass("disabled"+theVariety)
+          theElement.removeClass("disabling")
+
+        triggerType = TYPE_ALARM
+        triggerElement = this.getElement triggerType, colIndex, theVariety...
+        triggerState = @theModel.isCellActive triggerType, colIndex, theVariety...
+        if active and triggerState
+          theElement.addClass("alarming")
+          triggerElement.addClass("alarmed")
+        else
+          theElement.removeClass("alarming")
+          triggerElement.removeClass("alarmed")
+
+      when TYPE_ALARM
+        triggerType = TYPE_EFFECTOR
+        triggerElement = this.getElement triggerType, colIndex, theVariety...
+        triggerState = @theModel.isCellActive triggerType, colIndex, theVariety...
+        if active and triggerState
+          triggerElement.addClass("alarming")
+          theElement.addClass("alarmed")
+        else
+          triggerElement.removeClass("alarming")
+          theElement.removeClass("alarmed")
 
   randomSelectionArray: (picks, total) ->
     picklist = (true for n in [0...picks]).concat (false for n in [picks...total])
