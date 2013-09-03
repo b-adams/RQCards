@@ -65,6 +65,11 @@ class PlayMatSolitaireController
       pathogen: null
     }
 
+  changePressure: (side, amount) ->
+    @pressurePoints[side] += amount
+    console.log "Changing pressure for "+side+" by "+amount+". New total: "+@pressurePoints[side]
+
+
   getElement: (type, colIndex) ->
     selector = "#board > #c"+(colIndex+1)+" > ."
     switch type
@@ -98,8 +103,8 @@ class PlayMatSolitaireController
       when @theModel.isPlantMTIActive() then "MTI"
       else                                   "Virulence"
 
-    console.log "Game: " + @boardState
-    window.document.title = "Current state: " + @boardState
+    #console.log "Game: " + @boardState
+    #window.document.title = "Current state: " + @boardState
 
   updateGoButton: (whoseSide) ->
     @goButtons[whoseSide].removeAttr("disabled")
@@ -176,7 +181,7 @@ class PlayMatSolitaireController
 
     @currentPlayer = loser
     alert message if firstPhaseFilter isnt 0
-    @pressurePoints[loser] += pressureForLoser*firstPhaseFilter
+    this.changePressure loser, pressureForLoser*firstPhaseFilter
     @victoryPoints[winner] += victoryForWinner*firstPhaseFilter
     @actionChoices[winner].hide()
     @actionChoices[loser].show()
@@ -188,7 +193,9 @@ class PlayMatSolitaireController
     @pressureBoxen[SIDE_PLANT].html("Pressure: "+@pressurePoints[SIDE_PLANT])
     @pressureBoxen[SIDE_PATHOGEN].html("Pressure: "+@pressurePoints[SIDE_PATHOGEN])
 
+    document.title = "State: "+@boardState+" | Turn: "+@currentPlayer
     @iteration += 1
+    console.log "Moved to turn "+@iteration
 
   doDiscard: (theElement, type, colIndex, theVariety...) ->
     self = this
@@ -218,7 +225,7 @@ class PlayMatSolitaireController
 #    return picklist
   #This is a terrible method, but good enough for now. Use something based on above
   getRandomInactiveElementOfType: (type) ->
-    console.log "Searching for inactive "+type
+    #console.log "Searching for inactive "+type
     startCol = Math.floor Math.random()*NUMBER_OF_PLAYABLE_COLUMNS
     startVar = Math.floor Math.random()*2 #TODO: Constant for Number of Varieties
     colIndex = startCol
@@ -227,7 +234,7 @@ class PlayMatSolitaireController
     notLooped = true
     while occupied and notLooped
       occupied = @theModel.isCellActive type, colIndex, variety
-      console.log "Col"+colIndex+" var"+variety+" is "+(if occupied then "occupied" else "free")
+      #console.log "Col"+colIndex+" var"+variety+" is "+(if occupied then "occupied" else "free")
 
       ## Increment to next Col,Var option
       if occupied
@@ -292,7 +299,7 @@ class PlayMatSolitaireController
 
     # Don't bother selecting inactive elements, you can't discard or replace them
     if selectionState
-      console.log "Selecting "+theElement+": "+type+":"+colIndex+":"+theVariety
+      #console.log "Selecting "+theElement+": "+type+":"+colIndex+":"+theVariety
       #Set up new selected element
       theElement.css "border-style", "dotted"
       theElement.css "border-width", "3px"
@@ -327,7 +334,7 @@ class PlayMatSolitaireController
 
   doRandomize: ->
     self = this
-    console.log "RANDOMIZING----------------------------------"
+    #console.log "RANDOMIZING----------------------------------"
 
     randList = self.randomSelectionArray @distribution["features"], NUMBER_OF_FEATURES
     self.doSet null, randVal, TYPE_FEATURE, i for randVal,i in randList
@@ -341,22 +348,27 @@ class PlayMatSolitaireController
     randList = self.randomSelectionArray @distribution["alarms"], NUMBER_OF_ALARMS
     self.doSet null, randVal, TYPE_ALARM, i>>1, i%2 for randVal,i in randList
 
-    console.log "RANDOMIZED-----------------------------------"
+    #console.log "RANDOMIZED-----------------------------------"
 
   costForAction: (actionType, elementType) ->
+    detectionCostLimiter = 8
     existingAlarms = @theModel.countActiveCellsOfType TYPE_ALARM
     existingDetectors = @theModel.countActiveCellsOfType TYPE_DETECTOR
+    excessDetectionTools = existingAlarms + existingDetectors - detectionCostLimiter
+
     existingFeatures = @theModel.countActiveCellsOfType TYPE_FEATURE
     existingEffectors = @theModel.countActiveCellsOfType TYPE_EFFECTOR
     roomForEffectors = existingEffectors < existingFeatures
 
     switch elementType
       when TYPE_ALARM
-        drawCost = 1 * (1+existingAlarms) * (1+existingAlarms)
+        drawCost = 1
         discardCost = 1
+        if excessDetectionTools > 0 then drawCost+=excessDetectionTools
       when TYPE_DETECTOR
-        drawCost = 2 * (1+existingDetectors)
-        discardCost = 2
+        drawCost = 2
+        discardCost = 1
+        if excessDetectionTools > 0 then drawCost+=excessDetectionTools
       when TYPE_FEATURE
         drawCost = 1
         discardCost = if roomForEffectors then 1 else 2
@@ -366,19 +378,18 @@ class PlayMatSolitaireController
         drawCost = if roomForEffectors then 1 else 2
         discardCost = 1
 
-    console.log "Draw cost: "+drawCost+" Discard cost: "+discardCost
+    #console.log "Draw cost: "+drawCost+" Discard cost: "+discardCost
 
     cost = switch actionType
       when ACTION_DISCARD then discardCost
       when ACTION_REPLACE then drawCost+discardCost
       when ACTION_DRAW then drawCost
-      else -1
+      else 0
 
-    console.log "Cost of action "+actionType+" is "+cost
+    #console.log "Cost of action "+actionType+" is "+cost
     return cost
 
   processAction: (whichSide) ->
-    console.log "Processing action for "+whichSide
     action = @actionChoices[whichSide].val()
     type = @selectedElement["type"]
 
@@ -404,8 +415,9 @@ class PlayMatSolitaireController
         this.doDraw type
         this.doDiscardSelected()
         #Draw before discard to prevent re-drawing the same card
-
-    @pressurePoints[whichSide] -= this.costForAction action, type
+    cost = this.costForAction action, type
+    console.log "Cost for "+action+"/"+type+": "+cost
+    this.changePressure whichSide, -cost
     this.clearCurrentSelection()
     this.moveToNextTurn()
 

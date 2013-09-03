@@ -71,6 +71,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       };
     }
 
+    PlayMatSolitaireController.prototype.changePressure = function(side, amount) {
+      this.pressurePoints[side] += amount;
+      return console.log("Changing pressure for " + side + " by " + amount + ". New total: " + this.pressurePoints[side]);
+    };
+
     PlayMatSolitaireController.prototype.getElement = function(type, colIndex) {
       var selector;
       selector = "#board > #c" + (colIndex + 1) + " > .";
@@ -115,7 +120,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.updateBoardState = function() {
-      this.boardState = (function() {
+      return this.boardState = (function() {
         switch (false) {
           case !this.theModel.isPlantETIActive():
             return "ETI";
@@ -125,8 +130,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             return "Virulence";
         }
       }).call(this);
-      console.log("Game: " + this.boardState);
-      return window.document.title = "Current state: " + this.boardState;
     };
 
     PlayMatSolitaireController.prototype.updateGoButton = function(whoseSide) {
@@ -214,7 +217,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       if (firstPhaseFilter !== 0) {
         alert(message);
       }
-      this.pressurePoints[loser] += pressureForLoser * firstPhaseFilter;
+      this.changePressure(loser, pressureForLoser * firstPhaseFilter);
       this.victoryPoints[winner] += victoryForWinner * firstPhaseFilter;
       this.actionChoices[winner].hide();
       this.actionChoices[loser].show();
@@ -224,7 +227,9 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.victoryBoxen[SIDE_PATHOGEN].html("Victory: " + this.victoryPoints[SIDE_PATHOGEN]);
       this.pressureBoxen[SIDE_PLANT].html("Pressure: " + this.pressurePoints[SIDE_PLANT]);
       this.pressureBoxen[SIDE_PATHOGEN].html("Pressure: " + this.pressurePoints[SIDE_PATHOGEN]);
-      return this.iteration += 1;
+      document.title = "State: " + this.boardState + " | Turn: " + this.currentPlayer;
+      this.iteration += 1;
+      return console.log("Moved to turn " + this.iteration);
     };
 
     PlayMatSolitaireController.prototype.doDiscard = function() {
@@ -258,39 +263,31 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.doDiscardSelected = function() {
-      console.log("doDiscardSelected");
       return this.doDiscard(this.selectedElement["element"], this.selectedElement["type"], this.selectedElement["colIndex"], this.selectedElement["variety"]);
     };
 
     PlayMatSolitaireController.prototype.getRandomInactiveElementOfType = function(type) {
-      var colIndex, elementInfo, notLooped, occupied, startCol, startVar, variety;
-      console.log("Searching for inactive " + type);
+      var colIndex, notLooped, occupied, startCol, startVar, variety;
       startCol = Math.floor(Math.random() * NUMBER_OF_PLAYABLE_COLUMNS);
       startVar = Math.floor(Math.random() * 2);
       colIndex = startCol;
       variety = startVar;
       occupied = true;
       notLooped = true;
-      elementInfo = (function() {
-        var _results;
-        _results = [];
-        while (occupied && notLooped) {
-          occupied = this.theModel.isCellActive(type, colIndex, variety);
-          console.log("Col" + colIndex + " var" + variety + " is " + (occupied ? "occupied" : "free"));
-          if (occupied) {
-            variety += 1;
-            if (variety >= 2) {
-              variety = 0;
-              colIndex += 1;
-              if (colIndex >= NUMBER_OF_PLAYABLE_COLUMNS) {
-                colIndex = 0;
-              }
+      while (occupied && notLooped) {
+        occupied = this.theModel.isCellActive(type, colIndex, variety);
+        if (occupied) {
+          variety += 1;
+          if (variety >= 2) {
+            variety = 0;
+            colIndex += 1;
+            if (colIndex >= NUMBER_OF_PLAYABLE_COLUMNS) {
+              colIndex = 0;
             }
           }
-          _results.push(notLooped = colIndex !== startCol || variety !== startVar);
         }
-        return _results;
-      }).call(this);
+        notLooped = colIndex !== startCol || variety !== startVar;
+      }
       if (occupied) {
         alert("Could not find unoccupied cell");
         this.clearCurrentSelection();
@@ -307,7 +304,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
     PlayMatSolitaireController.prototype.doDraw = function(type) {
       var anElement;
-      console.log("doDraw " + type);
       anElement = this.getRandomInactiveElementOfType(type);
       if (anElement === null) {
         return;
@@ -352,7 +348,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       }
       selectionState = this.theModel.isCellActive(type, colIndex, theVariety);
       if (selectionState) {
-        console.log("Selecting " + theElement + ": " + type + ":" + colIndex + ":" + theVariety);
         theElement.css("border-style", "dotted");
         theElement.css("border-width", "3px");
         theElement.css("text-shadow", "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF");
@@ -406,9 +401,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.doRandomize = function() {
-      var i, randList, randVal, self, _i, _j, _k, _l, _len, _len1, _len2, _len3;
+      var i, randList, randVal, self, _i, _j, _k, _l, _len, _len1, _len2, _len3, _results;
       self = this;
-      console.log("RANDOMIZING----------------------------------");
       randList = self.randomSelectionArray(this.distribution["features"], NUMBER_OF_FEATURES);
       for (i = _i = 0, _len = randList.length; _i < _len; i = ++_i) {
         randVal = randList[i];
@@ -425,28 +419,37 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         self.doSet(null, randVal, TYPE_EFFECTOR, i >> 1, i % 2);
       }
       randList = self.randomSelectionArray(this.distribution["alarms"], NUMBER_OF_ALARMS);
+      _results = [];
       for (i = _l = 0, _len3 = randList.length; _l < _len3; i = ++_l) {
         randVal = randList[i];
-        self.doSet(null, randVal, TYPE_ALARM, i >> 1, i % 2);
+        _results.push(self.doSet(null, randVal, TYPE_ALARM, i >> 1, i % 2));
       }
-      return console.log("RANDOMIZED-----------------------------------");
+      return _results;
     };
 
     PlayMatSolitaireController.prototype.costForAction = function(actionType, elementType) {
-      var cost, discardCost, drawCost, existingAlarms, existingDetectors, existingEffectors, existingFeatures, roomForEffectors;
+      var cost, detectionCostLimiter, discardCost, drawCost, excessDetectionTools, existingAlarms, existingDetectors, existingEffectors, existingFeatures, roomForEffectors;
+      detectionCostLimiter = 8;
       existingAlarms = this.theModel.countActiveCellsOfType(TYPE_ALARM);
       existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
+      excessDetectionTools = existingAlarms + existingDetectors - detectionCostLimiter;
       existingFeatures = this.theModel.countActiveCellsOfType(TYPE_FEATURE);
       existingEffectors = this.theModel.countActiveCellsOfType(TYPE_EFFECTOR);
       roomForEffectors = existingEffectors < existingFeatures;
       switch (elementType) {
         case TYPE_ALARM:
-          drawCost = 1 * (1 + existingAlarms) * (1 + existingAlarms);
+          drawCost = 1;
           discardCost = 1;
+          if (excessDetectionTools > 0) {
+            drawCost += excessDetectionTools;
+          }
           break;
         case TYPE_DETECTOR:
-          drawCost = 2 * (1 + existingDetectors);
-          discardCost = 2;
+          drawCost = 2;
+          discardCost = 1;
+          if (excessDetectionTools > 0) {
+            drawCost += excessDetectionTools;
+          }
           break;
         case TYPE_FEATURE:
           drawCost = 1;
@@ -462,7 +465,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           drawCost = roomForEffectors ? 1 : 2;
           discardCost = 1;
       }
-      console.log("Draw cost: " + drawCost + " Discard cost: " + discardCost);
       cost = (function() {
         switch (actionType) {
           case ACTION_DISCARD:
@@ -472,16 +474,14 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           case ACTION_DRAW:
             return drawCost;
           default:
-            return -1;
+            return 0;
         }
       })();
-      console.log("Cost of action " + actionType + " is " + cost);
       return cost;
     };
 
     PlayMatSolitaireController.prototype.processAction = function(whichSide) {
-      var action, type;
-      console.log("Processing action for " + whichSide);
+      var action, cost, type;
       action = this.actionChoices[whichSide].val();
       type = this.selectedElement["type"];
       switch (action) {
@@ -509,11 +509,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           this.doDraw(type);
           break;
         case ACTION_REPLACE:
-          console.log("processAction - " + action);
           this.doDraw(type);
           this.doDiscardSelected();
       }
-      this.pressurePoints[whichSide] -= this.costForAction(action, type);
+      cost = this.costForAction(action, type);
+      console.log("Cost for " + action + "/" + type + ": " + cost);
+      this.changePressure(whichSide, -cost);
       this.clearCurrentSelection();
       return this.moveToNextTurn();
     };
