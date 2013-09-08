@@ -113,3 +113,40 @@ to {
 	width: 100%; height: 1.5em; text-align: center; background-color: #0000ff;
 	color:  #ffffff;
 }
+
+.disabled0, .disabled1, .disabling, .alarmed, .alarming, .detected, .detecting {
+    box-shadow: inset 0px 0px 0.5em 0.5em rgba(255,255,255,0.75);
+    padding: 0.5em;
+}
+.disabled0 {
+    padding-left: 1em;
+    border-left-color: red;
+    border-bottom-left-radius: 3em;
+}
+.disabled1 {
+    padding-right: 1em;
+    border-right-color: red;
+    border-bottom-right-radius: 3em;
+}
+.disabling:after {
+    content: " - DISABLING DETECTOR";
+}
+.disabled0:before {
+    content: "DISABLED - ";
+}
+.disabled1:before {
+    content: "DISABLED - ";
+}
+.alarming:after {
+    content: " - TRIGGERING ALARM";
+}
+.alarmed:after {
+    content: " - TRIGGERED";
+}
+.detecting:after {
+    content: " - DETECTING MAMP";
+}
+.detected:after {
+    content: " - DETECTED";
+}
+

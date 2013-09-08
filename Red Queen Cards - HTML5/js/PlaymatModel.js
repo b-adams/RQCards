@@ -153,6 +153,58 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return -1;
     };
 
+    PlayMat.prototype.countActiveCellsOfType = function(type) {
+      var actives, theColumn, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
+      actives = 0;
+      switch (type) {
+        case TYPE_FEATURE:
+          _ref = this._columns;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            theColumn = _ref[_i];
+            if (theColumn._MAMP) {
+              actives += 1;
+            }
+          }
+          break;
+        case TYPE_DETECTOR:
+          _ref1 = this._columns;
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            theColumn = _ref1[_j];
+            if (theColumn._PRR) {
+              actives += 1;
+            }
+          }
+          break;
+        case TYPE_ALARM:
+          _ref2 = this._columns;
+          for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
+            theColumn = _ref2[_k];
+            if (theColumn._RProteins[0]) {
+              actives += 1;
+            }
+            if (theColumn._RProteins[1]) {
+              actives += 1;
+            }
+          }
+          break;
+        case TYPE_EFFECTOR:
+          _ref3 = this._columns;
+          for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
+            theColumn = _ref3[_l];
+            if (theColumn._Effectors[0]) {
+              actives += 1;
+            }
+            if (theColumn._Effectors[1]) {
+              actives += 1;
+            }
+          }
+          break;
+        default:
+          alert("Unknown cell type: " + type);
+      }
+      return actives;
+    };
+
     PlayMat.prototype.isPlantETIActive = function() {
       return this.stateOfETI;
     };

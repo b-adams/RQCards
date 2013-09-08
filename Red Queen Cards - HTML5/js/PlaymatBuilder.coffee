@@ -1,12 +1,26 @@
 
-window.createPlaymat = (controlSelector, boardSelector, licenseSelector) ->
+window.createTrainingPlaymat = (controlSelector, boardSelector, licenseSelector) ->
   boardElement = $('#'+boardSelector)
   controlElement = $('#'+controlSelector)
   licenseElement = $('#'+licenseSelector)
 
   if boardElement and controlElement and licenseElement
     console.log "Found elements"
-    createControls controlElement
+    createTrainingControls controlElement
+    createBoard boardElement
+    createCopyright licenseElement
+    $('head').append('<link rel="stylesheet" href="css/board.css" type="text/css" />')
+  else
+    console.log "Elements not apparent"
+
+window.createSolitairePlaymat = (controlSelector, boardSelector, licenseSelector) ->
+  boardElement = $('#'+boardSelector)
+  controlElement = $('#'+controlSelector)
+  licenseElement = $('#'+licenseSelector)
+
+  if boardElement and controlElement and licenseElement
+    console.log "Found elements"
+    createSolitaireControls controlElement
     createBoard boardElement
     createCopyright licenseElement
     $('head').append('<link rel="stylesheet" href="css/board.css" type="text/css" />')
@@ -23,10 +37,51 @@ createBoard = (inElement) ->
     $(document.createElement('div')).attr("class", "detector").text("Detector #{letter}").appendTo aColumn
     $(document.createElement('div')).attr("class", "effector e1").text("Effector #{letter}1").appendTo aColumn
     $(document.createElement('div')).attr("class", "effector e2").text("Effector #{letter}2").appendTo aColumn
-    $(document.createElement('div')).attr("class", "alarm e1").text("Alarm #{letter}1").appendTo aColumn
-    $(document.createElement('div')).attr("class", "alarm e2").text("Alarm #{letter}2").appendTo aColumn
+    $(document.createElement('div')).attr("class", "alarm a1").text("Alarm #{letter}1").appendTo aColumn
+    $(document.createElement('div')).attr("class", "alarm a2").text("Alarm #{letter}2").appendTo aColumn
 
-createControls = (inElement) ->
+createSolitaireControls = (inElement) ->
+  theTable = $(document.createElement('table')).attr("style", "width:100%").attr("border", 1).appendTo inElement
+
+  theRow = $(document.createElement('tr')).attr("style", "width:100%; border: 1px solid black").appendTo theTable
+  $(document.createElement('td')).attr("colspan", 2).text("PLANT").appendTo theRow
+  $(document.createElement('td')).attr("colspan", 2).text("PATHOGEN").appendTo theRow
+
+  theRow = $(document.createElement('tr')).appendTo theTable
+  $(document.createElement('td')).text("Victories: 0").attr("id", ID_PLANT_VICTORY).appendTo theRow
+  $(document.createElement('td')).text("Pressure: 2").attr("id", ID_PLANT_PRESSURE).appendTo theRow
+  $(document.createElement('td')).text("Victories: 0").attr("id", ID_PATHO_VICTORY).appendTo theRow
+  $(document.createElement('td')).text("Pressure: 2").attr("id", ID_PATHO_PRESSURE).appendTo theRow
+
+
+  theRow = $(document.createElement('tr')).appendTo theTable
+
+  plantControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
+  selector = $(document.createElement('select')).attr("style", "width:100%").attr("id", ID_PLANT_ACTIONS).appendTo plantControls
+  $(document.createElement('option')).attr("value", "").text("Select Plant Action").appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DISCARD).text(ACTION_DISCARD).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DRAW_D).text(ACTION_DRAW_D).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DRAW_A).text(ACTION_DRAW_A).appendTo selector
+
+  pathoControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
+  selector = $(document.createElement('select')).attr("style", "width:100%").attr("id", ID_PATHO_ACTIONS).appendTo pathoControls
+  $(document.createElement('option')).attr("value", "").text("Select Pathogen Action").appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DISCARD).text(ACTION_DISCARD).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DRAW_F).text(ACTION_DRAW_F).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_DRAW_E).text(ACTION_DRAW_E).appendTo selector
+
+  theRow = $(document.createElement('tr')).appendTo theTable
+  plantControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
+  $(document.createElement('button')).attr("type", "button").attr("id", ID_PLANT_ENGAGE).attr("style", "width:100%").text("Plant Go").appendTo plantControls
+
+  pathoControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
+  $(document.createElement('button')).attr("type", "button").attr("id", ID_PATHO_ENGAGE).attr("style", "width:100%").text("Pathogen Go").appendTo pathoControls
+
+
+
+createTrainingControls = (inElement) ->
   theTable = $(document.createElement('table')).attr("style", "width:100%").appendTo inElement
 
   firstRow = $(document.createElement('tr')).appendTo theTable
