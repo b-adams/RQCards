@@ -110,6 +110,7 @@ class PlayMatSolitaireController
   updateGoButton: (whoseSide) ->
     @goButtons[whoseSide].removeAttr("disabled")
     actionType = @actionChoices[whoseSide].val()
+
     requiresSelection = actionType is ACTION_DISCARD or actionType is ACTION_REPLACE
     hasSelection = @selectedElement["element"] isnt null
 
@@ -138,6 +139,8 @@ class PlayMatSolitaireController
       when ACTION_DRAW_F
         actionType = ACTION_DRAW
         elementType = TYPE_FEATURE
+      when ACTION_RANDOM
+        null
       else
         @goButtons[whoseSide].html("Action Required")
         @goButtons[whoseSide].attr("disabled", "disabled")
@@ -145,6 +148,7 @@ class PlayMatSolitaireController
         return
 
     cost = this.costForAction actionType, elementType
+
     if cost < 0
       @goButtons[whoseSide].attr("disabled", "disabled")
       @goButtons[whoseSide].html("Disallowed")
@@ -286,6 +290,15 @@ class PlayMatSolitaireController
         colIndex: colIndex
         variety: variety
       }
+
+  selectRandomInactiveElementOfType: (type) ->
+    this.clearCurrentSelection()
+    choice = this.getRandomInactiveElementOfType type
+    @selectedElement["element"] = choice["element"]
+    @selectedElement["type"] = choice["type"]
+    @selectedElement["colIndex"] = choice["colIndex"]
+    @selectedElement["variety"] = choice["variety"]
+
 
   doDraw: (type) ->
     anElement = this.getRandomInactiveElementOfType type
@@ -493,11 +506,15 @@ class PlayMatSolitaireController
 
     #console.log "Draw cost: "+drawCost+" Discard cost: "+discardCost
 
+    availablePoints = @pressurePoints[@currentPlayer]
+
     cost = switch actionType
       when ACTION_DISCARD then discardCost
       when ACTION_REPLACE then replaceCost
       when ACTION_DRAW then drawCost
+      when ACTION_RANDOM then if availablePoints < 5 then availablePoints else 5
       else 0
+    if cost < 0 then cost = 0
 
     #console.log "Cost of action "+actionType+" is "+cost
     return cost
@@ -519,6 +536,11 @@ class PlayMatSolitaireController
       when ACTION_DRAW_D
         type = TYPE_DETECTOR
         action = ACTION_DRAW
+      when ACTION_RANDOM
+        type = switch whichSide
+          when SIDE_PLANT then (if Math.random() < 0.5 then TYPE_DETECTOR else TYPE_ALARM)
+          when SIDE_PATHOGEN then (if Math.random() < 0.5 then TYPE_FEATURE else TYPE_EFFECTOR)
+
 
     switch action
       when ACTION_DISCARD
@@ -528,6 +550,10 @@ class PlayMatSolitaireController
         this.doDraw type
         this.doDiscardSelected()
         #Draw before discard to prevent re-drawing the same card
+      when ACTION_RANDOM
+        this.doDraw type
+        this.selectRandomInactiveElementOfType type
+        this.doDiscardSelected()
     cost = this.costForAction action, type
     console.log "Cost for "+action+"/"+type+": "+cost
     this.changePressure whichSide, -cost

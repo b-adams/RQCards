@@ -25,6 +25,7 @@ var ACTION_DRAW_F = "Draw Feature"
 var ACTION_DRAW_D = "Draw Detector"
 var ACTION_DRAW_E = "Draw Effector"
 var ACTION_DRAW_A = "Draw Alarm"
+var ACTION_RANDOM = "Random action"
 
 var ID_PLANT_ACTIONS = "plantAction"
 var ID_PATHO_ACTIONS = "pathoAction"

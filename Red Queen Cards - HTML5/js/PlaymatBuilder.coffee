@@ -63,6 +63,7 @@ createSolitaireControls = (inElement) ->
   $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DRAW_D).text(ACTION_DRAW_D).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DRAW_A).text(ACTION_DRAW_A).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_RANDOM).text(ACTION_RANDOM).appendTo selector
 
   pathoControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow
   selector = $(document.createElement('select')).attr("style", "width:100%").attr("id", ID_PATHO_ACTIONS).appendTo pathoControls
@@ -71,6 +72,7 @@ createSolitaireControls = (inElement) ->
   $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DRAW_F).text(ACTION_DRAW_F).appendTo selector
   $(document.createElement('option')).attr("value", ACTION_DRAW_E).text(ACTION_DRAW_E).appendTo selector
+  $(document.createElement('option')).attr("value", ACTION_RANDOM).text(ACTION_RANDOM).appendTo selector
 
   theRow = $(document.createElement('tr')).appendTo theTable
   plantControls = $(document.createElement('td')).attr("colspan", 2).appendTo theRow

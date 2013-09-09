@@ -171,6 +171,9 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           actionType = ACTION_DRAW;
           elementType = TYPE_FEATURE;
           break;
+        case ACTION_RANDOM:
+          null;
+          break;
         default:
           this.goButtons[whoseSide].html("Action Required");
           this.goButtons[whoseSide].attr("disabled", "disabled");
@@ -326,6 +329,16 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           variety: variety
         };
       }
+    };
+
+    PlayMatSolitaireController.prototype.selectRandomInactiveElementOfType = function(type) {
+      var choice;
+      this.clearCurrentSelection();
+      choice = this.getRandomInactiveElementOfType(type);
+      this.selectedElement["element"] = choice["element"];
+      this.selectedElement["type"] = choice["type"];
+      this.selectedElement["colIndex"] = choice["colIndex"];
+      return this.selectedElement["variety"] = choice["variety"];
     };
 
     PlayMatSolitaireController.prototype.doDraw = function(type) {
@@ -597,6 +610,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             return replaceCost;
           case ACTION_DRAW:
             return drawCost;
+          case ACTION_RANDOM:
+            return 5;
           default:
             return 0;
         }
@@ -624,6 +639,24 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         case ACTION_DRAW_D:
           type = TYPE_DETECTOR;
           action = ACTION_DRAW;
+          break;
+        case ACTION_RANDOM:
+          type = (function() {
+            switch (whichSide) {
+              case SIDE_PLANT:
+                if (Math.random() < 0.5) {
+                  return TYPE_DETECTOR;
+                } else {
+                  return TYPE_ALARM;
+                }
+              case SIDE_PATHOGEN:
+                if (Math.random() < 0.5) {
+                  return TYPE_FEATURE;
+                } else {
+                  return TYPE_EFFECTOR;
+                }
+            }
+          })();
       }
       switch (action) {
         case ACTION_DISCARD:
@@ -634,6 +667,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           break;
         case ACTION_REPLACE:
           this.doDraw(type);
+          this.doDiscardSelected();
+          break;
+        case ACTION_RANDOM:
+          this.doDraw(type);
+          this.selectRandomInactiveElementOfType(type);
           this.doDiscardSelected();
       }
       cost = this.costForAction(action, type);
