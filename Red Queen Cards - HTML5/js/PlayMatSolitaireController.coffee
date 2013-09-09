@@ -27,6 +27,7 @@ class PlayMatSolitaireController
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
+    @sequentialLosses = 0
     @currentPlayer = "Uninitialized"
     @distribution = {
       features: 4
@@ -35,8 +36,8 @@ class PlayMatSolitaireController
       alarms: 4
     }
     @pressurePoints = {
-      plant: 2
-      pathogen: 2
+      plant: 20
+      pathogen: 20
     }
     @victoryPoints = {
       plant: 0
@@ -67,7 +68,7 @@ class PlayMatSolitaireController
 
   changePressure: (side, amount) ->
     @pressurePoints[side] += amount
-    console.log "Changing pressure for "+side+" by "+amount+". New total: "+@pressurePoints[side]
+    #console.log "Changing pressure for "+side+" by "+amount+". New total: "+@pressurePoints[side]
 
 
   getElement: (type, colIndex) ->
@@ -80,7 +81,8 @@ class PlayMatSolitaireController
       else
         alert "Bad element request"
         selector=""
-    return $ selector
+    element = $ selector
+    return element
 
   connectElement: (type, colIndex, theVariant...) ->
     self = this
@@ -109,6 +111,7 @@ class PlayMatSolitaireController
   updateGoButton: (whoseSide) ->
     @goButtons[whoseSide].removeAttr("disabled")
     actionType = @actionChoices[whoseSide].val()
+
     requiresSelection = actionType is ACTION_DISCARD or actionType is ACTION_REPLACE
     hasSelection = @selectedElement["element"] isnt null
 
@@ -137,6 +140,8 @@ class PlayMatSolitaireController
       when ACTION_DRAW_F
         actionType = ACTION_DRAW
         elementType = TYPE_FEATURE
+      when ACTION_RANDOM
+        null
       else
         @goButtons[whoseSide].html("Action Required")
         @goButtons[whoseSide].attr("disabled", "disabled")
@@ -144,6 +149,7 @@ class PlayMatSolitaireController
         return
 
     cost = this.costForAction actionType, elementType
+
     if cost < 0
       @goButtons[whoseSide].attr("disabled", "disabled")
       @goButtons[whoseSide].html("Disallowed")
@@ -169,25 +175,43 @@ class PlayMatSolitaireController
       when "ETI"
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
-        pressureForLoser = 2
+        pressureForLoser = 25
         victoryForWinner = rewards[SIDE_PLANT]
       when "MTI"
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
-        pressureForLoser = 1
+        pressureForLoser = 15
         victoryForWinner = rewards[SIDE_PLANT]
       else #Virulence
         winner = SIDE_PATHOGEN
         loser =  SIDE_PLANT
-        pressureForLoser = 1
+        pressureForLoser = 15
         victoryForWinner = rewards[SIDE_PATHOGEN]
 
-    message = winner + " wins round "+@iteration+" ("+@boardState+")\n"
-    message += loser + ": +"+pressureForLoser+"pp\n"
-    message += winner + ": +"+victoryForWinner+"vp"
+    lostAgain = (@currentPlayer is loser)
+    if lostAgain
+      @sequentialLosses += 1
+    else
+      @currentPlayer = loser
+      @sequentialLosses = 0
 
-    @currentPlayer = loser
+    if lostAgain
+      winline = winner + " wins again (round "+@iteration+" ,"+@boardState+")"
+    else
+      winline = winner + " wins round "+@iteration+" ("+@boardState+")"
+
+    vpLine =  winner + ": +"+victoryForWinner+"vp"
+    ppLine =   loser + ": +"+pressureForLoser+"pp"
+    if lostAgain
+      ppLine += " (+"+@sequentialLosses+"pp for repeat loss)"
+      pressureForLoser += @sequentialLosses
+
+    message = winline + "\n" + vpLine + "\n" + ppLine;
+    if victoryForWinner < 0
+      message += "\nWARNING: Unsustainably costly win!"
+
     alert message if firstPhaseFilter isnt 0
+
     this.changePressure loser, pressureForLoser*firstPhaseFilter
     @victoryPoints[winner] += victoryForWinner*firstPhaseFilter
     @actionChoices[winner].hide()
@@ -202,7 +226,7 @@ class PlayMatSolitaireController
 
     document.title = "State: "+@boardState+" | Turn: "+@currentPlayer
     @iteration += 1
-    console.log "Moved to turn "+@iteration
+    #console.log "Moved to turn "+@iteration
 
   doDiscard: (theElement, type, colIndex, theVariety...) ->
     self = this
@@ -211,7 +235,7 @@ class PlayMatSolitaireController
       return false #No discarding cards you don't have
     else
       theElement ?= self.getElement type, colIndex, theVariety...
-      @theModel.setCell false, type, colIndex, theVariety...
+      this.doSet theElement, false, type, colIndex, theVariety...
       switch type
         when TYPE_FEATURE  then @distribution["features"] -= 1
         when TYPE_DETECTOR then @distribution["detectors"] -= 1
@@ -268,6 +292,15 @@ class PlayMatSolitaireController
         variety: variety
       }
 
+  selectRandomInactiveElementOfType: (type) ->
+    this.clearCurrentSelection()
+    choice = this.getRandomInactiveElementOfType type
+    @selectedElement["element"] = choice["element"]
+    @selectedElement["type"] = choice["type"]
+    @selectedElement["colIndex"] = choice["colIndex"]
+    @selectedElement["variety"] = choice["variety"]
+
+
   doDraw: (type) ->
     anElement = this.getRandomInactiveElementOfType type
     if anElement is null then return
@@ -302,7 +335,7 @@ class PlayMatSolitaireController
 #      alert "It is the "+@losingPlayer+" turn, and a "+type+" is not under "+@losingPlayer+" control."
       return
 
-    selectionState = @theModel.isCellActive type, colIndex, theVariety
+    selectionState = @theModel.isCellActive type, colIndex, theVariety...
 
     # Don't bother selecting inactive elements, you can't discard or replace them
     if selectionState
@@ -317,28 +350,29 @@ class PlayMatSolitaireController
       @selectedElement["element"] = theElement
       @selectedElement["type"] = type
       @selectedElement["colIndex"] = colIndex
-      @selectedElement["variety"] = theVariety
+      @selectedElement["variety"] = if theVariety.length > 0 then theVariety[0] else -1;
 
       this.updateGoButton @currentPlayer
 
 
   doSet: (theElement, newValue, type, colIndex, theVariety...) ->
+    console.log "doSet "+type+colIndex+":"+theElement+" to "+newValue
     self = this
     oldValue = @theModel.isCellActive type, colIndex, theVariety...
-    if oldValue isnt newValue
-      theElement ?= self.getElement type, colIndex, theVariety...
-      @theModel.setCell newValue, type, colIndex, theVariety...
-      self.updateBoardState()
-      self.setElementActivity newValue, theElement
-      this.updateInteractions theElement, newValue, type, colIndex, theVariety...
+    theElement ?= self.getElement type, colIndex, theVariety...
+    @theModel.setCell newValue, type, colIndex, theVariety...
+    self.updateBoardState()
+    self.setElementActivity newValue, theElement
+    this.updateInteractions theElement, newValue, type, colIndex, theVariety...
     return newValue
 
   updateInteractions: (theElement, active, type, colIndex, theVariety...) ->
+    console.log "Updating interactions for "+theElement
     switch type
       when TYPE_FEATURE
         triggerType = TYPE_DETECTOR
         triggerElement = this.getElement triggerType, colIndex
-        triggerState = @theModel.isCellActive triggerType, colIndex
+        triggerState = (@theModel.isCellActive triggerType, colIndex) and not (@theModel.isDetectorDisabled colIndex)
         if active and triggerState
           theElement.addClass("detected")
           triggerElement.addClass("detecting")
@@ -347,6 +381,21 @@ class PlayMatSolitaireController
           triggerElement.removeClass("detecting")
 
       when TYPE_DETECTOR
+        triggerType = TYPE_EFFECTOR
+        busted = false
+        for aVariety in [0,1]
+          triggerElement = this.getElement triggerType, colIndex, aVariety
+          triggerState = @theModel.isCellActive triggerType, colIndex, aVariety
+          if active and triggerState
+            theElement.addClass("disabled"+aVariety)
+            triggerElement.addClass("disabling")
+            busted = true
+          else
+            theElement.removeClass("disabled"+aVariety)
+            triggerElement.removeClass("disabling")
+
+        if busted then active = false
+
         triggerType = TYPE_FEATURE
         triggerElement = this.getElement triggerType, colIndex
         triggerState = @theModel.isCellActive triggerType, colIndex
@@ -357,27 +406,18 @@ class PlayMatSolitaireController
           triggerElement.removeClass("detected")
           theElement.removeClass("detecting")
 
-        triggerType = TYPE_EFFECTOR
-        for aVariety in [0,1]
-          triggerElement = this.getElement triggerType, colIndex, aVariety
-          triggerState = @theModel.isCellActive triggerType, colIndex, aVariety
-          if active and triggerState
-            theElement.addClass("disabled"+aVariety)
-            triggerElement.addClass("disabling")
-          else
-            theElement.removeClass("disabled"+aVariety)
-            triggerElement.removeClass("disabling")
 
       when TYPE_EFFECTOR
         triggerType = TYPE_DETECTOR
         triggerElement = this.getElement triggerType, colIndex
         triggerState = @theModel.isCellActive triggerType, colIndex
-        if active and triggerState
-          triggerElement.addClass("disabled"+theVariety)
-          theElement.addClass("disabling")
-        else
-          triggerElement.removeClass("disabled"+theVariety)
-          theElement.removeClass("disabling")
+        this.updateInteractions triggerElement, triggerState, triggerType, colIndex
+#        if active and triggerState
+#          triggerElement.addClass("disabled"+theVariety[0])
+#          theElement.addClass("disabling")
+#        else
+#          triggerElement.removeClass("disabled"+theVariety[0])
+#          theElement.removeClass("disabling")
 
         triggerType = TYPE_ALARM
         triggerElement = this.getElement triggerType, colIndex, theVariety...
@@ -432,7 +472,7 @@ class PlayMatSolitaireController
     existingFeatures = @theModel.countActiveCellsOfType TYPE_FEATURE
     existingEffectors = @theModel.countActiveCellsOfType TYPE_EFFECTOR
 
-    plantRewards = 12
+    plantRewards = 13
     plantExpenses = 2*existingDetectors + existingAlarms
     pathoRewards = 2*(existingFeatures-2)
     pathoExpenses = existingEffectors-2
@@ -453,28 +493,36 @@ class PlayMatSolitaireController
 
     switch elementType
       when TYPE_ALARM
-        drawCost = 1
-        discardCost = 1
+        drawCost = 10
+        discardCost = 10
+        replaceCost = 15 # < 20
         if excessDetectionTools > 0 then drawCost+=excessDetectionTools
       when TYPE_DETECTOR
-        drawCost = 2
-        discardCost = 1
+        drawCost = 20
+        discardCost = 10
+        replaceCost = 25 # < 30
         if excessDetectionTools > 0 then drawCost+=excessDetectionTools
       when TYPE_FEATURE
-        drawCost = 1
-        discardCost = if roomForEffectors then 1 else 2
+        drawCost = 20
+        discardCost = if roomForEffectors then 10 else 20
+        replaceCost = 15 # < 30
         if existingFeatures <= 2 then discardCost = -1
       when TYPE_EFFECTOR
-        drawCost = if roomForEffectors then 1 else 2
-        discardCost = 1
+        drawCost = if roomForEffectors then 10 else 20
+        discardCost = 10
+        replaceCost = 15 # < 20
 
     #console.log "Draw cost: "+drawCost+" Discard cost: "+discardCost
 
+    availablePoints = @pressurePoints[@currentPlayer]
+
     cost = switch actionType
       when ACTION_DISCARD then discardCost
-      when ACTION_REPLACE then drawCost+discardCost
+      when ACTION_REPLACE then replaceCost
       when ACTION_DRAW then drawCost
+      when ACTION_RANDOM then (if availablePoints < 5 then availablePoints else 5)
       else 0
+    if cost < 0 then cost = 0
 
     #console.log "Cost of action "+actionType+" is "+cost
     return cost
@@ -496,6 +544,11 @@ class PlayMatSolitaireController
       when ACTION_DRAW_D
         type = TYPE_DETECTOR
         action = ACTION_DRAW
+      when ACTION_RANDOM
+        type = switch whichSide
+          when SIDE_PLANT then (if Math.random() < 0.5 then TYPE_DETECTOR else TYPE_ALARM)
+          when SIDE_PATHOGEN then (if Math.random() < 0.5 then TYPE_FEATURE else TYPE_EFFECTOR)
+
 
     switch action
       when ACTION_DISCARD
@@ -505,8 +558,12 @@ class PlayMatSolitaireController
         this.doDraw type
         this.doDiscardSelected()
         #Draw before discard to prevent re-drawing the same card
+      when ACTION_RANDOM
+        this.doDraw type
+        this.selectRandomInactiveElementOfType type
+        this.doDiscardSelected()
     cost = this.costForAction action, type
-    console.log "Cost for "+action+"/"+type+": "+cost
+    #console.log "Cost for "+action+"/"+type+": "+cost
     this.changePressure whichSide, -cost
     this.clearCurrentSelection()
     this.moveToNextTurn()
