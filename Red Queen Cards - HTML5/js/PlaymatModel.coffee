@@ -116,6 +116,11 @@ window.PlayMat = class PlayMat
       else alert "Unknown cell type: #{type}"
     return -1
 
+  isDetectorDisabled: (colIndex) ->
+    if colIndex>=NUMBER_OF_PLAYABLE_COLUMNS then alert "Too many columns: #{colIndex}"
+    theColumn = @_columns[colIndex];
+    return theColumn._Effectors[0] or theColumn._Effectors[1]
+
   countActiveCellsOfType: (type) ->
     actives = 0
     switch type

@@ -153,6 +153,15 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return -1;
     };
 
+    PlayMat.prototype.isDetectorDisabled = function(colIndex) {
+      var theColumn;
+      if (colIndex >= NUMBER_OF_PLAYABLE_COLUMNS) {
+        alert("Too many columns: " + colIndex);
+      }
+      theColumn = this._columns[colIndex];
+      return theColumn._Effectors[0] || theColumn._Effectors[1];
+    };
+
     PlayMat.prototype.countActiveCellsOfType = function(type) {
       var actives, theColumn, _i, _j, _k, _l, _len, _len1, _len2, _len3, _ref, _ref1, _ref2, _ref3;
       actives = 0;

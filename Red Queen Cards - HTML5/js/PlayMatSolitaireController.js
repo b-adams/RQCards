@@ -73,12 +73,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     }
 
     PlayMatSolitaireController.prototype.changePressure = function(side, amount) {
-      this.pressurePoints[side] += amount;
-      return console.log("Changing pressure for " + side + " by " + amount + ". New total: " + this.pressurePoints[side]);
+      return this.pressurePoints[side] += amount;
     };
 
     PlayMatSolitaireController.prototype.getElement = function(type, colIndex) {
-      var selector;
+      var element, selector;
       selector = "#board > #c" + (colIndex + 1) + " > .";
       switch (type) {
         case TYPE_FEATURE:
@@ -97,7 +96,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           alert("Bad element request");
           selector = "";
       }
-      return $(selector);
+      element = $(selector);
+      return element;
     };
 
     PlayMatSolitaireController.prototype.connectElement = function() {
@@ -257,12 +257,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.pressureBoxen[SIDE_PLANT].html("Pressure: " + this.pressurePoints[SIDE_PLANT]);
       this.pressureBoxen[SIDE_PATHOGEN].html("Pressure: " + this.pressurePoints[SIDE_PATHOGEN]);
       document.title = "State: " + this.boardState + " | Turn: " + this.currentPlayer;
-      this.iteration += 1;
-      return console.log("Moved to turn " + this.iteration);
+      return this.iteration += 1;
     };
 
     PlayMatSolitaireController.prototype.doDiscard = function() {
-      var colIndex, oldValue, self, theElement, theVariety, type, _ref, _ref1;
+      var colIndex, oldValue, self, theElement, theVariety, type, _ref;
       theElement = arguments[0], type = arguments[1], colIndex = arguments[2], theVariety = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
       self = this;
       oldValue = (_ref = this.theModel).isCellActive.apply(_ref, [type, colIndex].concat(__slice.call(theVariety)));
@@ -272,7 +271,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         if (theElement == null) {
           theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
         }
-        (_ref1 = this.theModel).setCell.apply(_ref1, [false, type, colIndex].concat(__slice.call(theVariety)));
+        this.doSet.apply(this, [theElement, false, type, colIndex].concat(__slice.call(theVariety)));
         switch (type) {
           case TYPE_FEATURE:
             this.distribution["features"] -= 1;
@@ -379,13 +378,13 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.doSelect = function() {
-      var colIndex, selectionState, theElement, theVariety, type;
+      var colIndex, selectionState, theElement, theVariety, type, _ref;
       theElement = arguments[0], type = arguments[1], colIndex = arguments[2], theVariety = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
       this.clearCurrentSelection();
       if (!this.isTypeOnSideOf(type, this.currentPlayer)) {
         return;
       }
-      selectionState = this.theModel.isCellActive(type, colIndex, theVariety);
+      selectionState = (_ref = this.theModel).isCellActive.apply(_ref, [type, colIndex].concat(__slice.call(theVariety)));
       if (selectionState) {
         theElement.css("border-style", "dotted");
         theElement.css("border-width", "3px");
@@ -394,7 +393,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         this.selectedElement["element"] = theElement;
         this.selectedElement["type"] = type;
         this.selectedElement["colIndex"] = colIndex;
-        this.selectedElement["variety"] = theVariety;
+        this.selectedElement["variety"] = theVariety.length > 0 ? theVariety[0] : -1;
         return this.updateGoButton(this.currentPlayer);
       }
     };
@@ -402,28 +401,28 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     PlayMatSolitaireController.prototype.doSet = function() {
       var colIndex, newValue, oldValue, self, theElement, theVariety, type, _ref, _ref1;
       theElement = arguments[0], newValue = arguments[1], type = arguments[2], colIndex = arguments[3], theVariety = 5 <= arguments.length ? __slice.call(arguments, 4) : [];
+      console.log("doSet " + type + colIndex + ":" + theElement + " to " + newValue);
       self = this;
       oldValue = (_ref = this.theModel).isCellActive.apply(_ref, [type, colIndex].concat(__slice.call(theVariety)));
-      if (oldValue !== newValue) {
-        if (theElement == null) {
-          theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
-        }
-        (_ref1 = this.theModel).setCell.apply(_ref1, [newValue, type, colIndex].concat(__slice.call(theVariety)));
-        self.updateBoardState();
-        self.setElementActivity(newValue, theElement);
-        this.updateInteractions.apply(this, [theElement, newValue, type, colIndex].concat(__slice.call(theVariety)));
+      if (theElement == null) {
+        theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
       }
+      (_ref1 = this.theModel).setCell.apply(_ref1, [newValue, type, colIndex].concat(__slice.call(theVariety)));
+      self.updateBoardState();
+      self.setElementActivity(newValue, theElement);
+      this.updateInteractions.apply(this, [theElement, newValue, type, colIndex].concat(__slice.call(theVariety)));
       return newValue;
     };
 
     PlayMatSolitaireController.prototype.updateInteractions = function() {
-      var aVariety, active, colIndex, theElement, theVariety, triggerElement, triggerState, triggerType, type, _i, _len, _ref, _ref1, _ref2, _results;
+      var aVariety, active, busted, colIndex, theElement, theVariety, triggerElement, triggerState, triggerType, type, _i, _len, _ref, _ref1, _ref2;
       theElement = arguments[0], active = arguments[1], type = arguments[2], colIndex = arguments[3], theVariety = 5 <= arguments.length ? __slice.call(arguments, 4) : [];
+      console.log("Updating interactions for " + theElement);
       switch (type) {
         case TYPE_FEATURE:
           triggerType = TYPE_DETECTOR;
           triggerElement = this.getElement(triggerType, colIndex);
-          triggerState = this.theModel.isCellActive(triggerType, colIndex);
+          triggerState = (this.theModel.isCellActive(triggerType, colIndex)) && !(this.theModel.isDetectorDisabled(colIndex));
           if (active && triggerState) {
             theElement.addClass("detected");
             return triggerElement.addClass("detecting");
@@ -433,44 +432,41 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           }
           break;
         case TYPE_DETECTOR:
-          triggerType = TYPE_FEATURE;
-          triggerElement = this.getElement(triggerType, colIndex);
-          triggerState = this.theModel.isCellActive(triggerType, colIndex);
-          if (active && triggerState) {
-            triggerElement.addClass("detected");
-            theElement.addClass("detecting");
-          } else {
-            triggerElement.removeClass("detected");
-            theElement.removeClass("detecting");
-          }
           triggerType = TYPE_EFFECTOR;
+          busted = false;
           _ref = [0, 1];
-          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             aVariety = _ref[_i];
             triggerElement = this.getElement(triggerType, colIndex, aVariety);
             triggerState = this.theModel.isCellActive(triggerType, colIndex, aVariety);
             if (active && triggerState) {
               theElement.addClass("disabled" + aVariety);
-              _results.push(triggerElement.addClass("disabling"));
+              triggerElement.addClass("disabling");
+              busted = true;
             } else {
               theElement.removeClass("disabled" + aVariety);
-              _results.push(triggerElement.removeClass("disabling"));
+              triggerElement.removeClass("disabling");
             }
           }
-          return _results;
+          if (busted) {
+            active = false;
+          }
+          triggerType = TYPE_FEATURE;
+          triggerElement = this.getElement(triggerType, colIndex);
+          triggerState = this.theModel.isCellActive(triggerType, colIndex);
+          if (active && triggerState) {
+            triggerElement.addClass("detected");
+            return theElement.addClass("detecting");
+          } else {
+            triggerElement.removeClass("detected");
+            return theElement.removeClass("detecting");
+          }
           break;
         case TYPE_EFFECTOR:
           triggerType = TYPE_DETECTOR;
           triggerElement = this.getElement(triggerType, colIndex);
           triggerState = this.theModel.isCellActive(triggerType, colIndex);
-          if (active && triggerState) {
-            triggerElement.addClass("disabled" + theVariety);
-            theElement.addClass("disabling");
-          } else {
-            triggerElement.removeClass("disabled" + theVariety);
-            theElement.removeClass("disabling");
-          }
+          this.updateInteractions(triggerElement, triggerState, triggerType, colIndex);
           triggerType = TYPE_ALARM;
           triggerElement = this.getElement.apply(this, [triggerType, colIndex].concat(__slice.call(theVariety)));
           triggerState = (_ref1 = this.theModel).isCellActive.apply(_ref1, [triggerType, colIndex].concat(__slice.call(theVariety)));
@@ -564,7 +560,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.costForAction = function(actionType, elementType) {
-      var cost, detectionCostLimiter, discardCost, drawCost, excessDetectionTools, existingAlarms, existingDetectors, existingEffectors, existingFeatures, replaceCost, roomForEffectors;
+      var availablePoints, cost, detectionCostLimiter, discardCost, drawCost, excessDetectionTools, existingAlarms, existingDetectors, existingEffectors, existingFeatures, replaceCost, roomForEffectors;
       detectionCostLimiter = 8;
       existingAlarms = this.theModel.countActiveCellsOfType(TYPE_ALARM);
       existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
@@ -602,6 +598,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           discardCost = 10;
           replaceCost = 15;
       }
+      availablePoints = this.pressurePoints[this.currentPlayer];
       cost = (function() {
         switch (actionType) {
           case ACTION_DISCARD:
@@ -611,11 +608,18 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           case ACTION_DRAW:
             return drawCost;
           case ACTION_RANDOM:
-            return 5;
+            if (availablePoints < 5) {
+              return availablePoints;
+            } else {
+              return 5;
+            }
           default:
             return 0;
         }
       })();
+      if (cost < 0) {
+        cost = 0;
+      }
       return cost;
     };
 
@@ -675,7 +679,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           this.doDiscardSelected();
       }
       cost = this.costForAction(action, type);
-      console.log("Cost for " + action + "/" + type + ": " + cost);
       this.changePressure(whichSide, -cost);
       this.clearCurrentSelection();
       return this.moveToNextTurn();
