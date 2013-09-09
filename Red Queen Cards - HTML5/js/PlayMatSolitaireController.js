@@ -32,6 +32,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
       this.iteration = 0;
+      this.sequentialLosses = 0;
       this.currentPlayer = "Uninitialized";
       this.distribution = {
         features: 4,
@@ -40,8 +41,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         alarms: 4
       };
       this.pressurePoints = {
-        plant: 2,
-        pathogen: 2
+        plant: 20,
+        pathogen: 20
       };
       this.victoryPoints = {
         plant: 0,
@@ -193,7 +194,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.moveToNextTurn = function() {
-      var firstPhaseFilter, loser, message, pressureForLoser, rewards, victoryForWinner, winner;
+      var firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, rewards, victoryForWinner, vpLine, winline, winner;
       this.updateBoardState();
       firstPhaseFilter = this.iteration === 0 ? 0 : 1;
       message = "ERROR: Message not instantiated";
@@ -202,25 +203,43 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         case "ETI":
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
-          pressureForLoser = 2;
+          pressureForLoser = 25;
           victoryForWinner = rewards[SIDE_PLANT];
           break;
         case "MTI":
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
-          pressureForLoser = 1;
+          pressureForLoser = 15;
           victoryForWinner = rewards[SIDE_PLANT];
           break;
         default:
           winner = SIDE_PATHOGEN;
           loser = SIDE_PLANT;
-          pressureForLoser = 1;
+          pressureForLoser = 15;
           victoryForWinner = rewards[SIDE_PATHOGEN];
       }
-      message = winner + " wins round " + this.iteration + " (" + this.boardState + ")\n";
-      message += loser + ": +" + pressureForLoser + "pp\n";
-      message += winner + ": +" + victoryForWinner + "vp";
-      this.currentPlayer = loser;
+      lostAgain = this.currentPlayer === loser;
+      if (lostAgain) {
+        this.sequentialLosses += 1;
+      } else {
+        this.currentPlayer = loser;
+        this.sequentialLosses = 0;
+      }
+      if (lostAgain) {
+        winline = winner + " wins again (round " + this.iteration + " ," + this.boardState + ")";
+      } else {
+        winline = winner + " wins round " + this.iteration + " (" + this.boardState + ")";
+      }
+      vpLine = winner + ": +" + victoryForWinner + "vp";
+      ppLine = loser + ": +" + pressureForLoser + "pp";
+      if (lostAgain) {
+        ppLine += " (+" + this.sequentialLosses + "pp for repeat loss)";
+        pressureForLoser += this.sequentialLosses;
+      }
+      message = winline + "\n" + vpLine + "\n" + ppLine;
+      if (victoryForWinner < 0) {
+        message += "\nWARNING: Unsustainably costly win!";
+      }
       if (firstPhaseFilter !== 0) {
         alert(message);
       }
@@ -521,7 +540,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
       existingFeatures = this.theModel.countActiveCellsOfType(TYPE_FEATURE);
       existingEffectors = this.theModel.countActiveCellsOfType(TYPE_EFFECTOR);
-      plantRewards = 12;
+      plantRewards = 13;
       plantExpenses = 2 * existingDetectors + existingAlarms;
       pathoRewards = 2 * (existingFeatures - 2);
       pathoExpenses = existingEffectors - 2;
@@ -532,7 +551,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.costForAction = function(actionType, elementType) {
-      var cost, detectionCostLimiter, discardCost, drawCost, excessDetectionTools, existingAlarms, existingDetectors, existingEffectors, existingFeatures, roomForEffectors;
+      var cost, detectionCostLimiter, discardCost, drawCost, excessDetectionTools, existingAlarms, existingDetectors, existingEffectors, existingFeatures, replaceCost, roomForEffectors;
       detectionCostLimiter = 8;
       existingAlarms = this.theModel.countActiveCellsOfType(TYPE_ALARM);
       existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
@@ -542,36 +561,40 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       roomForEffectors = existingEffectors < existingFeatures;
       switch (elementType) {
         case TYPE_ALARM:
-          drawCost = 1;
-          discardCost = 1;
+          drawCost = 10;
+          discardCost = 10;
+          replaceCost = 15;
           if (excessDetectionTools > 0) {
             drawCost += excessDetectionTools;
           }
           break;
         case TYPE_DETECTOR:
-          drawCost = 2;
-          discardCost = 1;
+          drawCost = 20;
+          discardCost = 10;
+          replaceCost = 25;
           if (excessDetectionTools > 0) {
             drawCost += excessDetectionTools;
           }
           break;
         case TYPE_FEATURE:
-          drawCost = 1;
-          discardCost = roomForEffectors ? 1 : 2;
+          drawCost = 20;
+          discardCost = roomForEffectors ? 10 : 20;
+          replaceCost = 15;
           if (existingFeatures <= 2) {
             discardCost = -1;
           }
           break;
         case TYPE_EFFECTOR:
-          drawCost = roomForEffectors ? 1 : 2;
-          discardCost = 1;
+          drawCost = roomForEffectors ? 10 : 20;
+          discardCost = 10;
+          replaceCost = 15;
       }
       cost = (function() {
         switch (actionType) {
           case ACTION_DISCARD:
             return discardCost;
           case ACTION_REPLACE:
-            return drawCost + discardCost;
+            return replaceCost;
           case ACTION_DRAW:
             return drawCost;
           default:

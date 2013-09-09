@@ -27,6 +27,7 @@ class PlayMatSolitaireController
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
+    @sequentialLosses = 0
     @currentPlayer = "Uninitialized"
     @distribution = {
       features: 4
@@ -35,8 +36,8 @@ class PlayMatSolitaireController
       alarms: 4
     }
     @pressurePoints = {
-      plant: 2
-      pathogen: 2
+      plant: 20
+      pathogen: 20
     }
     @victoryPoints = {
       plant: 0
@@ -169,25 +170,43 @@ class PlayMatSolitaireController
       when "ETI"
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
-        pressureForLoser = 2
+        pressureForLoser = 25
         victoryForWinner = rewards[SIDE_PLANT]
       when "MTI"
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
-        pressureForLoser = 1
+        pressureForLoser = 15
         victoryForWinner = rewards[SIDE_PLANT]
       else #Virulence
         winner = SIDE_PATHOGEN
         loser =  SIDE_PLANT
-        pressureForLoser = 1
+        pressureForLoser = 15
         victoryForWinner = rewards[SIDE_PATHOGEN]
 
-    message = winner + " wins round "+@iteration+" ("+@boardState+")\n"
-    message += loser + ": +"+pressureForLoser+"pp\n"
-    message += winner + ": +"+victoryForWinner+"vp"
+    lostAgain = (@currentPlayer is loser)
+    if lostAgain
+      @sequentialLosses += 1
+    else
+      @currentPlayer = loser
+      @sequentialLosses = 0
 
-    @currentPlayer = loser
+    if lostAgain
+      winline = winner + " wins again (round "+@iteration+" ,"+@boardState+")"
+    else
+      winline = winner + " wins round "+@iteration+" ("+@boardState+")"
+
+    vpLine =  winner + ": +"+victoryForWinner+"vp"
+    ppLine =   loser + ": +"+pressureForLoser+"pp"
+    if lostAgain
+      ppLine += " (+"+@sequentialLosses+"pp for repeat loss)"
+      pressureForLoser += @sequentialLosses
+
+    message = winline + "\n" + vpLine + "\n" + ppLine;
+    if victoryForWinner < 0
+      message += "\nWARNING: Unsustainably costly win!"
+
     alert message if firstPhaseFilter isnt 0
+
     this.changePressure loser, pressureForLoser*firstPhaseFilter
     @victoryPoints[winner] += victoryForWinner*firstPhaseFilter
     @actionChoices[winner].hide()
@@ -432,7 +451,7 @@ class PlayMatSolitaireController
     existingFeatures = @theModel.countActiveCellsOfType TYPE_FEATURE
     existingEffectors = @theModel.countActiveCellsOfType TYPE_EFFECTOR
 
-    plantRewards = 12
+    plantRewards = 13
     plantExpenses = 2*existingDetectors + existingAlarms
     pathoRewards = 2*(existingFeatures-2)
     pathoExpenses = existingEffectors-2
@@ -453,26 +472,30 @@ class PlayMatSolitaireController
 
     switch elementType
       when TYPE_ALARM
-        drawCost = 1
-        discardCost = 1
+        drawCost = 10
+        discardCost = 10
+        replaceCost = 15 # < 20
         if excessDetectionTools > 0 then drawCost+=excessDetectionTools
       when TYPE_DETECTOR
-        drawCost = 2
-        discardCost = 1
+        drawCost = 20
+        discardCost = 10
+        replaceCost = 25 # < 30
         if excessDetectionTools > 0 then drawCost+=excessDetectionTools
       when TYPE_FEATURE
-        drawCost = 1
-        discardCost = if roomForEffectors then 1 else 2
+        drawCost = 20
+        discardCost = if roomForEffectors then 10 else 20
+        replaceCost = 15 # < 30
         if existingFeatures <= 2 then discardCost = -1
       when TYPE_EFFECTOR
-        drawCost = if roomForEffectors then 1 else 2
-        discardCost = 1
+        drawCost = if roomForEffectors then 10 else 20
+        discardCost = 10
+        replaceCost = 15 # < 20
 
     #console.log "Draw cost: "+drawCost+" Discard cost: "+discardCost
 
     cost = switch actionType
       when ACTION_DISCARD then discardCost
-      when ACTION_REPLACE then drawCost+discardCost
+      when ACTION_REPLACE then replaceCost
       when ACTION_DRAW then drawCost
       else 0
 
