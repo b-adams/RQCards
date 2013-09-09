@@ -114,19 +114,46 @@ to {
 	color:  #ffffff;
 }
 
-.disabled0, .disabled1, .disabling, .alarmed, .alarming, .detected, .detecting {
-    box-shadow: inset 0px 0px 0.5em 0.5em rgba(255,255,255,0.75);
-    padding: 0.5em;
+.detecting {
+    border-top-left-radius: 1em;
+    border-top-right-radius: 1em;
+    box-shadow: 0px 0px 0.5em 0.5em rgba(255,155,0,0.75);
+}
+.detected {
+    border-bottom-left-radius: 1em;
+    border-bottom-right-radius: 1em;
+    box-shadow: 0px 0px 0.5em 0.5em rgba(255,155,0,0.75);
+}
+.e1.disabling {
+    border-top-left-radius: 3em;
+    padding-left: 1em;
+    border-top-style: dashed;
+    border-top-color: white;
+}
+.e2.disabling {
+    border-top-right-radius: 3em;
+    padding-right: 1em;
+    border-top-style: dashed;
+    border-top-color: white;
 }
 .disabled0 {
     padding-left: 1em;
     border-left-color: red;
     border-bottom-left-radius: 3em;
+    border-bottom-style: dashed;
+    border-bottom-color: white;
+    background-image: url('http://placekitten.com/170/80');
 }
 .disabled1 {
     padding-right: 1em;
     border-right-color: red;
     border-bottom-right-radius: 3em;
+    border-bottom-style: dashed;
+    border-bottom-color: white;
+    background-image: url('http://placekitten.com/171/80');
+}
+.disabled0.disabled1 {
+    background-image: url('http://placekitten.com/172/80');
 }
 .disabling:after {
     content: " - DISABLING DETECTOR";
@@ -139,6 +166,16 @@ to {
 }
 .alarming:after {
     content: " - TRIGGERING ALARM";
+}
+.alarming {
+    border-bottom-left-radius: 1em;
+    border-bottom-right-radius: 1em;
+    box-shadow: 0px 0px 0.5em 0.5em rgba(255,0,0,0.75);
+}
+.alarmed {
+    border-top-left-radius: 1em;
+    border-top-right-radius: 1em;
+    box-shadow: 0px 0px 0.5em 0.5em rgba(255,0,0,0.75);
 }
 .alarmed:after {
     content: " - TRIGGERED";
