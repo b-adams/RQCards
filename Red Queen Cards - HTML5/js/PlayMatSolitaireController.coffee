@@ -203,12 +203,12 @@ class PlayMatSolitaireController
       @sequentialLosses = 0
 
     if lostAgain
-      winline = winner + " wins again (round "+@iteration+" ,"+@boardState+")"
+      winline = "#{winner} wins again (round #{@iteration} ,#{@boardState})"
     else
-      winline = winner + " wins round "+@iteration+" ("+@boardState+")"
+      winline = "#{winner} wins round #{@iteration} (#{@boardState})"
 
-    vpLine =  winner + ": +"+victoryForWinner+"vp"
-    ppLine =   loser + ": +"+pressureForLoser+"pp"
+    vpLine =  "#{winner}: +#{victoryForWinner}vp"
+    ppLine =   "#{loser}: +#{pressureForLoser}pp"
     if lostAgain
       ppLine += " (+"+@sequentialLosses+"pp for repeat loss)"
       pressureForLoser += @sequentialLosses
@@ -226,10 +226,13 @@ class PlayMatSolitaireController
     @goButtons[winner].hide()
     @goButtons[loser].show()
 
-    @victoryBoxen[SIDE_PLANT].html("Victory: "+@victoryPoints[SIDE_PLANT])
-    @victoryBoxen[SIDE_PATHOGEN].html("Victory: "+@victoryPoints[SIDE_PATHOGEN])
-    @pressureBoxen[SIDE_PLANT].html("Pressure: "+@pressurePoints[SIDE_PLANT])
-    @pressureBoxen[SIDE_PATHOGEN].html("Pressure: "+@pressurePoints[SIDE_PATHOGEN])
+    etiWins = @resultLog[RESULT_ETI]+" "+RESULT_ETI
+    ptiWins = @resultLog[RESULT_PTI]+" "+RESULT_PTI
+    virWins = @resultLog[RESULT_VIR]+" "+RESULT_VIR
+    @victoryBoxen[SIDE_PLANT].html("Victory: #{@victoryPoints[SIDE_PLANT]} (#{etiWins}, #{ptiWins})")
+    @victoryBoxen[SIDE_PATHOGEN].html("Victory: #{@victoryPoints[SIDE_PATHOGEN]} (#{virWins})")
+    @pressureBoxen[SIDE_PLANT].html("Pressure: #{@pressurePoints[SIDE_PLANT]}")
+    @pressureBoxen[SIDE_PATHOGEN].html("Pressure: #{@pressurePoints[SIDE_PATHOGEN]}")
 
     document.title = "State: "+@boardState+" | Turn: "+@currentPlayer
     @iteration += 1

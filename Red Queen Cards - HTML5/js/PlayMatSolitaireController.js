@@ -202,7 +202,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.moveToNextTurn = function() {
-      var firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, rewards, victoryForWinner, vpLine, winline, winner;
+      var etiWins, firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, ptiWins, rewards, victoryForWinner, virWins, vpLine, winline, winner;
       this.updateBoardState();
       firstPhaseFilter = this.iteration === 0 ? 0 : 1;
       message = "ERROR: Message not instantiated";
@@ -235,12 +235,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         this.sequentialLosses = 0;
       }
       if (lostAgain) {
-        winline = winner + " wins again (round " + this.iteration + " ," + this.boardState + ")";
+        winline = "" + winner + " wins again (round " + this.iteration + " ," + this.boardState + ")";
       } else {
-        winline = winner + " wins round " + this.iteration + " (" + this.boardState + ")";
+        winline = "" + winner + " wins round " + this.iteration + " (" + this.boardState + ")";
       }
-      vpLine = winner + ": +" + victoryForWinner + "vp";
-      ppLine = loser + ": +" + pressureForLoser + "pp";
+      vpLine = "" + winner + ": +" + victoryForWinner + "vp";
+      ppLine = "" + loser + ": +" + pressureForLoser + "pp";
       if (lostAgain) {
         ppLine += " (+" + this.sequentialLosses + "pp for repeat loss)";
         pressureForLoser += this.sequentialLosses;
@@ -258,8 +258,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.actionChoices[loser].show();
       this.goButtons[winner].hide();
       this.goButtons[loser].show();
-      this.victoryBoxen[SIDE_PLANT].html("Victory: " + this.victoryPoints[SIDE_PLANT]);
-      this.victoryBoxen[SIDE_PATHOGEN].html("Victory: " + this.victoryPoints[SIDE_PATHOGEN]);
+      etiWins = this.resultLog[RESULT_ETI] + " " + RESULT_ETI;
+      ptiWins = this.resultLog[RESULT_PTI] + " " + RESULT_PTI;
+      virWins = this.resultLog[RESULT_VIR] + " " + RESULT_VIR;
+      this.victoryBoxen[SIDE_PLANT].html("Victory: " + this.victoryPoints[SIDE_PLANT] + " (" + etiWins + ", " + ptiWins + ")");
+      this.victoryBoxen[SIDE_PATHOGEN].html("Victory: " + this.victoryPoints[SIDE_PATHOGEN] + " (" + virWins + ")");
       this.pressureBoxen[SIDE_PLANT].html("Pressure: " + this.pressurePoints[SIDE_PLANT]);
       this.pressureBoxen[SIDE_PATHOGEN].html("Pressure: " + this.pressurePoints[SIDE_PATHOGEN]);
       document.title = "State: " + this.boardState + " | Turn: " + this.currentPlayer;
