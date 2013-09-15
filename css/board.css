@@ -142,7 +142,7 @@ to {
     border-bottom-left-radius: 3em;
     border-bottom-style: dashed;
     border-bottom-color: white;
-    background-image: url('http://placekitten.com/170/80');
+    background-image: url('http://placedog.com/170/80');
 }
 .disabled1 {
     padding-right: 1em;
@@ -153,7 +153,7 @@ to {
     background-image: url('http://placekitten.com/171/80');
 }
 .disabled0.disabled1 {
-    background-image: url('http://placekitten.com/172/80');
+    background-image: url('http://placesheen.com/172/80');
 }
 .disabling:after {
     content: " - DISABLING DETECTOR";

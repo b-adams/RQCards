@@ -34,6 +34,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.iteration = 0;
       this.sequentialLosses = 0;
       this.currentPlayer = "Uninitialized";
+      this.resultLog = {
+        ETI: 0,
+        MTI: 0,
+        Virulence: 0
+      };
       this.distribution = {
         features: 4,
         detectors: 4,
@@ -124,11 +129,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return this.boardState = (function() {
         switch (false) {
           case !this.theModel.isPlantETIActive():
-            return "ETI";
+            return RESULT_ETI;
           case !this.theModel.isPlantMTIActive():
-            return "MTI";
+            return RESULT_PTI;
           default:
-            return "Virulence";
+            return RESULT_VIR;
         }
       }).call(this);
     };
@@ -197,19 +202,20 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.moveToNextTurn = function() {
-      var firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, rewards, victoryForWinner, vpLine, winline, winner;
+      var etiWins, firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, ptiWins, rewards, victoryForWinner, virWins, vpLine, vpReason, winline, winner;
       this.updateBoardState();
       firstPhaseFilter = this.iteration === 0 ? 0 : 1;
       message = "ERROR: Message not instantiated";
       rewards = this.rewardsForRound();
+      this.resultLog[this.boardState] += 1;
       switch (this.boardState) {
-        case "ETI":
+        case RESULT_ETI:
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
           pressureForLoser = 25;
           victoryForWinner = rewards[SIDE_PLANT];
           break;
-        case "MTI":
+        case RESULT_PTI:
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
           pressureForLoser = 15;
@@ -221,6 +227,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           pressureForLoser = 15;
           victoryForWinner = rewards[SIDE_PATHOGEN];
       }
+      vpReason = rewards[winner + "_reason"];
       lostAgain = this.currentPlayer === loser;
       if (lostAgain) {
         this.sequentialLosses += 1;
@@ -229,17 +236,17 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         this.sequentialLosses = 0;
       }
       if (lostAgain) {
-        winline = winner + " wins again (round " + this.iteration + " ," + this.boardState + ")";
+        winline = "" + winner + " wins again (round " + this.iteration + " ," + this.boardState + ")";
       } else {
-        winline = winner + " wins round " + this.iteration + " (" + this.boardState + ")";
+        winline = "" + winner + " wins round " + this.iteration + " (" + this.boardState + ")";
       }
-      vpLine = winner + ": +" + victoryForWinner + "vp";
-      ppLine = loser + ": +" + pressureForLoser + "pp";
+      vpLine = "" + winner + ": +" + victoryForWinner + "vp";
+      ppLine = "" + loser + ": +" + pressureForLoser + "pp";
       if (lostAgain) {
         ppLine += " (+" + this.sequentialLosses + "pp for repeat loss)";
         pressureForLoser += this.sequentialLosses;
       }
-      message = winline + "\n" + vpLine + "\n" + ppLine;
+      message = winline + "\n" + vpLine + "\n" + vpReason + "\n" + ppLine;
       if (victoryForWinner < 0) {
         message += "\nWARNING: Unsustainably costly win!";
       }
@@ -252,8 +259,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.actionChoices[loser].show();
       this.goButtons[winner].hide();
       this.goButtons[loser].show();
-      this.victoryBoxen[SIDE_PLANT].html("Victory: " + this.victoryPoints[SIDE_PLANT]);
-      this.victoryBoxen[SIDE_PATHOGEN].html("Victory: " + this.victoryPoints[SIDE_PATHOGEN]);
+      etiWins = this.resultLog[RESULT_ETI] + " " + RESULT_ETI;
+      ptiWins = this.resultLog[RESULT_PTI] + " " + RESULT_PTI;
+      virWins = this.resultLog[RESULT_VIR] + " " + RESULT_VIR;
+      this.victoryBoxen[SIDE_PLANT].html("Victory: " + this.victoryPoints[SIDE_PLANT] + " (" + etiWins + ", " + ptiWins + ")");
+      this.victoryBoxen[SIDE_PATHOGEN].html("Victory: " + this.victoryPoints[SIDE_PATHOGEN] + " (" + virWins + ")");
       this.pressureBoxen[SIDE_PLANT].html("Pressure: " + this.pressurePoints[SIDE_PLANT]);
       this.pressureBoxen[SIDE_PATHOGEN].html("Pressure: " + this.pressurePoints[SIDE_PATHOGEN]);
       document.title = "State: " + this.boardState + " | Turn: " + this.currentPlayer;
@@ -549,13 +559,15 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
       existingFeatures = this.theModel.countActiveCellsOfType(TYPE_FEATURE);
       existingEffectors = this.theModel.countActiveCellsOfType(TYPE_EFFECTOR);
-      plantRewards = 13;
-      plantExpenses = 2 * existingDetectors + existingAlarms;
+      plantRewards = 12;
+      plantExpenses = 2 * existingDetectors;
       pathoRewards = 2 * (existingFeatures - 2);
-      pathoExpenses = existingEffectors - 2;
+      pathoExpenses = 0;
       return {
         plant: plantRewards - plantExpenses,
-        pathogen: pathoRewards - pathoExpenses
+        pathogen: pathoRewards - pathoExpenses,
+        plant_reason: "12 income - 2*" + existingDetectors + " expenses from " + existingDetectors + " detectors",
+        pathogen_reason: "2*(" + existingFeatures + "-2) income based on " + existingFeatures + " features"
       };
     };
 
@@ -618,7 +630,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         }
       })();
       if (cost < 0) {
-        cost = 0;
+        cost = -1;
       }
       return cost;
     };
