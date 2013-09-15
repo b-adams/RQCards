@@ -202,7 +202,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.moveToNextTurn = function() {
-      var etiWins, firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, ptiWins, rewards, victoryForWinner, virWins, vpLine, winline, winner;
+      var etiWins, firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, ptiWins, rewards, victoryForWinner, virWins, vpLine, vpReason, winline, winner;
       this.updateBoardState();
       firstPhaseFilter = this.iteration === 0 ? 0 : 1;
       message = "ERROR: Message not instantiated";
@@ -227,6 +227,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           pressureForLoser = 15;
           victoryForWinner = rewards[SIDE_PATHOGEN];
       }
+      vpReason = rewards[winner + "_reason"];
       lostAgain = this.currentPlayer === loser;
       if (lostAgain) {
         this.sequentialLosses += 1;
@@ -245,7 +246,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         ppLine += " (+" + this.sequentialLosses + "pp for repeat loss)";
         pressureForLoser += this.sequentialLosses;
       }
-      message = winline + "\n" + vpLine + "\n" + ppLine;
+      message = winline + "\n" + vpLine + "\n" + vpReason + "\n" + ppLine;
       if (victoryForWinner < 0) {
         message += "\nWARNING: Unsustainably costly win!";
       }
@@ -564,7 +565,9 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       pathoExpenses = 0;
       return {
         plant: plantRewards - plantExpenses,
-        pathogen: pathoRewards - pathoExpenses
+        pathogen: pathoRewards - pathoExpenses,
+        plant_reason: "12 income - 2*" + existingDetectors + " expenses from " + existingDetectors + " detectors",
+        pathogen_reason: "2*(" + existingFeatures + "-2) income based on " + existingFeatures + " features"
       };
     };
 

@@ -195,6 +195,8 @@ class PlayMatSolitaireController
         pressureForLoser = 15
         victoryForWinner = rewards[SIDE_PATHOGEN]
 
+    vpReason = rewards[winner+"_reason"]
+
     lostAgain = (@currentPlayer is loser)
     if lostAgain
       @sequentialLosses += 1
@@ -213,7 +215,7 @@ class PlayMatSolitaireController
       ppLine += " (+"+@sequentialLosses+"pp for repeat loss)"
       pressureForLoser += @sequentialLosses
 
-    message = winline + "\n" + vpLine + "\n" + ppLine;
+    message = winline + "\n" + vpLine + "\n" + vpReason + "\n" + ppLine;
     if victoryForWinner < 0
       message += "\nWARNING: Unsustainably costly win!"
 
@@ -492,6 +494,8 @@ class PlayMatSolitaireController
     return {
       plant: plantRewards-plantExpenses
       pathogen: pathoRewards-pathoExpenses
+      plant_reason: "12 income - 2*#{existingDetectors} expenses from #{existingDetectors} detectors"
+      pathogen_reason: "2*(#{existingFeatures}-2) income based on #{existingFeatures} features"
     }
 
   costForAction: (actionType, elementType) ->
