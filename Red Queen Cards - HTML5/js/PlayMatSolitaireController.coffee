@@ -29,6 +29,11 @@ class PlayMatSolitaireController
     @iteration = 0
     @sequentialLosses = 0
     @currentPlayer = "Uninitialized"
+    @resultLog = {
+      ETI: 0
+      MTI: 0
+      Virulence: 0
+    }
     @distribution = {
       features: 4
       detectors: 4
@@ -101,9 +106,9 @@ class PlayMatSolitaireController
 
   updateBoardState: ->
     @boardState = switch
-      when @theModel.isPlantETIActive() then "ETI"
-      when @theModel.isPlantMTIActive() then "MTI"
-      else                                   "Virulence"
+      when @theModel.isPlantETIActive() then RESULT_ETI
+      when @theModel.isPlantMTIActive() then RESULT_PTI
+      else                                   RESULT_VIR
 
     #console.log "Game: " + @boardState
     #window.document.title = "Current state: " + @boardState
@@ -172,17 +177,17 @@ class PlayMatSolitaireController
     rewards = this.rewardsForRound()
 
     switch @boardState
-      when "ETI"
+      when RESULT_ETI
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
         pressureForLoser = 25
         victoryForWinner = rewards[SIDE_PLANT]
-      when "MTI"
+      when RESULT_PTI
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
         pressureForLoser = 15
         victoryForWinner = rewards[SIDE_PLANT]
-      else #Virulence
+      else #RESULT_VIR
         winner = SIDE_PATHOGEN
         loser =  SIDE_PLANT
         pressureForLoser = 15

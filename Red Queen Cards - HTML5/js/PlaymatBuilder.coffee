@@ -92,9 +92,9 @@ createTrainingControls = (inElement) ->
   aTD = $(document.createElement('td')).attr("style", "width:20%").appendTo firstRow
   selector = $(document.createElement('select')).attr("style", "width:100%").attr("id", "comboBoard").appendTo aTD
   $(document.createElement('option')).attr("value", "").text("Select current board state").appendTo selector
-  $(document.createElement('option')).attr("value", "ETI").text("ETI (Alarm matches Effector)").appendTo selector
-  $(document.createElement('option')).attr("value", "MTI").text("MTI (Two active detectors match features)").appendTo selector
-  $(document.createElement('option')).attr("value", "Virulence").text("Virulence (None of the above)").appendTo selector
+  $(document.createElement('option')).attr("value", RESULT_ETI).text(RESULT_ETI+" (Alarm matches Effector)").appendTo selector
+  $(document.createElement('option')).attr("value", RESULT_PTI).text(RESULT_PTI+" (Two active detectors match features)").appendTo selector
+  $(document.createElement('option')).attr("value", RESULT_VIR).text(RESULT_VIR + " (None of the above)").appendTo selector
 
   for i in [1..3]
     aTD = $(document.createElement('td')).appendTo firstRow

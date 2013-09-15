@@ -107,11 +107,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.boardState = (function() {
         switch (false) {
           case !this.theModel.isPlantETIActive():
-            return "ETI";
+            return RESULT_ETI;
           case !this.theModel.isPlantMTIActive():
-            return "MTI";
+            return RESULT_PTI;
           default:
-            return "Virulence";
+            return RESULT_VIR;
         }
       }).call(this);
       console.log("Board: " + this.boardState);
@@ -220,37 +220,37 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       }
       diagnosis = "Incorrect.\nYou selected " + suppliedAnswer;
       switch (suppliedAnswer) {
-        case "ETI":
+        case RESULT_ETI:
           note = " but there are no effector-alarm matches.";
           switch (correctAnswer) {
-            case "MTI":
+            case RESULT_PTI:
               hint = note + "\nLook at the feature-detector row.";
               break;
-            case "Virulence":
+            case RESULT_VIR:
               hint = note + "\nWere you looking at detector-effector disablements?";
               break;
             default:
               "ERROR: How is " + correctAnswer + " possible?";
           }
           break;
-        case "MTI":
+        case RESULT_PTI:
           switch (correctAnswer) {
-            case "ETI":
+            case RESULT_ETI:
               hint = ".\nKeep in mind that effector-alarm matches trump feature-detector ones.";
               break;
-            case "Virulence":
+            case RESULT_VIR:
               hint = " but there are not enough *non-disabled* feature-detector matches.";
               break;
             default:
               "ERROR: How is " + correctAnswer + " possible?";
           }
           break;
-        case "Virulence":
+        case RESULT_VIR:
           switch (correctAnswer) {
-            case "MTI":
+            case RESULT_PTI:
               hint = ".\nCheck again for active feature-detector matches.";
               break;
-            case "ETI":
+            case RESULT_ETI:
               hint = ".\nCheck again for effector-alarmmatches.";
               break;
             default:
@@ -288,9 +288,9 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       quizBox = $("#Quiz" + whichLevel);
       right = this.attempts[whichLevel]["correct"];
       wrong = this.attempts[whichLevel]["incorrect"];
-      endedMTI = this.outcomes[whichLevel]["MTI"];
-      endedETI = this.outcomes[whichLevel]["ETI"];
-      endedBad = this.outcomes[whichLevel]["Virulence"];
+      endedMTI = this.outcomes[whichLevel][RESULT_PTI];
+      endedETI = this.outcomes[whichLevel][RESULT_ETI];
+      endedBad = this.outcomes[whichLevel][RESULT_VIR];
       quizBox.html("Training " + whichLevel + "<br>Answers: " + (right + wrong) + " Correct: " + right + "<br>ETI:" + endedETI + " MTI:" + endedMTI + " Virulence:" + endedBad);
     };
 

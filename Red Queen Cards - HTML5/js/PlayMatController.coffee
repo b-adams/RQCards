@@ -67,9 +67,9 @@ class PlayMatController
 
   updateBoardState: ->
     @boardState = switch
-      when @theModel.isPlantETIActive() then "ETI"
-      when @theModel.isPlantMTIActive() then "MTI"
-      else                                   "Virulence"
+      when @theModel.isPlantETIActive() then RESULT_ETI
+      when @theModel.isPlantMTIActive() then RESULT_PTI
+      else                                   RESULT_VIR
     console.log "Board: " + @boardState
     window.document.title = "Current state: " + @boardState
 
@@ -123,19 +123,19 @@ class PlayMatController
     diagnosis = "Incorrect.\nYou selected "+suppliedAnswer
 
     switch suppliedAnswer
-      when "ETI"
+      when RESULT_ETI
         note = " but there are no effector-alarm matches."
         switch correctAnswer
-          when "MTI"        then hint = note+"\nLook at the feature-detector row."
-          when "Virulence"  then hint = note+"\nWere you looking at detector-effector disablements?"
+          when RESULT_PTI  then hint = note+"\nLook at the feature-detector row."
+          when RESULT_VIR  then hint = note+"\nWere you looking at detector-effector disablements?"
           else "ERROR: How is "+correctAnswer+" possible?"
-      when "MTI" then switch correctAnswer
-          when "ETI"        then hint = ".\nKeep in mind that effector-alarm matches trump feature-detector ones."
-          when "Virulence"  then hint = " but there are not enough *non-disabled* feature-detector matches."
+      when RESULT_PTI then switch correctAnswer
+          when RESULT_ETI  then hint = ".\nKeep in mind that effector-alarm matches trump feature-detector ones."
+          when RESULT_VIR  then hint = " but there are not enough *non-disabled* feature-detector matches."
           else "ERROR: How is "+correctAnswer+" possible?"
-      when "Virulence" then switch correctAnswer
-          when "MTI"        then hint = ".\nCheck again for active feature-detector matches."
-          when "ETI"        then hint = ".\nCheck again for effector-alarmmatches."
+      when RESULT_VIR then switch correctAnswer
+          when RESULT_PTI  then hint = ".\nCheck again for active feature-detector matches."
+          when RESULT_ETI  then hint = ".\nCheck again for effector-alarmmatches."
           else "ERROR: How is "+correctAnswer+" possible?"
       else
         "ERROR: invalid answer"
@@ -157,9 +157,9 @@ class PlayMatController
     quizBox = $ "#Quiz"+whichLevel
     right = @attempts[whichLevel]["correct"]
     wrong = @attempts[whichLevel]["incorrect"]
-    endedMTI = @outcomes[whichLevel]["MTI"];
-    endedETI = @outcomes[whichLevel]["ETI"];
-    endedBad = @outcomes[whichLevel]["Virulence"];
+    endedMTI = @outcomes[whichLevel][RESULT_PTI];
+    endedETI = @outcomes[whichLevel][RESULT_ETI];
+    endedBad = @outcomes[whichLevel][RESULT_VIR];
 
     quizBox.html "Training #{whichLevel}<br>Answers: #{right+wrong} Correct: #{right}<br>ETI:#{endedETI} MTI:#{endedMTI} Virulence:#{endedBad}"
     return

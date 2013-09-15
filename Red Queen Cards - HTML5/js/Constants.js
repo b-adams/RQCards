@@ -13,10 +13,15 @@ var EFFECTORS_PER_DETECTOR = 2;
 
 var MAMP_MATCHES_TO_TRIGGER_MTI = 2;
 var NUMBER_OF_PLAYABLE_COLUMNS = 8;
+
 var TYPE_FEATURE = "Feature";
 var TYPE_DETECTOR = "Detector";
 var TYPE_EFFECTOR = "Effector";
 var TYPE_ALARM = "Alarm";
+
+var RESULT_PTI = "MTI"
+var RESULT_ETI = "ETI"
+var RESULT_VIR = "Virulence"
 
 var ACTION_DISCARD = "Discard Selected"
 var ACTION_REPLACE = "Replace Selected"

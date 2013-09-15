@@ -34,6 +34,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.iteration = 0;
       this.sequentialLosses = 0;
       this.currentPlayer = "Uninitialized";
+      this.resultLog = {
+        ETI: 0,
+        MTI: 0,
+        Virulence: 0
+      };
       this.distribution = {
         features: 4,
         detectors: 4,
@@ -124,11 +129,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return this.boardState = (function() {
         switch (false) {
           case !this.theModel.isPlantETIActive():
-            return "ETI";
+            return RESULT_ETI;
           case !this.theModel.isPlantMTIActive():
-            return "MTI";
+            return RESULT_PTI;
           default:
-            return "Virulence";
+            return RESULT_VIR;
         }
       }).call(this);
     };
@@ -203,13 +208,13 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       message = "ERROR: Message not instantiated";
       rewards = this.rewardsForRound();
       switch (this.boardState) {
-        case "ETI":
+        case RESULT_ETI:
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
           pressureForLoser = 25;
           victoryForWinner = rewards[SIDE_PLANT];
           break;
-        case "MTI":
+        case RESULT_PTI:
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
           pressureForLoser = 15;
