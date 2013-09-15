@@ -539,7 +539,7 @@ class PlayMatSolitaireController
       when ACTION_DRAW then drawCost
       when ACTION_RANDOM then (if availablePoints < 5 then availablePoints else 5)
       else 0
-    if cost < 0 then cost = 0
+    if cost < 0 then cost = -1
 
     #console.log "Cost of action "+actionType+" is "+cost
     return cost
