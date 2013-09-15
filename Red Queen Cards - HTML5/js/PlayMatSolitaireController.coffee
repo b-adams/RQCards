@@ -176,6 +176,8 @@ class PlayMatSolitaireController
     message = "ERROR: Message not instantiated"
     rewards = this.rewardsForRound()
 
+    @resultLog[@boardState] += 1
+
     switch @boardState
       when RESULT_ETI
         winner = SIDE_PLANT

@@ -207,6 +207,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       firstPhaseFilter = this.iteration === 0 ? 0 : 1;
       message = "ERROR: Message not instantiated";
       rewards = this.rewardsForRound();
+      this.resultLog[this.boardState] += 1;
       switch (this.boardState) {
         case RESULT_ETI:
           winner = SIDE_PLANT;
