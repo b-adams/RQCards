@@ -549,10 +549,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
       existingFeatures = this.theModel.countActiveCellsOfType(TYPE_FEATURE);
       existingEffectors = this.theModel.countActiveCellsOfType(TYPE_EFFECTOR);
-      plantRewards = 13;
-      plantExpenses = 2 * existingDetectors + existingAlarms;
+      plantRewards = 12;
+      plantExpenses = 2 * existingDetectors;
       pathoRewards = 2 * (existingFeatures - 2);
-      pathoExpenses = existingEffectors - 2;
+      pathoExpenses = 0;
       return {
         plant: plantRewards - plantExpenses,
         pathogen: pathoRewards - pathoExpenses

@@ -472,10 +472,13 @@ class PlayMatSolitaireController
     existingFeatures = @theModel.countActiveCellsOfType TYPE_FEATURE
     existingEffectors = @theModel.countActiveCellsOfType TYPE_EFFECTOR
 
-    plantRewards = 13
-    plantExpenses = 2*existingDetectors + existingAlarms
-    pathoRewards = 2*(existingFeatures-2)
-    pathoExpenses = existingEffectors-2
+    #Plant rewards: -4 to 12, based on eschewing detectors
+    plantRewards = 12
+    plantExpenses = 2*existingDetectors #Having more than 5 detectors isn't worth it in the long run
+
+    #Pathogen rewards: -4 to 12, based on collecting features
+    pathoRewards = 2*(existingFeatures-2) #Having less than 3 features isn't worth it in the long run
+    pathoExpenses = 0 #Expenses are intrinsic
     return {
       plant: plantRewards-plantExpenses
       pathogen: pathoRewards-pathoExpenses
