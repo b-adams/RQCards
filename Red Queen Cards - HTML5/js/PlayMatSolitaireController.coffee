@@ -48,12 +48,7 @@ class PlayMatSolitaireController
       plant: 0
       pathogen: 0
     }
-    @selectedElement = {
-      element: null
-      type: -1
-      colIndex: -1
-      variety: -1
-    }
+    @selectedElement = new Location(-1, -1, -1)
     @goButtons = {
       plant: null
       pathogen: null
@@ -76,23 +71,22 @@ class PlayMatSolitaireController
     #console.log "Changing pressure for "+side+" by "+amount+". New total: "+@pressurePoints[side]
 
 
-  getElement: (type, colIndex) ->
-    selector = "#board > #c"+(colIndex+1)+" > ."
-    switch type
+  getElement: (locWhere) ->
+    selector = "#board > #c"+(locWhere.colIndex+1)+" > ."
+    switch locWhere.cardtype
       when TYPE_FEATURE  then selector+="feature"
       when TYPE_DETECTOR then selector+="detector"
-      when TYPE_EFFECTOR then selector+="e"+(arguments[2]+1)
-      when TYPE_ALARM    then selector+="a"+(arguments[2]+1)
+      when TYPE_EFFECTOR then selector+="e"+(locWhere.variety+1)
+      when TYPE_ALARM    then selector+="a"+(locWhere.variety+1)
       else
-        alert "Bad element request"
+        alert "PMSC Bad element request-- "+locWhere.toString()
         selector=""
     element = $ selector
     return element
 
-  connectElement: (type, colIndex, theVariant...) ->
-    self = this
-    theFeature = self.getElement type, colIndex, theVariant...
-    theFeature.click -> self.doSelect theFeature, type, colIndex, theVariant...
+  connectElement: (locWhere) ->
+    theFeature = this.getElement locWhere
+    theFeature.click -> this.doSelect locWhere
     theFeature.css "border-style", "dashed"
 
   setElementActivity: (active, theElement) ->
@@ -240,25 +234,23 @@ class PlayMatSolitaireController
     @iteration += 1
     #console.log "Moved to turn "+@iteration
 
-  doDiscard: (theElement, type, colIndex, theVariety...) ->
-    self = this
-    oldValue = @theModel.isCellActive type, colIndex, theVariety...
+  doDiscard: (locWhere) ->
+    oldValue = @theModel.isCellActive locWhere
     if oldValue isnt true
       return false #No discarding cards you don't have
     else
-      theElement ?= self.getElement type, colIndex, theVariety...
-      this.doSet theElement, false, type, colIndex, theVariety...
-      switch type
-        when TYPE_FEATURE  then @distribution["features"] -= 1
+      this.doSet false, locWhere
+      switch locWhere.cardtype
+        when TYPE_FEATURE  then @distribution["features"]  -= 1
         when TYPE_DETECTOR then @distribution["detectors"] -= 1
-        when TYPE_ALARM    then @distribution["alarms"] -= 1
+        when TYPE_ALARM    then @distribution["alarms"]    -= 1
         when TYPE_EFFECTOR then @distribution["effectors"] -= 1
-      self.setElementActivity false, theElement
+      this.setElementActivity false, (this.getElement locWhere)
       #this.moveToNextTurn()
       return true #Discard successful
 
   doDiscardSelected: ->
-    this.doDiscard @selectedElement["element"], @selectedElement["type"], @selectedElement["colIndex"], @selectedElement["variety"]
+    this.doDiscard @selectedElement
 
 #  randomSelectionArray: (picks, total) ->
 #    picklist = (true for n in [0...picks]).concat (false for n in [picks...total])
@@ -269,54 +261,63 @@ class PlayMatSolitaireController
   #This is a terrible method, but good enough for now. Use something based on above
   getRandomInactiveElementOfType: (type) ->
     #console.log "Searching for inactive "+type
-    startCol = Math.floor Math.random()*NUMBER_OF_PLAYABLE_COLUMNS
-    startVar = Math.floor Math.random()*2 #TODO: Constant for Number of Varieties
-    colIndex = startCol
-    variety = startVar
-    occupied = true
-    notLooped = true
-    while occupied and notLooped
-      occupied = @theModel.isCellActive type, colIndex, variety
-      #console.log "Col"+colIndex+" var"+variety+" is "+(if occupied then "occupied" else "free")
+    switch type
+      when TYPE_FEATURE then upper = true
+      when TYPE_DETECTOR then upper = true
+      when TYPE_EFFECTOR then upper = false
+      when TYPE_ALARM then upper = false
+      #else return new Location()
 
-      ## Increment to next Col,Var option
-      if occupied
+    startCol = Math.floor Math.random()*NUMBER_OF_PLAYABLE_COLUMNS
+    colIndex = startCol
+    occupied = true
+    looped = false
+    theSpot = new Location()
+
+    if upper
+      while occupied and not looped
+        theSpot = new Location(type, colIndex)
+        occupied = @theModel.isCellActive theSpot
+        #console.log "Col"+colIndex+" is "+(if occupied then "occupied" else "free")
+
+        ## Increment to next Col option
+        colIndex += 1
+        colIndex = 0 if colIndex >= NUMBER_OF_PLAYABLE_COLUMNS
+        looped = colIndex is startCol
+
+    else
+      startVar = Math.floor Math.random()*2 #TODO: Constant for Number of Varieties
+      variety = startVar
+      while occupied and not looped
+        theSpot = new Location(type, colIndex, variety)
+        occupied = @theModel.isCellActive theSpot
+        #console.log "Col"+colIndex+" var"+variety+" is "+(if occupied then "occupied" else "free")
+
+        ## Increment to next Col,Var option
         variety += 1
         if variety >= 2 #TODO: Constant for Number of Varieties
           variety = 0
           colIndex += 1
-          if colIndex >= NUMBER_OF_PLAYABLE_COLUMNS
-            colIndex = 0
-
-      notLooped = colIndex isnt startCol or variety isnt startVar
-
+          colIndex = 0 if colIndex >= NUMBER_OF_PLAYABLE_COLUMNS
+        looped = colIndex is startCol and variety is startVar
 
     if occupied
       alert "Could not find unoccupied cell"
       this.clearCurrentSelection()
-      return null
+      theSpot = new Location()
 
-    else
-      return {
-        element: this.getElement type, colIndex, variety
-        type: type
-        colIndex: colIndex
-        variety: variety
-      }
+    return theSpot
 
   selectRandomInactiveElementOfType: (type) ->
     this.clearCurrentSelection()
     choice = this.getRandomInactiveElementOfType type
-    @selectedElement["element"] = choice["element"]
-    @selectedElement["type"] = choice["type"]
-    @selectedElement["colIndex"] = choice["colIndex"]
-    @selectedElement["variety"] = choice["variety"]
+    @selectedElement = choice
 
 
   doDraw: (type) ->
     anElement = this.getRandomInactiveElementOfType type
-    if anElement is null then return
-    this.doSet anElement["element"], true, type, anElement["colIndex"], anElement["variety"]
+    if anElement.isIllegalLocation() then return
+    this.doSet true, anElement
 
   isTypeOnSideOf: (type, side) ->
     switch type
@@ -327,130 +328,69 @@ class PlayMatSolitaireController
       else return false
 
   clearCurrentSelection: ->
-    if @selectedElement["element"] isnt null
-      oldState = @theModel.isCellActive @selectedElement["type"], @selectedElement["colIndex"], @selectedElement["variety"]
-      this.setElementActivity oldState, @selectedElement["element"]
+    if @selectedElement.isIllegalLocation() isnt true
+      oldState = @theModel.isCellActive @selectedElement
+      this.setElementActivity oldState, @selectedElement
 
-    @selectedElement["element"] = null
-    @selectedElement["type"] = -1
-    @selectedElement["colIndex"] = -1
-    @selectedElement["variety"] = -1
+    @selectedElement = new Location()
     this.updateGoButton @currentPlayer
 
 
-  doSelect: (theElement, type, colIndex, theVariety...) ->
+  doSelect: (locWhere) ->
     #Reject if it's not for the right side
 
     this.clearCurrentSelection()
 
-    if not this.isTypeOnSideOf type, @currentPlayer
+    if not this.isTypeOnSideOf locWhere.cardtype, @currentPlayer
 #      alert "It is the "+@losingPlayer+" turn, and a "+type+" is not under "+@losingPlayer+" control."
       return
 
-    selectionState = @theModel.isCellActive type, colIndex, theVariety...
+    selectionState = @theModel.isCellActive locWhere
 
     # Don't bother selecting inactive elements, you can't discard or replace them
     if selectionState
       #console.log "Selecting "+theElement+": "+type+":"+colIndex+":"+theVariety
       #Set up new selected element
-      theElement.css "border-style", "dotted"
-      theElement.css "border-width", "3px"
-      theElement.css "text-shadow",  "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF"
-      theElement.css "opacity",      "1"
+      locWhere.element.css "border-style", "dotted"
+      locWhere.element.css "border-width", "3px"
+      locWhere.element.css "text-shadow",  "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF"
+      locWhere.element.css "opacity",      "1"
 
       #Remember for future use
-      @selectedElement["element"] = theElement
-      @selectedElement["type"] = type
-      @selectedElement["colIndex"] = colIndex
-      @selectedElement["variety"] = if theVariety.length > 0 then theVariety[0] else -1;
+      @selectedElement = locWhere
 
       this.updateGoButton @currentPlayer
 
 
-  doSet: (theElement, newValue, type, colIndex, theVariety...) ->
-    console.log "doSet "+type+colIndex+":"+theElement+" to "+newValue
-    self = this
-    oldValue = @theModel.isCellActive type, colIndex, theVariety...
-    theElement ?= self.getElement type, colIndex, theVariety...
-    @theModel.setCell newValue, type, colIndex, theVariety...
-    self.updateBoardState()
-    self.setElementActivity newValue, theElement
-    this.updateInteractions theElement, newValue, type, colIndex, theVariety...
+  doSet: (newValue, locWhere) ->
+    theElement = this.getElement locWhere
+    console.log "doSet "+locWhere.cardtype+locWhere.colIndex+":"+theElement+" to "+newValue
+    @theModel.setCell newValue, locWhere
+    this.updateBoardState()
+    this.setElementActivity newValue, theElement
+    this.updateInteractionsAround locWhere
     return newValue
 
-  updateInteractions: (theElement, active, type, colIndex, theVariety...) ->
-    console.log "Updating interactions for "+theElement
-    switch type
-      when TYPE_FEATURE
-        triggerType = TYPE_DETECTOR
-        triggerElement = this.getElement triggerType, colIndex
-        triggerState = (@theModel.isCellActive triggerType, colIndex) and not (@theModel.isDetectorDisabled colIndex)
-        if active and triggerState
-          theElement.addClass("detected")
-          triggerElement.addClass("detecting")
-        else
-          theElement.removeClass("detected")
-          triggerElement.removeClass("detecting")
+  updateInteractionsAt: (locWhere) ->
+    if locWhere is null or locWhere.isIllegalLocation() then return
+    theElement = this.getElement locWhere
+    activeStates = @theModel.getStateCondidionsAt locWhere
+    allStates = @theModel.getPossibleConditionsAt locWhere
+    console.log "Active states: "+activeStates+ " out of: "+allStates
+    for state in allStates
+      if $.inArray(state, activeStates)
+        theElement.addClass state
+      else
+        theElement.removeClass state
 
-      when TYPE_DETECTOR
-        triggerType = TYPE_EFFECTOR
-        busted = false
-        for aVariety in [0,1]
-          triggerElement = this.getElement triggerType, colIndex, aVariety
-          triggerState = @theModel.isCellActive triggerType, colIndex, aVariety
-          if active and triggerState
-            theElement.addClass("disabled"+aVariety)
-            triggerElement.addClass("disabling")
-            busted = true
-          else
-            theElement.removeClass("disabled"+aVariety)
-            triggerElement.removeClass("disabling")
-
-        if busted then active = false
-
-        triggerType = TYPE_FEATURE
-        triggerElement = this.getElement triggerType, colIndex
-        triggerState = @theModel.isCellActive triggerType, colIndex
-        if active and triggerState
-          triggerElement.addClass("detected")
-          theElement.addClass("detecting")
-        else
-          triggerElement.removeClass("detected")
-          theElement.removeClass("detecting")
-
-
-      when TYPE_EFFECTOR
-        triggerType = TYPE_DETECTOR
-        triggerElement = this.getElement triggerType, colIndex
-        triggerState = @theModel.isCellActive triggerType, colIndex
-        this.updateInteractions triggerElement, triggerState, triggerType, colIndex
-#        if active and triggerState
-#          triggerElement.addClass("disabled"+theVariety[0])
-#          theElement.addClass("disabling")
-#        else
-#          triggerElement.removeClass("disabled"+theVariety[0])
-#          theElement.removeClass("disabling")
-
-        triggerType = TYPE_ALARM
-        triggerElement = this.getElement triggerType, colIndex, theVariety...
-        triggerState = @theModel.isCellActive triggerType, colIndex, theVariety...
-        if active and triggerState
-          theElement.addClass("alarming")
-          triggerElement.addClass("alarmed")
-        else
-          theElement.removeClass("alarming")
-          triggerElement.removeClass("alarmed")
-
-      when TYPE_ALARM
-        triggerType = TYPE_EFFECTOR
-        triggerElement = this.getElement triggerType, colIndex, theVariety...
-        triggerState = @theModel.isCellActive triggerType, colIndex, theVariety...
-        if active and triggerState
-          triggerElement.addClass("alarming")
-          theElement.addClass("alarmed")
-        else
-          triggerElement.removeClass("alarming")
-          theElement.removeClass("alarmed")
+  updateInteractionsAround: (locWhere) ->
+    console.log "Updating interactions for "+locWhere+" and neighbors"
+    this.updateInteractionsAt locWhere
+    above = locWhere.getLocationAbove()
+    if not above.isIllegalLocation()
+      this.updateInteractionsAt above
+    for below in locWhere.getLocationsBelow()
+      this.updateInteractionsAt below
 
   randomSelectionArray: (picks, total) ->
     picklist = (true for n in [0...picks]).concat (false for n in [picks...total])
@@ -460,20 +400,19 @@ class PlayMatSolitaireController
     return picklist
 
   doRandomize: ->
-    self = this
     #console.log "RANDOMIZING----------------------------------"
 
-    randList = self.randomSelectionArray @distribution["features"], NUMBER_OF_FEATURES
-    self.doSet null, randVal, TYPE_FEATURE, i for randVal,i in randList
+    randList = this.randomSelectionArray @distribution["features"], NUMBER_OF_FEATURES
+    this.doSet randVal, new Location(TYPE_FEATURE, i) for randVal,i in randList
 
-    randList = self.randomSelectionArray @distribution["detectors"], NUMBER_OF_DETECTORS
-    self.doSet null, randVal, TYPE_DETECTOR, i for randVal,i in randList
+    randList = this.randomSelectionArray @distribution["detectors"], NUMBER_OF_DETECTORS
+    this.doSet randVal, new Location(TYPE_DETECTOR, i) for randVal,i in randList
 
-    randList = self.randomSelectionArray @distribution["effectors"], NUMBER_OF_EFFECTORS
-    self.doSet null, randVal, TYPE_EFFECTOR, i>>1, i%2 for randVal,i in randList
+    randList = this.randomSelectionArray @distribution["effectors"], NUMBER_OF_EFFECTORS
+    this.doSet randVal, new Location(TYPE_EFFECTOR, i>>1, i%2) for randVal,i in randList
 
-    randList = self.randomSelectionArray @distribution["alarms"], NUMBER_OF_ALARMS
-    self.doSet null, randVal, TYPE_ALARM, i>>1, i%2 for randVal,i in randList
+    randList = this.randomSelectionArray @distribution["alarms"], NUMBER_OF_ALARMS
+    this.doSet randVal, new Location(TYPE_ALARM, i>>1, i%2) for randVal,i in randList
 
     #console.log "RANDOMIZED-----------------------------------"
 
@@ -591,12 +530,12 @@ $(document).ready ->
   control = window.controller
 
   for i in [0...NUMBER_OF_PLAYABLE_COLUMNS]
-    control.connectElement(TYPE_FEATURE,  i)
-    control.connectElement(TYPE_DETECTOR, i)
-    control.connectElement(TYPE_EFFECTOR, i, 0)
-    control.connectElement(TYPE_EFFECTOR, i, 1)
-    control.connectElement(TYPE_ALARM,    i, 0)
-    control.connectElement(TYPE_ALARM,    i, 1)
+    control.connectElement new Location(TYPE_FEATURE,  i)
+    control.connectElement new Location(TYPE_DETECTOR, i)
+    control.connectElement new Location(TYPE_EFFECTOR, i, VARIETY_LEFT)
+    control.connectElement new Location(TYPE_EFFECTOR, i, VARIETY_RIGHT)
+    control.connectElement new Location(TYPE_ALARM,    i, VARIETY_LEFT)
+    control.connectElement new Location(TYPE_ALARM,    i, VARIETY_RIGHT)
 
   control.goButtons[SIDE_PLANT] = $("#"+ID_PLANT_ENGAGE)
   control.actionChoices[SIDE_PLANT] = $("#"+ID_PLANT_ACTIONS)
@@ -631,3 +570,4 @@ $(document).ready ->
 #    answer = $(this).val();
 #    gotItRight = control.processAnswer answer
 #    if gotItRight then $(this).val("")  # Reset answer selection
+

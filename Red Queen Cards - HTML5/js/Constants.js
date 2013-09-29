@@ -19,6 +19,21 @@ var TYPE_DETECTOR = "Detector";
 var TYPE_EFFECTOR = "Effector";
 var TYPE_ALARM = "Alarm";
 
+var VARIETY_LEFT = 0
+var VARIETY_RIGHT = 1
+var VARIETY_NONE = -1
+
+var STATE_DISABLED = "disabled"
+var STATE_DISABLED_LEFT = STATE_DISABLED+VARIETY_LEFT
+var STATE_DISABLED_RIGHT = STATE_DISABLED+VARIETY_RIGHT
+var STATE_DISABLING = "disabling"
+var STATE_DETECTED = "detected"
+var STATE_DETECTING = "detecting"
+var STATE_ALARMING = "alarming"
+var STATE_ALARMED = "alarmed"
+var STATE_ABSENT = "absent"
+var STATE_PRESENT = "present"
+
 var RESULT_PTI = "MTI"
 var RESULT_ETI = "ETI"
 var RESULT_VIR = "Virulence"
