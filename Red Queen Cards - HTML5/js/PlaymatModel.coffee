@@ -276,7 +276,7 @@ window.Location = class Location
 
   toString: ->
     if this.isIllegalLocation() then return "Illegal location "+@cardtype+"/"+@colIndex+"/"+@variety
-    if @variety is -1 then return return "Loc [Type="+@cardtype+", col="+@colIndex+"]"
+    if @variety is -1 then return "Loc [Type="+@cardtype+", col="+@colIndex+"]"
     return "Loc [Type="+@cardtype+", col="+@colIndex+", var="+@variety+"]"
 
 
