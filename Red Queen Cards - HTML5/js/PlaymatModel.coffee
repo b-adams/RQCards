@@ -235,6 +235,75 @@ window.PlayMat = class PlayMat
       when TYPE_ALARM then states.push STATE_ALARMED
     return states
 
+  getDetectedFeatures: ->
+    detectedSet = []
+    for theColumn, colNum in @_columns
+      cardLoc = new Location(TYPE_FEATURE, colNum)
+      thisCellActive = this.isCellActive cardLoc
+      somethingDetectingMe = this.isCellActive cardLoc.getLocationBelow()
+      detectorBusted = this.isDetectorDisabled cardLoc.colIndex
+      detected = thisCellActive and somethingDetectingMe and not detectorBusted
+      if detected then detectedSet.push cardLoc
+    return detectedSet
+
+  getDetectedEffectors: ->
+    detectedSet = []
+    for theColumn, colNum in @_columns
+      for variety in [VARIETY_LEFT, VARIETY_RIGHT]
+        cardLoc = new Location(TYPE_EFFECTOR, colNum, variety)
+        thisCellActive = this.isCellActive cardLoc
+        somethingDetectingMe = this.isCellActive cardLoc.getLocationBelow()
+        detected = thisCellActive and somethingDetectingMe
+        if detected then detectedSet.push cardLoc
+    return detectedSet
+
+  getPathogenEvolutionReplacementOptions: ->
+    lumpThemAllTogetherMode = true
+    effectors = this.getDetectedEffectors()
+    features = this.getDetectedFeatures()
+    if lumpThemAllTogetherMode
+      return effectors + features
+    else
+      if effectors.length > 0
+        return effectors
+      else
+        return features
+
+  getUselessDetectors: ->
+    uselessSet = []
+    for theColumn, colNum in @_columns
+      cardLoc = new Location(TYPE_FEATURE, colNum)
+      thisCellActive = this.isCellActive cardLoc
+      somethingToDetect = this.isCellActive cardLoc.getLocationAbove()
+      detectorBusted = this.isDetectorDisabled cardLoc.colIndex
+      detecting = thisCellActive and somethingToDetect and not detectorBusted
+      if not detecting then uselessSet.push cardLoc
+    return uselessSet
+
+  getUselessAlarms: ->
+    uselessSet = []
+    for theColumn, colNum in @_columns
+      for variety in [VARIETY_LEFT, VARIETY_RIGHT]
+        cardLoc = new Location(TYPE_EFFECTOR, colNum, variety)
+        thisCellActive = this.isCellActive cardLoc
+        somethingToDetect = this.isCellActive cardLoc.getLocationAbove()
+        detecting = thisCellActive and somethingToDetect
+        if not detecting then uselessSet.push cardLoc
+    return uselessSet
+
+  getPlantEvolutionReplacementOptions: ->
+    lumpThemAllTogetherMode = true
+    detectors = this.getDetectedEffectors()
+    alarms = this.getDetectedFeatures()
+    if lumpThemAllTogetherMode
+      return detectors + alarms
+    else
+      if alarms.length > 0
+        return alarms
+      else
+        return detectors
+
+
 window.Location = class Location
   constructor: (@cardtype=-1, @colIndex=-1, @variety=-1) ->
     return this
