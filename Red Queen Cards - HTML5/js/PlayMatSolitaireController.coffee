@@ -24,7 +24,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 class PlayMatSolitaireController
   constructor: ->
-    alert "Solitaire Build 131015@1813"
+    alert "Solitaire Build 131015@1826"
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
@@ -382,7 +382,7 @@ class PlayMatSolitaireController
     allStates = @theModel.getPossibleConditionsAt locWhere
     console.log "Active states: "+activeStates+ " out of: "+allStates
     for state in allStates
-      if $.inArray(state, activeStates)
+      if (0<= $.inArray(state, activeStates))
         theElement.addClass state
       else
         theElement.removeClass state

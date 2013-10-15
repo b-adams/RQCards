@@ -28,7 +28,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
   PlayMatSolitaireController = (function() {
     function PlayMatSolitaireController() {
-      alert("Solitaire Build 131015@1813");
+      alert("Solitaire Build 131015@1826");
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
       this.iteration = 0;
@@ -430,7 +430,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       _results = [];
       for (_i = 0, _len = allStates.length; _i < _len; _i++) {
         state = allStates[_i];
-        if ($.inArray(state, activeStates)) {
+        if (0 <= $.inArray(state, activeStates)) {
           _results.push(theElement.addClass(state));
         } else {
           _results.push(theElement.removeClass(state));
