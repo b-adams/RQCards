@@ -24,7 +24,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 class PlayMatSolitaireController
   constructor: ->
-    alert "Solitaire Build 131015@1736"
+    alert "Solitaire Build 131015@1813"
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
@@ -86,8 +86,9 @@ class PlayMatSolitaireController
     return element
 
   connectElement: (locWhere) ->
-    theFeature = this.getElement locWhere
-    theFeature.click -> this.doSelect locWhere
+    theController = this
+    theFeature = theController.getElement locWhere
+    theFeature.click -> theController.doSelect locWhere
     theFeature.css "border-style", "dashed"
 
   setElementActivity: (active, theElement) ->
@@ -331,7 +332,7 @@ class PlayMatSolitaireController
   clearCurrentSelection: ->
     if @selectedElement.isIllegalLocation() isnt true
       oldState = @theModel.isCellActive @selectedElement
-      this.setElementActivity oldState, @selectedElement
+      this.setElementActivity oldState, (this.getElement @selectedElement)
 
     @selectedElement = new Location()
     this.updateGoButton @currentPlayer
@@ -348,14 +349,16 @@ class PlayMatSolitaireController
 
     selectionState = @theModel.isCellActive locWhere
 
+    htmlCell = this.getElement locWhere
+
     # Don't bother selecting inactive elements, you can't discard or replace them
     if selectionState
       #console.log "Selecting "+theElement+": "+type+":"+colIndex+":"+theVariety
       #Set up new selected element
-      locWhere.element.css "border-style", "dotted"
-      locWhere.element.css "border-width", "3px"
-      locWhere.element.css "text-shadow",  "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF"
-      locWhere.element.css "opacity",      "1"
+      htmlCell.css "border-style", "dotted"
+      htmlCell.css "border-width", "3px"
+      htmlCell.css "text-shadow",  "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF"
+      htmlCell.css "opacity",      "1"
 
       #Remember for future use
       @selectedElement = locWhere

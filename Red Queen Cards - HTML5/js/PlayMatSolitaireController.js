@@ -24,11 +24,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 
 (function() {
-  var PlayMatSolitaireController,
-    __slice = [].slice;
+  var PlayMatSolitaireController;
 
   PlayMatSolitaireController = (function() {
     function PlayMatSolitaireController() {
+      alert("Solitaire Build 131015@1813");
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
       this.iteration = 0;
@@ -53,12 +53,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         plant: 0,
         pathogen: 0
       };
-      this.selectedElement = {
-        element: null,
-        type: -1,
-        colIndex: -1,
-        variety: -1
-      };
+      this.selectedElement = new Location(-1, -1, -1);
       this.goButtons = {
         plant: null,
         pathogen: null
@@ -81,10 +76,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return this.pressurePoints[side] += amount;
     };
 
-    PlayMatSolitaireController.prototype.getElement = function(type, colIndex) {
+    PlayMatSolitaireController.prototype.getElement = function(locWhere) {
       var element, selector;
-      selector = "#board > #c" + (colIndex + 1) + " > .";
-      switch (type) {
+      selector = "#board > #c" + (locWhere.colIndex + 1) + " > .";
+      switch (locWhere.cardtype) {
         case TYPE_FEATURE:
           selector += "feature";
           break;
@@ -92,26 +87,25 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           selector += "detector";
           break;
         case TYPE_EFFECTOR:
-          selector += "e" + (arguments[2] + 1);
+          selector += "e" + (locWhere.variety + 1);
           break;
         case TYPE_ALARM:
-          selector += "a" + (arguments[2] + 1);
+          selector += "a" + (locWhere.variety + 1);
           break;
         default:
-          alert("Bad element request");
+          alert("PMSC Bad element request-- " + locWhere.toString());
           selector = "";
       }
       element = $(selector);
       return element;
     };
 
-    PlayMatSolitaireController.prototype.connectElement = function() {
-      var colIndex, self, theFeature, theVariant, type;
-      type = arguments[0], colIndex = arguments[1], theVariant = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-      self = this;
-      theFeature = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariant)));
+    PlayMatSolitaireController.prototype.connectElement = function(locWhere) {
+      var theController, theFeature;
+      theController = this;
+      theFeature = theController.getElement(locWhere);
       theFeature.click(function() {
-        return self.doSelect.apply(self, [theFeature, type, colIndex].concat(__slice.call(theVariant)));
+        return theController.doSelect(locWhere);
       });
       return theFeature.css("border-style", "dashed");
     };
@@ -270,19 +264,14 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return this.iteration += 1;
     };
 
-    PlayMatSolitaireController.prototype.doDiscard = function() {
-      var colIndex, oldValue, self, theElement, theVariety, type, _ref;
-      theElement = arguments[0], type = arguments[1], colIndex = arguments[2], theVariety = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
-      self = this;
-      oldValue = (_ref = this.theModel).isCellActive.apply(_ref, [type, colIndex].concat(__slice.call(theVariety)));
+    PlayMatSolitaireController.prototype.doDiscard = function(locWhere) {
+      var oldValue;
+      oldValue = this.theModel.isCellActive(locWhere);
       if (oldValue !== true) {
         return false;
       } else {
-        if (theElement == null) {
-          theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
-        }
-        this.doSet.apply(this, [theElement, false, type, colIndex].concat(__slice.call(theVariety)));
-        switch (type) {
+        this.doSet(false, locWhere);
+        switch (locWhere.cardtype) {
           case TYPE_FEATURE:
             this.distribution["features"] -= 1;
             break;
@@ -295,26 +284,51 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           case TYPE_EFFECTOR:
             this.distribution["effectors"] -= 1;
         }
-        self.setElementActivity(false, theElement);
+        this.setElementActivity(false, this.getElement(locWhere));
         return true;
       }
     };
 
     PlayMatSolitaireController.prototype.doDiscardSelected = function() {
-      return this.doDiscard(this.selectedElement["element"], this.selectedElement["type"], this.selectedElement["colIndex"], this.selectedElement["variety"]);
+      return this.doDiscard(this.selectedElement);
     };
 
     PlayMatSolitaireController.prototype.getRandomInactiveElementOfType = function(type) {
-      var colIndex, notLooped, occupied, startCol, startVar, variety;
+      var colIndex, looped, occupied, startCol, startVar, theSpot, upper, variety;
+      switch (type) {
+        case TYPE_FEATURE:
+          upper = true;
+          break;
+        case TYPE_DETECTOR:
+          upper = true;
+          break;
+        case TYPE_EFFECTOR:
+          upper = false;
+          break;
+        case TYPE_ALARM:
+          upper = false;
+      }
       startCol = Math.floor(Math.random() * NUMBER_OF_PLAYABLE_COLUMNS);
-      startVar = Math.floor(Math.random() * 2);
       colIndex = startCol;
-      variety = startVar;
       occupied = true;
-      notLooped = true;
-      while (occupied && notLooped) {
-        occupied = this.theModel.isCellActive(type, colIndex, variety);
-        if (occupied) {
+      looped = false;
+      theSpot = new Location();
+      if (upper) {
+        while (occupied && !looped) {
+          theSpot = new Location(type, colIndex);
+          occupied = this.theModel.isCellActive(theSpot);
+          colIndex += 1;
+          if (colIndex >= NUMBER_OF_PLAYABLE_COLUMNS) {
+            colIndex = 0;
+          }
+          looped = colIndex === startCol;
+        }
+      } else {
+        startVar = Math.floor(Math.random() * 2);
+        variety = startVar;
+        while (occupied && !looped) {
+          theSpot = new Location(type, colIndex, variety);
+          occupied = this.theModel.isCellActive(theSpot);
           variety += 1;
           if (variety >= 2) {
             variety = 0;
@@ -323,40 +337,31 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
               colIndex = 0;
             }
           }
+          looped = colIndex === startCol && variety === startVar;
         }
-        notLooped = colIndex !== startCol || variety !== startVar;
       }
       if (occupied) {
         alert("Could not find unoccupied cell");
         this.clearCurrentSelection();
-        return null;
-      } else {
-        return {
-          element: this.getElement(type, colIndex, variety),
-          type: type,
-          colIndex: colIndex,
-          variety: variety
-        };
+        theSpot = new Location();
       }
+      return theSpot;
     };
 
     PlayMatSolitaireController.prototype.selectRandomInactiveElementOfType = function(type) {
       var choice;
       this.clearCurrentSelection();
       choice = this.getRandomInactiveElementOfType(type);
-      this.selectedElement["element"] = choice["element"];
-      this.selectedElement["type"] = choice["type"];
-      this.selectedElement["colIndex"] = choice["colIndex"];
-      return this.selectedElement["variety"] = choice["variety"];
+      return this.selectedElement = choice;
     };
 
     PlayMatSolitaireController.prototype.doDraw = function(type) {
       var anElement;
       anElement = this.getRandomInactiveElementOfType(type);
-      if (anElement === null) {
+      if (anElement.isIllegalLocation()) {
         return;
       }
-      return this.doSet(anElement["element"], true, type, anElement["colIndex"], anElement["variety"]);
+      return this.doSet(true, anElement);
     };
 
     PlayMatSolitaireController.prototype.isTypeOnSideOf = function(type, side) {
@@ -376,130 +381,79 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
     PlayMatSolitaireController.prototype.clearCurrentSelection = function() {
       var oldState;
-      if (this.selectedElement["element"] !== null) {
-        oldState = this.theModel.isCellActive(this.selectedElement["type"], this.selectedElement["colIndex"], this.selectedElement["variety"]);
-        this.setElementActivity(oldState, this.selectedElement["element"]);
+      if (this.selectedElement.isIllegalLocation() !== true) {
+        oldState = this.theModel.isCellActive(this.selectedElement);
+        this.setElementActivity(oldState, this.getElement(this.selectedElement));
       }
-      this.selectedElement["element"] = null;
-      this.selectedElement["type"] = -1;
-      this.selectedElement["colIndex"] = -1;
-      this.selectedElement["variety"] = -1;
+      this.selectedElement = new Location();
       return this.updateGoButton(this.currentPlayer);
     };
 
-    PlayMatSolitaireController.prototype.doSelect = function() {
-      var colIndex, selectionState, theElement, theVariety, type, _ref;
-      theElement = arguments[0], type = arguments[1], colIndex = arguments[2], theVariety = 4 <= arguments.length ? __slice.call(arguments, 3) : [];
+    PlayMatSolitaireController.prototype.doSelect = function(locWhere) {
+      var htmlCell, selectionState;
       this.clearCurrentSelection();
-      if (!this.isTypeOnSideOf(type, this.currentPlayer)) {
+      if (!this.isTypeOnSideOf(locWhere.cardtype, this.currentPlayer)) {
         return;
       }
-      selectionState = (_ref = this.theModel).isCellActive.apply(_ref, [type, colIndex].concat(__slice.call(theVariety)));
+      selectionState = this.theModel.isCellActive(locWhere);
+      htmlCell = this.getElement(locWhere);
       if (selectionState) {
-        theElement.css("border-style", "dotted");
-        theElement.css("border-width", "3px");
-        theElement.css("text-shadow", "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF");
-        theElement.css("opacity", "1");
-        this.selectedElement["element"] = theElement;
-        this.selectedElement["type"] = type;
-        this.selectedElement["colIndex"] = colIndex;
-        this.selectedElement["variety"] = theVariety.length > 0 ? theVariety[0] : -1;
+        htmlCell.css("border-style", "dotted");
+        htmlCell.css("border-width", "3px");
+        htmlCell.css("text-shadow", "0 0 0.2em #FFF, 0 0 0.3em #FFF, 0 0 0.4em #FFF");
+        htmlCell.css("opacity", "1");
+        this.selectedElement = locWhere;
         return this.updateGoButton(this.currentPlayer);
       }
     };
 
-    PlayMatSolitaireController.prototype.doSet = function() {
-      var colIndex, newValue, oldValue, self, theElement, theVariety, type, _ref, _ref1;
-      theElement = arguments[0], newValue = arguments[1], type = arguments[2], colIndex = arguments[3], theVariety = 5 <= arguments.length ? __slice.call(arguments, 4) : [];
-      console.log("doSet " + type + colIndex + ":" + theElement + " to " + newValue);
-      self = this;
-      oldValue = (_ref = this.theModel).isCellActive.apply(_ref, [type, colIndex].concat(__slice.call(theVariety)));
-      if (theElement == null) {
-        theElement = self.getElement.apply(self, [type, colIndex].concat(__slice.call(theVariety)));
-      }
-      (_ref1 = this.theModel).setCell.apply(_ref1, [newValue, type, colIndex].concat(__slice.call(theVariety)));
-      self.updateBoardState();
-      self.setElementActivity(newValue, theElement);
-      this.updateInteractions.apply(this, [theElement, newValue, type, colIndex].concat(__slice.call(theVariety)));
+    PlayMatSolitaireController.prototype.doSet = function(newValue, locWhere) {
+      var theElement;
+      theElement = this.getElement(locWhere);
+      console.log("doSet " + locWhere.cardtype + locWhere.colIndex + ":" + theElement + " to " + newValue);
+      this.theModel.setCell(newValue, locWhere);
+      this.updateBoardState();
+      this.setElementActivity(newValue, theElement);
+      this.updateInteractionsAround(locWhere);
       return newValue;
     };
 
-    PlayMatSolitaireController.prototype.updateInteractions = function() {
-      var aVariety, active, busted, colIndex, theElement, theVariety, triggerElement, triggerState, triggerType, type, _i, _len, _ref, _ref1, _ref2;
-      theElement = arguments[0], active = arguments[1], type = arguments[2], colIndex = arguments[3], theVariety = 5 <= arguments.length ? __slice.call(arguments, 4) : [];
-      console.log("Updating interactions for " + theElement);
-      switch (type) {
-        case TYPE_FEATURE:
-          triggerType = TYPE_DETECTOR;
-          triggerElement = this.getElement(triggerType, colIndex);
-          triggerState = (this.theModel.isCellActive(triggerType, colIndex)) && !(this.theModel.isDetectorDisabled(colIndex));
-          if (active && triggerState) {
-            theElement.addClass("detected");
-            return triggerElement.addClass("detecting");
-          } else {
-            theElement.removeClass("detected");
-            return triggerElement.removeClass("detecting");
-          }
-          break;
-        case TYPE_DETECTOR:
-          triggerType = TYPE_EFFECTOR;
-          busted = false;
-          _ref = [0, 1];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            aVariety = _ref[_i];
-            triggerElement = this.getElement(triggerType, colIndex, aVariety);
-            triggerState = this.theModel.isCellActive(triggerType, colIndex, aVariety);
-            if (active && triggerState) {
-              theElement.addClass("disabled" + aVariety);
-              triggerElement.addClass("disabling");
-              busted = true;
-            } else {
-              theElement.removeClass("disabled" + aVariety);
-              triggerElement.removeClass("disabling");
-            }
-          }
-          if (busted) {
-            active = false;
-          }
-          triggerType = TYPE_FEATURE;
-          triggerElement = this.getElement(triggerType, colIndex);
-          triggerState = this.theModel.isCellActive(triggerType, colIndex);
-          if (active && triggerState) {
-            triggerElement.addClass("detected");
-            return theElement.addClass("detecting");
-          } else {
-            triggerElement.removeClass("detected");
-            return theElement.removeClass("detecting");
-          }
-          break;
-        case TYPE_EFFECTOR:
-          triggerType = TYPE_DETECTOR;
-          triggerElement = this.getElement(triggerType, colIndex);
-          triggerState = this.theModel.isCellActive(triggerType, colIndex);
-          this.updateInteractions(triggerElement, triggerState, triggerType, colIndex);
-          triggerType = TYPE_ALARM;
-          triggerElement = this.getElement.apply(this, [triggerType, colIndex].concat(__slice.call(theVariety)));
-          triggerState = (_ref1 = this.theModel).isCellActive.apply(_ref1, [triggerType, colIndex].concat(__slice.call(theVariety)));
-          if (active && triggerState) {
-            theElement.addClass("alarming");
-            return triggerElement.addClass("alarmed");
-          } else {
-            theElement.removeClass("alarming");
-            return triggerElement.removeClass("alarmed");
-          }
-          break;
-        case TYPE_ALARM:
-          triggerType = TYPE_EFFECTOR;
-          triggerElement = this.getElement.apply(this, [triggerType, colIndex].concat(__slice.call(theVariety)));
-          triggerState = (_ref2 = this.theModel).isCellActive.apply(_ref2, [triggerType, colIndex].concat(__slice.call(theVariety)));
-          if (active && triggerState) {
-            triggerElement.addClass("alarming");
-            return theElement.addClass("alarmed");
-          } else {
-            triggerElement.removeClass("alarming");
-            return theElement.removeClass("alarmed");
-          }
+    PlayMatSolitaireController.prototype.updateInteractionsAt = function(locWhere) {
+      var activeStates, allStates, state, theElement, _i, _len, _results;
+      if (locWhere === null || locWhere.isIllegalLocation()) {
+        return;
       }
+      theElement = this.getElement(locWhere);
+      activeStates = this.theModel.getStateCondidionsAt(locWhere);
+      allStates = this.theModel.getPossibleConditionsAt(locWhere);
+      console.log("Active states: " + activeStates + " out of: " + allStates);
+      _results = [];
+      for (_i = 0, _len = allStates.length; _i < _len; _i++) {
+        state = allStates[_i];
+        if ($.inArray(state, activeStates)) {
+          _results.push(theElement.addClass(state));
+        } else {
+          _results.push(theElement.removeClass(state));
+        }
+      }
+      return _results;
+    };
+
+    PlayMatSolitaireController.prototype.updateInteractionsAround = function(locWhere) {
+      var above, below, _i, _len, _ref, _results;
+      console.log("Updating interactions for " + locWhere + " and neighbors");
+      this.updateInteractionsAt(locWhere);
+      above = locWhere.getLocationAbove();
+      if (!above.isIllegalLocation()) {
+        this.updateInteractionsAt(above);
+      }
+      _ref = locWhere.getLocationsBelow();
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        below = _ref[_i];
+        _results.push(this.updateInteractionsAt(below));
+      }
+      return _results;
     };
 
     PlayMatSolitaireController.prototype.randomSelectionArray = function(picks, total) {
@@ -527,28 +481,27 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.doRandomize = function() {
-      var i, randList, randVal, self, _i, _j, _k, _l, _len, _len1, _len2, _len3, _results;
-      self = this;
-      randList = self.randomSelectionArray(this.distribution["features"], NUMBER_OF_FEATURES);
+      var i, randList, randVal, _i, _j, _k, _l, _len, _len1, _len2, _len3, _results;
+      randList = this.randomSelectionArray(this.distribution["features"], NUMBER_OF_FEATURES);
       for (i = _i = 0, _len = randList.length; _i < _len; i = ++_i) {
         randVal = randList[i];
-        self.doSet(null, randVal, TYPE_FEATURE, i);
+        this.doSet(randVal, new Location(TYPE_FEATURE, i));
       }
-      randList = self.randomSelectionArray(this.distribution["detectors"], NUMBER_OF_DETECTORS);
+      randList = this.randomSelectionArray(this.distribution["detectors"], NUMBER_OF_DETECTORS);
       for (i = _j = 0, _len1 = randList.length; _j < _len1; i = ++_j) {
         randVal = randList[i];
-        self.doSet(null, randVal, TYPE_DETECTOR, i);
+        this.doSet(randVal, new Location(TYPE_DETECTOR, i));
       }
-      randList = self.randomSelectionArray(this.distribution["effectors"], NUMBER_OF_EFFECTORS);
+      randList = this.randomSelectionArray(this.distribution["effectors"], NUMBER_OF_EFFECTORS);
       for (i = _k = 0, _len2 = randList.length; _k < _len2; i = ++_k) {
         randVal = randList[i];
-        self.doSet(null, randVal, TYPE_EFFECTOR, i >> 1, i % 2);
+        this.doSet(randVal, new Location(TYPE_EFFECTOR, i >> 1, i % 2));
       }
-      randList = self.randomSelectionArray(this.distribution["alarms"], NUMBER_OF_ALARMS);
+      randList = this.randomSelectionArray(this.distribution["alarms"], NUMBER_OF_ALARMS);
       _results = [];
       for (i = _l = 0, _len3 = randList.length; _l < _len3; i = ++_l) {
         randVal = randList[i];
-        _results.push(self.doSet(null, randVal, TYPE_ALARM, i >> 1, i % 2));
+        _results.push(this.doSet(randVal, new Location(TYPE_ALARM, i >> 1, i % 2)));
       }
       return _results;
     };
@@ -706,12 +659,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     window.controller = new PlayMatSolitaireController();
     control = window.controller;
     for (i = _i = 0; 0 <= NUMBER_OF_PLAYABLE_COLUMNS ? _i < NUMBER_OF_PLAYABLE_COLUMNS : _i > NUMBER_OF_PLAYABLE_COLUMNS; i = 0 <= NUMBER_OF_PLAYABLE_COLUMNS ? ++_i : --_i) {
-      control.connectElement(TYPE_FEATURE, i);
-      control.connectElement(TYPE_DETECTOR, i);
-      control.connectElement(TYPE_EFFECTOR, i, 0);
-      control.connectElement(TYPE_EFFECTOR, i, 1);
-      control.connectElement(TYPE_ALARM, i, 0);
-      control.connectElement(TYPE_ALARM, i, 1);
+      control.connectElement(new Location(TYPE_FEATURE, i));
+      control.connectElement(new Location(TYPE_DETECTOR, i));
+      control.connectElement(new Location(TYPE_EFFECTOR, i, VARIETY_LEFT));
+      control.connectElement(new Location(TYPE_EFFECTOR, i, VARIETY_RIGHT));
+      control.connectElement(new Location(TYPE_ALARM, i, VARIETY_LEFT));
+      control.connectElement(new Location(TYPE_ALARM, i, VARIETY_RIGHT));
     }
     control.goButtons[SIDE_PLANT] = $("#" + ID_PLANT_ENGAGE);
     control.actionChoices[SIDE_PLANT] = $("#" + ID_PLANT_ACTIONS);
