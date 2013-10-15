@@ -24,7 +24,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 class PlayMatSolitaireController
   constructor: ->
-    alert "Solitaire Build 131015@1826"
+    alert "Solitaire Build 131015@1856"
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
@@ -114,9 +114,9 @@ class PlayMatSolitaireController
     actionType = @actionChoices[whoseSide].val()
 
     requiresSelection = actionType is ACTION_DISCARD or actionType is ACTION_REPLACE
-    hasSelection = @selectedElement["element"] isnt null
+    hasNoSelection = @selectedElement.isIllegalLocation()
 
-    if requiresSelection and not hasSelection
+    if requiresSelection and hasNoSelection
       @goButtons[whoseSide].html("Selection Required")
       @goButtons[whoseSide].attr("disabled", "disabled")
       @goButtons[whoseSide].css "background", "red"
@@ -124,11 +124,11 @@ class PlayMatSolitaireController
 
     switch actionType
       when ACTION_DRAW
-        elementType = @selectedElement["type"]
+        elementType = @selectedElement[LOCATION_TYPE]
       when ACTION_DISCARD
-        elementType = @selectedElement["type"]
+        elementType = @selectedElement[LOCATION_TYPE]
       when ACTION_REPLACE
-        elementType = @selectedElement["type"]
+        elementType = @selectedElement[LOCATION_TYPE]
       when ACTION_DRAW_A
         actionType = ACTION_DRAW
         elementType = TYPE_ALARM
@@ -489,7 +489,7 @@ class PlayMatSolitaireController
 
   processAction: (whichSide) ->
     action = @actionChoices[whichSide].val()
-    type = @selectedElement["type"]
+    type = @selectedElement[LOCATION_TYPE]
 
     switch action
       when ACTION_DRAW_A

@@ -28,7 +28,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
   PlayMatSolitaireController = (function() {
     function PlayMatSolitaireController() {
-      alert("Solitaire Build 131015@1826");
+      alert("Solitaire Build 131015@1856");
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
       this.iteration = 0;
@@ -133,12 +133,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.updateGoButton = function(whoseSide) {
-      var actionType, cost, elementType, hasSelection, requiresSelection;
+      var actionType, cost, elementType, hasNoSelection, requiresSelection;
       this.goButtons[whoseSide].removeAttr("disabled");
       actionType = this.actionChoices[whoseSide].val();
       requiresSelection = actionType === ACTION_DISCARD || actionType === ACTION_REPLACE;
-      hasSelection = this.selectedElement["element"] !== null;
-      if (requiresSelection && !hasSelection) {
+      hasNoSelection = this.selectedElement.isIllegalLocation();
+      if (requiresSelection && hasNoSelection) {
         this.goButtons[whoseSide].html("Selection Required");
         this.goButtons[whoseSide].attr("disabled", "disabled");
         this.goButtons[whoseSide].css("background", "red");
@@ -146,13 +146,13 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       }
       switch (actionType) {
         case ACTION_DRAW:
-          elementType = this.selectedElement["type"];
+          elementType = this.selectedElement[LOCATION_TYPE];
           break;
         case ACTION_DISCARD:
-          elementType = this.selectedElement["type"];
+          elementType = this.selectedElement[LOCATION_TYPE];
           break;
         case ACTION_REPLACE:
-          elementType = this.selectedElement["type"];
+          elementType = this.selectedElement[LOCATION_TYPE];
           break;
         case ACTION_DRAW_A:
           actionType = ACTION_DRAW;
@@ -591,7 +591,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     PlayMatSolitaireController.prototype.processAction = function(whichSide) {
       var action, cost, type;
       action = this.actionChoices[whichSide].val();
-      type = this.selectedElement["type"];
+      type = this.selectedElement[LOCATION_TYPE];
       switch (action) {
         case ACTION_DRAW_A:
           type = TYPE_ALARM;

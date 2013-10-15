@@ -58,3 +58,7 @@ var ID_PATHO_PRESSURE = "pathoPressPts"
 
 var SIDE_PLANT = "plant"
 var SIDE_PATHOGEN = "pathogen"
+
+var LOCATION_TYPE = "cardtype"
+var LOCATION_COLUMN = "colIndex"
+var LOCATION_VARIANT = "variety"
