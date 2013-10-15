@@ -48,7 +48,7 @@ class PlayMatController
       when TYPE_EFFECTOR then selector+="e"+(arguments[2]+1)
       when TYPE_ALARM    then selector+="a"+(arguments[2]+1)
       else
-        alert "Bad element request"
+        alert "PMC Bad element request"
         selector=""
     return $ selector
 

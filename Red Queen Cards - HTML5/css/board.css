@@ -4,114 +4,102 @@
 //	height: 300px;
 }
 
-* 
-{ 
-	-moz-box-sizing: border-box; 
-	-webkit-box-sizing: border-box; 
-	box-sizing: border-box; 
+*
+{
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
-.board 
-{ 
-	width: 100%;
-	max-width: 100%; 
-	min-width: 600px; 
-	margin: 0 auto; 
+.board
+{
+    width: 100%;
+    max-width: 100%;
+    min-width: 600px;
+    margin: 0 auto;
 }
-.column 
-{ 
-	height: 500px;
-	width: 12.5%; 
-	float: left; 
-	min-height: 300px;
-	position: relative;
-	padding-right: 1px;
-	padding-left: 1px;
+.column
+{
+    height: 500px;
+    width: 12.5%;
+    float: left;
+    min-height: 300px;
+    position: relative;
+    padding-right: 1px;
+    padding-left: 1px;
 }
 [class*="column"] + [class*="column"]:last-child { float: right; }
 
 .feature, .detector, .effector, .alarm
 {
-	margin-top: 1px;
-	margin-bottom: 1px;
-	border: 1px solid #333;
-	padding: 1%;
-	opacity: 0.25;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    border: 1px solid #333;
+    padding: 1%;
+    opacity: 0.25;
 }
 
 @-webkit-keyframes 'select' {
-	from { 
-		opacity: 0.5;
-		-webkit-transform: rotateX(180deg);
-	}
-	to { 
-		opacity: 1;
-		-webkit-transform: rotateX(360deg);
-	}
+    from {
+        opacity: 0.5;
+        -webkit-transform: rotateX(180deg);
+    }
+    to {
+        opacity: 1;
+        -webkit-transform: rotateX(360deg);
+    }
 }
 @-webkit-keyframes 'deselect' {
-	from { 
-		opacity: 1;
-		-webkit-transform: rotateX(360deg);
-	}
-	to { 
-		opacity: 0.5;
-		-webkit-transform: rotateX(180deg);
-	}
+    from {
+        opacity: 1;
+        -webkit-transform: rotateX(360deg);
+    }
+    to {
+        opacity: 0.5;
+        -webkit-transform: rotateX(180deg);
+    }
 }
 
 @keyframes 'rectify' {
-from { 
-	transform: rotate(0deg) scale(1.0);
-}
-50% {
-	transform: rotate(180deg) scale(0.5);
-}
-to { 
-	transform: rotate(360deg) scale(1.0);
-}
-}
-
-.feature, .detector  
-{ 
-	width:100%; 
-	height: 16.66%;
-}
-.effector, .alarm 
-{ 
-	width:50%; 
-	float: left; 
-	height: 33.33%; 
+    from {
+        transform: rotate(0deg) scale(1.0);
+    }
+    50% {
+        transform: rotate(180deg) scale(0.5);
+    }
+    to {
+        transform: rotate(360deg) scale(1.0);
+    }
 }
 
-.feature
+.feature, .detector
 {
-	background-color: #f8b000;
+    width:100%;
+    height: 16.66%;
 }
-.detector
+.effector, .alarm
 {
-	background-color: #58ae49;	
+    width:50%;
+    float: left;
+    height: 33.33%;
 }
-.effector
-{
-	background-color: #f40000;
-}
-.alarm
-{
-	background-color: #b1ff52;
-}
+
+.feature  { background-color: #f8b000; }
+.detector { background-color: #58ae49; }
+.effector { background-color: #f40000; }
+.alarm    { background-color: #b1ff52; }
 
 #Quiz1, #Quiz2, #Quiz3, #Quiz4
 {
-	width: 100%; height: 4em; text-align: center;
+    width: 100%; height: 4em; text-align: center;
 }
 #Quiz1 { background-color: #00f000; }
 #Quiz2 { background-color: #40c000; }
 #Quiz3 { background-color: #808000; }
 #Quiz4 { background-color: #f40000; }
 #ClearBoardButton {
-	width: 100%; height: 1.5em; text-align: center; background-color: #0000ff;
-	color:  #ffffff;
+    width: 100%; height: 1.5em; text-align: center; background-color: #0000ff;
+    color:  #ffffff;
 }
 
 .detecting {
@@ -156,16 +144,16 @@ to {
     background-image: url('http://placesheen.com/172/80');
 }
 .disabling:after {
-    content: " - DISABLING DETECTOR";
+    /*content: " - DISABLING DETECTOR";*/
 }
 .disabled0:before {
-    content: "DISABLED - ";
+    /*content: "DISABLED - ";*/
 }
 .disabled1:before {
-    content: "DISABLED - ";
+    /*content: "DISABLED - ";*/
 }
 .alarming:after {
-    content: " - TRIGGERING ALARM";
+    /*content: " - TRIGGERING ALARM";*/
 }
 .alarming {
     border-bottom-left-radius: 1em;
@@ -178,12 +166,12 @@ to {
     box-shadow: 0px 0px 0.5em 0.5em rgba(255,0,0,0.75);
 }
 .alarmed:after {
-    content: " - TRIGGERED";
+    /*content: " - TRIGGERED";*/
 }
 .detecting:after {
-    content: " - DETECTING MAMP";
+    /*content: " - DETECTING MAMP";*/
 }
 .detected:after {
-    content: " - DETECTED";
+    /*content: " - DETECTED";*/
 }
 
