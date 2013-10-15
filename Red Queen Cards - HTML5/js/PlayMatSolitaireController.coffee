@@ -24,6 +24,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 class PlayMatSolitaireController
   constructor: ->
+    alert "Solitaire Build 131015@1736"
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0

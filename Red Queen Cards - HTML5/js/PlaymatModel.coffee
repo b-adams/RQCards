@@ -26,6 +26,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 window.PlayMat = class PlayMat
   constructor: ->
     this.clearBoard()
+    alert "Mat Build 131015@1736"
     return this
 
 # Data setup
