@@ -371,7 +371,7 @@ class PlayMatSolitaireController
 
   doSet: (newValue, locWhere) ->
     theElement = this.getElement locWhere
-    console.log "doSet "+locWhere.cardtype+locWhere.colIndex+":"+theElement+" to "+newValue
+    #console.log "doSet "+locWhere.cardtype+locWhere.colIndex+":"+theElement+" to "+newValue
     @theModel.setCell newValue, locWhere
     this.updateBoardState()
     this.setElementActivity newValue, theElement
@@ -383,7 +383,7 @@ class PlayMatSolitaireController
     theElement = this.getElement locWhere
     activeStates = @theModel.getStateCondidionsAt locWhere
     allStates = @theModel.getPossibleConditionsAt locWhere
-    console.log "Active states: "+activeStates+ " out of: "+allStates
+    #console.log "Active states: "+activeStates+ " out of: "+allStates
     for state in allStates
       if (0<= $.inArray(state, activeStates))
         theElement.addClass state
@@ -391,7 +391,7 @@ class PlayMatSolitaireController
         theElement.removeClass state
 
   updateInteractionsAround: (locWhere) ->
-    console.log "Updating interactions for "+locWhere+" and neighbors"
+    #console.log "Updating interactions for "+locWhere+" and neighbors"
     this.updateInteractionsAt locWhere
     above = locWhere.getLocationAbove()
     if not above.isIllegalLocation()

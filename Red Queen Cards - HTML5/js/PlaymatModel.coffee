@@ -71,7 +71,7 @@ window.PlayMat = class PlayMat
     this.updateStatesAfterChanging(locWhere.cardtype)
 
     variant = locWhere.getVariantString()
-    console.log "Set #{locWhere.cardtype}#{variant} in column #{locWhere.colIndex} to #{newValue}"
+    #console.log "Set #{locWhere.cardtype}#{variant} in column #{locWhere.colIndex} to #{newValue}"
 
 
   toggleCell: (type, locWhere) ->
