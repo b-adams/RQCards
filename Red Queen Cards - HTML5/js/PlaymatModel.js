@@ -24,12 +24,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 
 (function() {
-  var PlayMat,
-    __slice = [].slice;
+  var Location, PlayMat;
 
   window.PlayMat = PlayMat = (function() {
     function PlayMat() {
       this.clearBoard();
+      alert("Mat Build 131015@2341");
       return this;
     }
 
@@ -57,13 +57,13 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return _results;
     };
 
-    PlayMat.prototype.setCell = function(newValue, type, colIndex) {
+    PlayMat.prototype.setCell = function(newValue, locWhere) {
       var theColumn, variant;
-      if (colIndex >= NUMBER_OF_PLAYABLE_COLUMNS) {
-        alert("Column " + colIndex + " too high");
+      if (locWhere.isIllegalLocation()) {
+        alert("Attempting to set illegal location " + locWhere);
       }
-      theColumn = this._columns[colIndex];
-      switch (type) {
+      theColumn = this._columns[locWhere.colIndex];
+      switch (locWhere.cardtype) {
         case TYPE_FEATURE:
           theColumn._MAMP = newValue;
           break;
@@ -71,25 +71,23 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           theColumn._PRR = newValue;
           break;
         case TYPE_EFFECTOR:
-          theColumn._Effectors[arguments[3]] = newValue;
+          theColumn._Effectors[locWhere.variety] = newValue;
           break;
         case TYPE_ALARM:
-          theColumn._RProteins[arguments[3]] = newValue;
+          theColumn._RProteins[locWhere.variety] = newValue;
           break;
         default:
-          alert("Unknown cell type: " + type);
+          alert("Unknown cell type: " + locWhere.cardtype);
       }
-      this.updateActivityInColumn(colIndex);
-      this.updateStatesAfterChanging(type);
-      variant = arguments.length < 4 ? "" : arguments[3];
-      return console.log("Set " + type + variant + " in column " + colIndex + " to " + newValue);
+      this.updateActivityInColumn(locWhere.colIndex);
+      this.updateStatesAfterChanging(locWhere.cardtype);
+      return variant = locWhere.getVariantString();
     };
 
-    PlayMat.prototype.toggleCell = function() {
-      var colIndex, theColumn, theNewValue, theVariant, type;
-      type = arguments[0], colIndex = arguments[1], theVariant = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-      theColumn = this._columns[colIndex];
-      switch (type) {
+    PlayMat.prototype.toggleCell = function(type, locWhere) {
+      var theColumn, theNewValue;
+      theColumn = this._columns[locWhere.colIndex];
+      switch (locWhere.cardtype) {
         case TYPE_FEATURE:
           theNewValue = !theColumn._MAMP;
           break;
@@ -97,15 +95,15 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           theNewValue = !theColumn._PRR;
           break;
         case TYPE_EFFECTOR:
-          theNewValue = !theColumn._Effectors[arguments[2]];
+          theNewValue = !theColumn._Effectors[locWhere.variety];
           break;
         case TYPE_ALARM:
-          theNewValue = !theColumn._RProteins[arguments[2]];
+          theNewValue = !theColumn._RProteins[locWhere.variety];
           break;
         default:
-          alert("Unknown cell type: " + type);
+          alert("Unknown cell type: " + locWhere.cardtype);
       }
-      this.setCell.apply(this, [theNewValue, type, colIndex].concat(__slice.call(theVariant)));
+      this.setCell(theNewValue, locWhere);
       return theNewValue;
     };
 
@@ -125,30 +123,23 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       }
     };
 
-    PlayMat.prototype.isCellActive = function() {
-      var colIndex, theColumn, theVariant, type;
-      type = arguments[0], colIndex = arguments[1], theVariant = 3 <= arguments.length ? __slice.call(arguments, 2) : [];
-      if (colIndex >= NUMBER_OF_PLAYABLE_COLUMNS) {
-        alert("Too many columns: " + colIndex);
+    PlayMat.prototype.isCellActive = function(locWhere) {
+      var theColumn;
+      if (locWhere.isIllegalLocation()) {
+        alert("Attempting to query illegal location " + locWhere);
       }
-      theColumn = this._columns[colIndex];
-      switch (type) {
+      theColumn = this._columns[locWhere.colIndex];
+      switch (locWhere.cardtype) {
         case TYPE_FEATURE:
           return theColumn._MAMP;
         case TYPE_DETECTOR:
           return theColumn._PRR;
         case TYPE_EFFECTOR:
-          if (arguments.length < 3) {
-            alert("Effector variant not specified");
-          }
-          return theColumn._Effectors[arguments[2]];
+          return theColumn._Effectors[locWhere.variety];
         case TYPE_ALARM:
-          if (arguments.length < 3) {
-            alert("Alarm variant not specified");
-          }
-          return theColumn._RProteins[arguments[2]];
+          return theColumn._RProteins[locWhere.variety];
         default:
-          alert("Unknown cell type: " + type);
+          alert("Unknown cell type: " + locWhere.cardtype);
       }
       return -1;
     };
@@ -159,7 +150,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         alert("Too many columns: " + colIndex);
       }
       theColumn = this._columns[colIndex];
-      return theColumn._Effectors[0] || theColumn._Effectors[1];
+      return theColumn._Effectors[VARIETY_LEFT] || theColumn._Effectors[VARIETY_RIGHT];
     };
 
     PlayMat.prototype.countActiveCellsOfType = function(type) {
@@ -188,10 +179,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           _ref2 = this._columns;
           for (_k = 0, _len2 = _ref2.length; _k < _len2; _k++) {
             theColumn = _ref2[_k];
-            if (theColumn._RProteins[0]) {
+            if (theColumn._RProteins[VARIETY_LEFT]) {
               actives += 1;
             }
-            if (theColumn._RProteins[1]) {
+            if (theColumn._RProteins[VARIETY_RIGHT]) {
               actives += 1;
             }
           }
@@ -200,10 +191,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           _ref3 = this._columns;
           for (_l = 0, _len3 = _ref3.length; _l < _len3; _l++) {
             theColumn = _ref3[_l];
-            if (theColumn._Effectors[0]) {
+            if (theColumn._Effectors[VARIETY_LEFT]) {
               actives += 1;
             }
-            if (theColumn._Effectors[1]) {
+            if (theColumn._Effectors[VARIETY_RIGHT]) {
               actives += 1;
             }
           }
@@ -228,7 +219,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
     PlayMat.prototype.updateETIState = function() {
       return this.stateOfETI = this._columnActivities.some(function(actSet) {
-        return actSet._EffectorsDetected[0] || actSet._EffectorsDetected[1];
+        return actSet._EffectorsDetected[VARIETY_LEFT] || actSet._EffectorsDetected[VARIETY_RIGHT];
       });
     };
 
@@ -239,14 +230,16 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMat.prototype.updateActivityInColumn = function(colIndex) {
-      var slot, theColumn, theList, _i;
+      var slot, theColumn, theList, _i, _len, _ref;
       theColumn = this._columns[colIndex];
       theList = this._columnActivities[colIndex];
-      for (slot = _i = 0; _i <= 1; slot = ++_i) {
+      _ref = [VARIETY_LEFT, VARIETY_RIGHT];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        slot = _ref[_i];
         theList._EffectorsDisabling[slot] = theColumn._PRR && theColumn._Effectors[slot];
         theList._EffectorsDetected[slot] = theColumn._Effectors[slot] && theColumn._RProteins[slot];
       }
-      theList._DetectorDisabled = theList._EffectorsDisabling[0] || theList._EffectorsDisabling[1];
+      theList._DetectorDisabled = theList._EffectorsDisabling[VARIETY_LEFT] || theList._EffectorsDisabling[VARIETY_RIGHT];
       return theList._DetectorTriggered = theColumn._MAMP && theColumn._PRR && !theList._DetectorDisabled;
     };
 
@@ -264,17 +257,324 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
     PlayMat.prototype.disablingEffectors = function() {
       return this._columnActivities.filter(function(actSet) {
-        return actSet._EffectorsDisabling[0] || actSet._EffectorsDisabling[1];
+        return actSet._EffectorsDisabling[VARIETY_LEFT] || actSet._EffectorsDisabling[VARIETY_RIGHT];
       });
     };
 
     PlayMat.prototype.triggeredAlarms = function() {
       return this._columnActivities.filter(function(actSet) {
-        return actSet._EffectorsDetected[0] || actSet._EffectorsDetected[1];
+        return actSet._EffectorsDetected[VARIETY_LEFT] || actSet._EffectorsDetected[VARIETY_RIGHT];
       });
     };
 
+    PlayMat.prototype.getStateCondidionsAt = function(locWhere) {
+      var alarmLoc, alarmed, alarming, busted, detected, detecting, detectorLoc, disabled, disabling, effectorLoc, featureLoc, states, variant, _i, _len, _ref;
+      if (!this.isCellActive(locWhere)) {
+        return [STATE_ABSENT];
+      }
+      states = [STATE_PRESENT];
+      switch (locWhere.cardtype) {
+        case TYPE_FEATURE:
+          detectorLoc = locWhere.getLocationBelow();
+          detected = (this.isCellActive(detectorLoc)) && !(this.isDetectorDisabled(locWhere.colIndex));
+          if (detected) {
+            states.push(STATE_DETECTED);
+          }
+          break;
+        case TYPE_DETECTOR:
+          busted = false;
+          _ref = locWhere.getLocationsBelow();
+          for (variant = _i = 0, _len = _ref.length; _i < _len; variant = ++_i) {
+            effectorLoc = _ref[variant];
+            disabled = this.isCellActive(effectorLoc);
+            busted = busted || disabled;
+            if (disabled) {
+              states.push(STATE_DISABLED + variant);
+            }
+          }
+          if (busted) {
+            states.push(STATE_DISABLED);
+          } else {
+            featureLoc = locWhere.getLocationAbove();
+            detecting = this.isCellActive(featureLoc);
+            if (detecting) {
+              states.push(STATE_DETECTING);
+            }
+          }
+          break;
+        case TYPE_EFFECTOR:
+          detectorLoc = locWhere.getLocationAbove();
+          disabling = this.isCellActive(detectorLoc);
+          if (disabling) {
+            states.push(STATE_DISABLING);
+          }
+          alarmLoc = locWhere.getLocationBelow();
+          alarming = this.isCellActive(alarmLoc);
+          if (alarming) {
+            states.push(STATE_ALARMING);
+          }
+          break;
+        case TYPE_ALARM:
+          effectorLoc = locWhere.getLocationAbove();
+          alarmed = this.isCellActive(effectorLoc);
+          if (alarmed) {
+            states.push(STATE_ALARMED);
+          }
+      }
+      return states;
+    };
+
+    PlayMat.prototype.getPossibleConditionsAt = function(locWhere) {
+      var states;
+      states = [STATE_ABSENT, STATE_PRESENT];
+      switch (locWhere.cardtype) {
+        case TYPE_FEATURE:
+          states.push(STATE_DETECTED);
+          break;
+        case TYPE_DETECTOR:
+          states.push(STATE_DETECTING);
+          states.push(STATE_DISABLED);
+          states.push(STATE_DISABLED_LEFT);
+          states.push(STATE_DISABLED_RIGHT);
+          break;
+        case TYPE_EFFECTOR:
+          states.push(STATE_DISABLING);
+          states.push(STATE_ALARMING);
+          break;
+        case TYPE_ALARM:
+          states.push(STATE_ALARMED);
+      }
+      return states;
+    };
+
+    PlayMat.prototype.getDetectedFeatures = function() {
+      var cardLoc, colNum, detected, detectedSet, detectorBusted, somethingDetectingMe, theColumn, thisCellActive, _i, _len, _ref;
+      detectedSet = [];
+      _ref = this._columns;
+      for (colNum = _i = 0, _len = _ref.length; _i < _len; colNum = ++_i) {
+        theColumn = _ref[colNum];
+        cardLoc = new Location(TYPE_FEATURE, colNum);
+        thisCellActive = this.isCellActive(cardLoc);
+        somethingDetectingMe = this.isCellActive(cardLoc.getLocationBelow());
+        detectorBusted = this.isDetectorDisabled(cardLoc.colIndex);
+        detected = thisCellActive && somethingDetectingMe && !detectorBusted;
+        if (detected) {
+          detectedSet.push(cardLoc);
+        }
+      }
+      return detectedSet;
+    };
+
+    PlayMat.prototype.getDetectedEffectors = function() {
+      var cardLoc, colNum, detected, detectedSet, somethingDetectingMe, theColumn, thisCellActive, variety, _i, _j, _len, _len1, _ref, _ref1;
+      detectedSet = [];
+      _ref = this._columns;
+      for (colNum = _i = 0, _len = _ref.length; _i < _len; colNum = ++_i) {
+        theColumn = _ref[colNum];
+        _ref1 = [VARIETY_LEFT, VARIETY_RIGHT];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          variety = _ref1[_j];
+          cardLoc = new Location(TYPE_EFFECTOR, colNum, variety);
+          thisCellActive = this.isCellActive(cardLoc);
+          somethingDetectingMe = this.isCellActive(cardLoc.getLocationBelow());
+          detected = thisCellActive && somethingDetectingMe;
+          if (detected) {
+            detectedSet.push(cardLoc);
+          }
+        }
+      }
+      return detectedSet;
+    };
+
+    PlayMat.prototype.getPathogenEvolutionReplacementOptions = function(lumpThemAllTogetherMode) {
+      var effectors, features;
+      effectors = this.getDetectedEffectors();
+      features = this.getDetectedFeatures();
+      if (lumpThemAllTogetherMode) {
+        return effectors.concat(features);
+      } else {
+        if (effectors.length > 0) {
+          return effectors;
+        } else {
+          return features;
+        }
+      }
+    };
+
+    PlayMat.prototype.getUselessDetectors = function() {
+      var cardLoc, colNum, detecting, detectorBusted, somethingToDetect, theColumn, thisCellActive, thisCellUseless, uselessSet, _i, _len, _ref;
+      uselessSet = [];
+      _ref = this._columns;
+      for (colNum = _i = 0, _len = _ref.length; _i < _len; colNum = ++_i) {
+        theColumn = _ref[colNum];
+        cardLoc = new Location(TYPE_DETECTOR, colNum);
+        thisCellActive = this.isCellActive(cardLoc);
+        somethingToDetect = this.isCellActive(cardLoc.getLocationAbove());
+        detectorBusted = this.isDetectorDisabled(cardLoc.colIndex);
+        detecting = thisCellActive && somethingToDetect && !detectorBusted;
+        thisCellUseless = thisCellActive && !detecting;
+        if (thisCellUseless) {
+          uselessSet.push(cardLoc);
+        }
+      }
+      return uselessSet;
+    };
+
+    PlayMat.prototype.getUselessAlarms = function() {
+      var cardLoc, colNum, detecting, somethingToDetect, theColumn, thisCellActive, thisCellUseless, uselessSet, variety, _i, _j, _len, _len1, _ref, _ref1;
+      uselessSet = [];
+      _ref = this._columns;
+      for (colNum = _i = 0, _len = _ref.length; _i < _len; colNum = ++_i) {
+        theColumn = _ref[colNum];
+        _ref1 = [VARIETY_LEFT, VARIETY_RIGHT];
+        for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+          variety = _ref1[_j];
+          cardLoc = new Location(TYPE_ALARM, colNum, variety);
+          thisCellActive = this.isCellActive(cardLoc);
+          somethingToDetect = this.isCellActive(cardLoc.getLocationAbove());
+          detecting = thisCellActive && somethingToDetect;
+          thisCellUseless = thisCellActive && !detecting;
+          if (thisCellUseless) {
+            uselessSet.push(cardLoc);
+          }
+        }
+      }
+      return uselessSet;
+    };
+
+    PlayMat.prototype.getPlantEvolutionReplacementOptions = function(lumpThemAllTogetherMode) {
+      var alarms, detectors;
+      detectors = this.getUselessDetectors();
+      alarms = this.getUselessAlarms();
+      if (lumpThemAllTogetherMode) {
+        return detectors.concat(alarms);
+      } else {
+        if (alarms.length > 0) {
+          return alarms;
+        } else {
+          return detectors;
+        }
+      }
+    };
+
+    PlayMat.prototype.getRandomEvolutionReplacementLocation = function(whichSide) {
+      var chosenLocation, numOptions, randomIndex, theOptions;
+      switch (whichSide) {
+        case SIDE_PLANT:
+          theOptions = this.getPlantEvolutionReplacementOptions(true);
+          break;
+        case SIDE_PATHOGEN:
+          theOptions = this.getPathogenEvolutionReplacementOptions(false);
+      }
+      numOptions = theOptions.length;
+      if (numOptions > 0) {
+        randomIndex = Math.floor(Math.random() * numOptions);
+        chosenLocation = theOptions[randomIndex];
+      } else {
+        chosenLocation = new Location();
+      }
+      return chosenLocation;
+    };
+
     return PlayMat;
+
+  })();
+
+  window.Location = Location = (function() {
+    function Location(cardtype, colIndex, variety) {
+      this.cardtype = cardtype != null ? cardtype : -1;
+      this.colIndex = colIndex != null ? colIndex : -1;
+      this.variety = variety != null ? variety : -1;
+      return this;
+    }
+
+    Location.prototype.isIllegalLocation = function() {
+      if (this.colIndex < 0 || this.colIndex > NUMBER_OF_PLAYABLE_COLUMNS) {
+        return true;
+      }
+      switch (this.cardtype) {
+        case TYPE_FEATURE:
+          if (this.variety !== -1) {
+            return true;
+          }
+          break;
+        case TYPE_DETECTOR:
+          if (this.variety !== -1) {
+            return true;
+          }
+          break;
+        case TYPE_EFFECTOR:
+          if (this.variety < 0 || this.variety > 1) {
+            return true;
+          }
+          break;
+        case TYPE_ALARM:
+          if (this.variety < 0 || this.variety > 1) {
+            return true;
+          }
+          break;
+        default:
+          return true;
+      }
+      return false;
+    };
+
+    Location.prototype.getVariantString = function() {
+      if (this.variety === VARIETY_NONE) {
+        return "";
+      } else {
+        return this.variety;
+      }
+    };
+
+    Location.prototype.getLocationAbove = function() {
+      switch (this.cardtype) {
+        case TYPE_DETECTOR:
+          return new Location(TYPE_FEATURE, this.colIndex);
+        case TYPE_EFFECTOR:
+          return new Location(TYPE_DETECTOR, this.colIndex);
+        case TYPE_ALARM:
+          return new Location(TYPE_EFFECTOR, this.colIndex, this.variety);
+        default:
+          return new Location();
+      }
+    };
+
+    Location.prototype.getLocationsBelow = function() {
+      switch (this.cardtype) {
+        case TYPE_FEATURE:
+          return [new Location(TYPE_DETECTOR, this.colIndex)];
+        case TYPE_DETECTOR:
+          return [new Location(TYPE_EFFECTOR, this.colIndex, VARIETY_LEFT), new Location(TYPE_EFFECTOR, this.colIndex, VARIETY_RIGHT)];
+        case TYPE_EFFECTOR:
+          return [new Location(TYPE_ALARM, this.colIndex, this.variety)];
+        default:
+          return [];
+      }
+    };
+
+    Location.prototype.getLocationBelow = function() {
+      var locations;
+      locations = this.getLocationsBelow();
+      if (locations.length === 1) {
+        return locations[0];
+      } else {
+        alert("Location below is non-unique!");
+        return null;
+      }
+    };
+
+    Location.prototype.toString = function() {
+      if (this.isIllegalLocation()) {
+        return "Illegal location " + this.cardtype + "/" + this.colIndex + "/" + this.variety;
+      }
+      if (this.variety === -1) {
+        return "Loc [Type=" + this.cardtype + ", col=" + this.colIndex + "]";
+      }
+      return "Loc [Type=" + this.cardtype + ", col=" + this.colIndex + ", var=" + this.variety + "]";
+    };
+
+    return Location;
 
   })();
 

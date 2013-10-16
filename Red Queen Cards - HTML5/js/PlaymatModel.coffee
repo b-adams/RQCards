@@ -26,7 +26,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 window.PlayMat = class PlayMat
   constructor: ->
     this.clearBoard()
-    alert "Mat Build 131015@1736"
+    alert "Mat Build 131015@2341"
     return this
 
 # Data setup
@@ -71,7 +71,7 @@ window.PlayMat = class PlayMat
     this.updateStatesAfterChanging(locWhere.cardtype)
 
     variant = locWhere.getVariantString()
-    console.log "Set #{locWhere.cardtype}#{variant} in column #{locWhere.colIndex} to #{newValue}"
+    #console.log "Set #{locWhere.cardtype}#{variant} in column #{locWhere.colIndex} to #{newValue}"
 
 
   toggleCell: (type, locWhere) ->
@@ -234,6 +234,88 @@ window.PlayMat = class PlayMat
         states.push STATE_ALARMING
       when TYPE_ALARM then states.push STATE_ALARMED
     return states
+
+  getDetectedFeatures: ->
+    detectedSet = []
+    for theColumn, colNum in @_columns
+      cardLoc = new Location(TYPE_FEATURE, colNum)
+      thisCellActive = this.isCellActive cardLoc
+      somethingDetectingMe = this.isCellActive cardLoc.getLocationBelow()
+      detectorBusted = this.isDetectorDisabled cardLoc.colIndex
+      detected = thisCellActive and somethingDetectingMe and not detectorBusted
+      if detected then detectedSet.push cardLoc
+    return detectedSet
+
+  getDetectedEffectors: ->
+    detectedSet = []
+    for theColumn, colNum in @_columns
+      for variety in [VARIETY_LEFT, VARIETY_RIGHT]
+        cardLoc = new Location(TYPE_EFFECTOR, colNum, variety)
+        thisCellActive = this.isCellActive cardLoc
+        somethingDetectingMe = this.isCellActive cardLoc.getLocationBelow()
+        detected = thisCellActive and somethingDetectingMe
+        if detected then detectedSet.push cardLoc
+    return detectedSet
+
+  getPathogenEvolutionReplacementOptions: (lumpThemAllTogetherMode) ->
+    effectors = this.getDetectedEffectors()
+    features = this.getDetectedFeatures()
+    if lumpThemAllTogetherMode
+      return effectors.concat features
+    else
+      if effectors.length > 0
+        return effectors
+      else
+        return features
+
+  getUselessDetectors: ->
+    uselessSet = []
+    for theColumn, colNum in @_columns
+      cardLoc = new Location(TYPE_DETECTOR, colNum)
+      thisCellActive = this.isCellActive cardLoc
+      somethingToDetect = this.isCellActive cardLoc.getLocationAbove()
+      detectorBusted = this.isDetectorDisabled cardLoc.colIndex
+      detecting = thisCellActive and somethingToDetect and not detectorBusted
+      thisCellUseless = thisCellActive and not detecting
+      if thisCellUseless then uselessSet.push cardLoc
+    return uselessSet
+
+  getUselessAlarms: ->
+    uselessSet = []
+    for theColumn, colNum in @_columns
+      for variety in [VARIETY_LEFT, VARIETY_RIGHT]
+        cardLoc = new Location(TYPE_ALARM, colNum, variety)
+        thisCellActive = this.isCellActive cardLoc
+        somethingToDetect = this.isCellActive cardLoc.getLocationAbove()
+        detecting = thisCellActive and somethingToDetect
+        thisCellUseless = thisCellActive and not detecting
+        if thisCellUseless then uselessSet.push cardLoc
+    return uselessSet
+
+  getPlantEvolutionReplacementOptions: (lumpThemAllTogetherMode) ->
+    detectors = this.getUselessDetectors()
+    alarms = this.getUselessAlarms()
+    if lumpThemAllTogetherMode
+      return detectors.concat alarms
+    else
+      if alarms.length > 0
+        return alarms
+      else
+        return detectors
+
+  getRandomEvolutionReplacementLocation: (whichSide) ->
+    switch whichSide
+      when SIDE_PLANT then theOptions = this.getPlantEvolutionReplacementOptions true #select effectors and features equally
+      when SIDE_PATHOGEN then theOptions = this.getPathogenEvolutionReplacementOptions false #select alarms before detectors
+    numOptions = theOptions.length
+    #console.log numOptions+" options: "+theOptions
+    if numOptions > 0
+      randomIndex = Math.floor(Math.random() * numOptions)
+      chosenLocation = theOptions[randomIndex]
+    else
+      chosenLocation = new Location()
+    return chosenLocation
+
 
 window.Location = class Location
   constructor: (@cardtype=-1, @colIndex=-1, @variety=-1) ->

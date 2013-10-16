@@ -24,7 +24,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 class PlayMatSolitaireController
   constructor: ->
-    alert "Solitaire Build 131015@1856"
+    alert "Solitaire Build 131015@2341"
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
@@ -315,6 +315,9 @@ class PlayMatSolitaireController
     choice = this.getRandomInactiveElementOfType type
     @selectedElement = choice
 
+  selectElementAtLocation: (whichLocation) ->
+    this.clearCurrentSelection()
+    @selectedElement = whichLocation
 
   doDraw: (type) ->
     anElement = this.getRandomInactiveElementOfType type
@@ -368,7 +371,7 @@ class PlayMatSolitaireController
 
   doSet: (newValue, locWhere) ->
     theElement = this.getElement locWhere
-    console.log "doSet "+locWhere.cardtype+locWhere.colIndex+":"+theElement+" to "+newValue
+    #console.log "doSet "+locWhere.cardtype+locWhere.colIndex+":"+theElement+" to "+newValue
     @theModel.setCell newValue, locWhere
     this.updateBoardState()
     this.setElementActivity newValue, theElement
@@ -380,7 +383,7 @@ class PlayMatSolitaireController
     theElement = this.getElement locWhere
     activeStates = @theModel.getStateCondidionsAt locWhere
     allStates = @theModel.getPossibleConditionsAt locWhere
-    console.log "Active states: "+activeStates+ " out of: "+allStates
+    #console.log "Active states: "+activeStates+ " out of: "+allStates
     for state in allStates
       if (0<= $.inArray(state, activeStates))
         theElement.addClass state
@@ -388,7 +391,7 @@ class PlayMatSolitaireController
         theElement.removeClass state
 
   updateInteractionsAround: (locWhere) ->
-    console.log "Updating interactions for "+locWhere+" and neighbors"
+    #console.log "Updating interactions for "+locWhere+" and neighbors"
     this.updateInteractionsAt locWhere
     above = locWhere.getLocationAbove()
     if not above.isIllegalLocation()
@@ -488,10 +491,24 @@ class PlayMatSolitaireController
     return cost
 
   processAction: (whichSide) ->
-    action = @actionChoices[whichSide].val()
-    type = @selectedElement[LOCATION_TYPE]
+    chosenAaction = @actionChoices[whichSide].val()
 
-    switch action
+    #Override type/actions for non-selection-based actions
+    switch chosenAaction
+      when ACTION_REPLACE
+        selectedType = @selectedElement[LOCATION_TYPE]
+        type = selectedType
+        action = chosenAaction
+      when ACTION_DISCARD
+        selectedType = @selectedElement[LOCATION_TYPE]
+        type = selectedType
+        action = chosenAaction
+      when ACTION_RANDOM
+        locationEvolutionWouldReplace = @theModel.getRandomEvolutionReplacementLocation whichSide
+        this.doSelect locationEvolutionWouldReplace
+        selectedType = @selectedElement[LOCATION_TYPE]
+        type = selectedType
+        action = ACTION_REPLACE
       when ACTION_DRAW_A
         type = TYPE_ALARM
         action = ACTION_DRAW
@@ -504,26 +521,21 @@ class PlayMatSolitaireController
       when ACTION_DRAW_D
         type = TYPE_DETECTOR
         action = ACTION_DRAW
-      when ACTION_RANDOM
-        type = switch whichSide
-          when SIDE_PLANT then (if Math.random() < 0.5 then TYPE_DETECTOR else TYPE_ALARM)
-          when SIDE_PATHOGEN then (if Math.random() < 0.5 then TYPE_FEATURE else TYPE_EFFECTOR)
 
+    cost = this.costForAction action, type
+    #console.log "Cost for "+action+"/"+type+": "+cost
 
+    #Execute appropriate action(s)
     switch action
       when ACTION_DISCARD
         this.doDiscardSelected()
-      when ACTION_DRAW then this.doDraw type
+      when ACTION_DRAW
+        this.doDraw type
       when ACTION_REPLACE
-        this.doDraw type
-        this.doDiscardSelected()
         #Draw before discard to prevent re-drawing the same card
-      when ACTION_RANDOM
         this.doDraw type
-        this.selectRandomInactiveElementOfType type
         this.doDiscardSelected()
-    cost = this.costForAction action, type
-    #console.log "Cost for "+action+"/"+type+": "+cost
+
     this.changePressure whichSide, -cost
     this.clearCurrentSelection()
     this.moveToNextTurn()
