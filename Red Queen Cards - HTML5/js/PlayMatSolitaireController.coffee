@@ -24,7 +24,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 class PlayMatSolitaireController
   constructor: ->
-    alert "Solitaire Build 131015@2303"
+    alert "Solitaire Build 131015@2341"
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
@@ -492,20 +492,22 @@ class PlayMatSolitaireController
 
   processAction: (whichSide) ->
     chosenAaction = @actionChoices[whichSide].val()
-    #Set up default type for selection-based (discard/replace) actions
-    selectedType = @selectedElement[LOCATION_TYPE]
 
     #Override type/actions for non-selection-based actions
     switch chosenAaction
       when ACTION_REPLACE
+        selectedType = @selectedElement[LOCATION_TYPE]
         type = selectedType
         action = chosenAaction
       when ACTION_DISCARD
+        selectedType = @selectedElement[LOCATION_TYPE]
         type = selectedType
         action = chosenAaction
       when ACTION_RANDOM
         locationEvolutionWouldReplace = @theModel.getRandomEvolutionReplacementLocation whichSide
-        type = locationEvolutionWouldReplace[LOCATION_TYPE]
+        this.doSelect locationEvolutionWouldReplace
+        selectedType = @selectedElement[LOCATION_TYPE]
+        type = selectedType
         action = ACTION_REPLACE
       when ACTION_DRAW_A
         type = TYPE_ALARM

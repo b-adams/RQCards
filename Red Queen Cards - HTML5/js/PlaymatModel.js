@@ -29,7 +29,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
   window.PlayMat = PlayMat = (function() {
     function PlayMat() {
       this.clearBoard();
-      alert("Mat Build 131015@2303");
+      alert("Mat Build 131015@2341");
       return this;
     }
 
@@ -81,8 +81,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       }
       this.updateActivityInColumn(locWhere.colIndex);
       this.updateStatesAfterChanging(locWhere.cardtype);
-      variant = locWhere.getVariantString();
-      return console.log("Set " + locWhere.cardtype + variant + " in column " + locWhere.colIndex + " to " + newValue);
+      return variant = locWhere.getVariantString();
     };
 
     PlayMat.prototype.toggleCell = function(type, locWhere) {
@@ -403,17 +402,18 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMat.prototype.getUselessDetectors = function() {
-      var cardLoc, colNum, detecting, detectorBusted, somethingToDetect, theColumn, thisCellActive, uselessSet, _i, _len, _ref;
+      var cardLoc, colNum, detecting, detectorBusted, somethingToDetect, theColumn, thisCellActive, thisCellUseless, uselessSet, _i, _len, _ref;
       uselessSet = [];
       _ref = this._columns;
       for (colNum = _i = 0, _len = _ref.length; _i < _len; colNum = ++_i) {
         theColumn = _ref[colNum];
-        cardLoc = new Location(TYPE_FEATURE, colNum);
+        cardLoc = new Location(TYPE_DETECTOR, colNum);
         thisCellActive = this.isCellActive(cardLoc);
         somethingToDetect = this.isCellActive(cardLoc.getLocationAbove());
         detectorBusted = this.isDetectorDisabled(cardLoc.colIndex);
         detecting = thisCellActive && somethingToDetect && !detectorBusted;
-        if (!detecting) {
+        thisCellUseless = thisCellActive && !detecting;
+        if (thisCellUseless) {
           uselessSet.push(cardLoc);
         }
       }
@@ -421,7 +421,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMat.prototype.getUselessAlarms = function() {
-      var cardLoc, colNum, detecting, somethingToDetect, theColumn, thisCellActive, uselessSet, variety, _i, _j, _len, _len1, _ref, _ref1;
+      var cardLoc, colNum, detecting, somethingToDetect, theColumn, thisCellActive, thisCellUseless, uselessSet, variety, _i, _j, _len, _len1, _ref, _ref1;
       uselessSet = [];
       _ref = this._columns;
       for (colNum = _i = 0, _len = _ref.length; _i < _len; colNum = ++_i) {
@@ -429,11 +429,12 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         _ref1 = [VARIETY_LEFT, VARIETY_RIGHT];
         for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
           variety = _ref1[_j];
-          cardLoc = new Location(TYPE_EFFECTOR, colNum, variety);
+          cardLoc = new Location(TYPE_ALARM, colNum, variety);
           thisCellActive = this.isCellActive(cardLoc);
           somethingToDetect = this.isCellActive(cardLoc.getLocationAbove());
           detecting = thisCellActive && somethingToDetect;
-          if (!detecting) {
+          thisCellUseless = thisCellActive && !detecting;
+          if (thisCellUseless) {
             uselessSet.push(cardLoc);
           }
         }
@@ -443,8 +444,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
     PlayMat.prototype.getPlantEvolutionReplacementOptions = function(lumpThemAllTogetherMode) {
       var alarms, detectors;
-      detectors = this.getDetectedEffectors();
-      alarms = this.getDetectedFeatures();
+      detectors = this.getUselessDetectors();
+      alarms = this.getUselessAlarms();
       if (lumpThemAllTogetherMode) {
         return detectors.concat(alarms);
       } else {
@@ -457,7 +458,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMat.prototype.getRandomEvolutionReplacementLocation = function(whichSide) {
-      var lumpThemAllTogetherMode, numOptions, randomIndex, theOptions;
+      var chosenLocation, lumpThemAllTogetherMode, numOptions, randomIndex, theOptions;
       lumpThemAllTogetherMode = true;
       switch (whichSide) {
         case SIDE_PLANT:
@@ -470,10 +471,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       console.log(numOptions + " options: " + theOptions);
       if (numOptions > 0) {
         randomIndex = Math.floor(Math.random() * numOptions);
-        return numOptions[randomIndex];
+        chosenLocation = theOptions[randomIndex];
       } else {
-        return new Location;
+        chosenLocation = new Location();
       }
+      return chosenLocation;
     };
 
     return PlayMat;

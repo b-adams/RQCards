@@ -26,7 +26,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 window.PlayMat = class PlayMat
   constructor: ->
     this.clearBoard()
-    alert "Mat Build 131015@2303"
+    alert "Mat Build 131015@2341"
     return this
 
 # Data setup
@@ -271,28 +271,30 @@ window.PlayMat = class PlayMat
   getUselessDetectors: ->
     uselessSet = []
     for theColumn, colNum in @_columns
-      cardLoc = new Location(TYPE_FEATURE, colNum)
+      cardLoc = new Location(TYPE_DETECTOR, colNum)
       thisCellActive = this.isCellActive cardLoc
       somethingToDetect = this.isCellActive cardLoc.getLocationAbove()
       detectorBusted = this.isDetectorDisabled cardLoc.colIndex
       detecting = thisCellActive and somethingToDetect and not detectorBusted
-      if not detecting then uselessSet.push cardLoc
+      thisCellUseless = thisCellActive and not detecting
+      if thisCellUseless then uselessSet.push cardLoc
     return uselessSet
 
   getUselessAlarms: ->
     uselessSet = []
     for theColumn, colNum in @_columns
       for variety in [VARIETY_LEFT, VARIETY_RIGHT]
-        cardLoc = new Location(TYPE_EFFECTOR, colNum, variety)
+        cardLoc = new Location(TYPE_ALARM, colNum, variety)
         thisCellActive = this.isCellActive cardLoc
         somethingToDetect = this.isCellActive cardLoc.getLocationAbove()
         detecting = thisCellActive and somethingToDetect
-        if not detecting then uselessSet.push cardLoc
+        thisCellUseless = thisCellActive and not detecting
+        if thisCellUseless then uselessSet.push cardLoc
     return uselessSet
 
   getPlantEvolutionReplacementOptions: (lumpThemAllTogetherMode) ->
-    detectors = this.getDetectedEffectors()
-    alarms = this.getDetectedFeatures()
+    detectors = this.getUselessDetectors()
+    alarms = this.getUselessAlarms()
     if lumpThemAllTogetherMode
       return detectors.concat alarms
     else
@@ -310,10 +312,10 @@ window.PlayMat = class PlayMat
     console.log numOptions+" options: "+theOptions
     if numOptions > 0
       randomIndex = Math.floor(Math.random() * numOptions)
-      return numOptions[randomIndex]
+      chosenLocation = theOptions[randomIndex]
     else
-      return new Location
-
+      chosenLocation = new Location()
+    return chosenLocation
 
 
 window.Location = class Location

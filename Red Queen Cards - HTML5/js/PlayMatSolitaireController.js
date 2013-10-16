@@ -28,7 +28,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
   PlayMatSolitaireController = (function() {
     function PlayMatSolitaireController() {
-      alert("Solitaire Build 131015@2303");
+      alert("Solitaire Build 131015@2341");
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
       this.iteration = 0;
@@ -415,7 +415,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     PlayMatSolitaireController.prototype.doSet = function(newValue, locWhere) {
       var theElement;
       theElement = this.getElement(locWhere);
-      console.log("doSet " + locWhere.cardtype + locWhere.colIndex + ":" + theElement + " to " + newValue);
       this.theModel.setCell(newValue, locWhere);
       this.updateBoardState();
       this.setElementActivity(newValue, theElement);
@@ -431,7 +430,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       theElement = this.getElement(locWhere);
       activeStates = this.theModel.getStateCondidionsAt(locWhere);
       allStates = this.theModel.getPossibleConditionsAt(locWhere);
-      console.log("Active states: " + activeStates + " out of: " + allStates);
       _results = [];
       for (_i = 0, _len = allStates.length; _i < _len; _i++) {
         state = allStates[_i];
@@ -446,7 +444,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
     PlayMatSolitaireController.prototype.updateInteractionsAround = function(locWhere) {
       var above, below, _i, _len, _ref, _results;
-      console.log("Updating interactions for " + locWhere + " and neighbors");
       this.updateInteractionsAt(locWhere);
       above = locWhere.getLocationAbove();
       if (!above.isIllegalLocation()) {
@@ -596,19 +593,22 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     PlayMatSolitaireController.prototype.processAction = function(whichSide) {
       var action, chosenAaction, cost, locationEvolutionWouldReplace, selectedType, type;
       chosenAaction = this.actionChoices[whichSide].val();
-      selectedType = this.selectedElement[LOCATION_TYPE];
       switch (chosenAaction) {
         case ACTION_REPLACE:
+          selectedType = this.selectedElement[LOCATION_TYPE];
           type = selectedType;
           action = chosenAaction;
           break;
         case ACTION_DISCARD:
+          selectedType = this.selectedElement[LOCATION_TYPE];
           type = selectedType;
           action = chosenAaction;
           break;
         case ACTION_RANDOM:
           locationEvolutionWouldReplace = this.theModel.getRandomEvolutionReplacementLocation(whichSide);
-          type = locationEvolutionWouldReplace[LOCATION_TYPE];
+          this.doSelect(locationEvolutionWouldReplace);
+          selectedType = this.selectedElement[LOCATION_TYPE];
+          type = selectedType;
           action = ACTION_REPLACE;
           break;
         case ACTION_DRAW_A:
