@@ -458,17 +458,15 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMat.prototype.getRandomEvolutionReplacementLocation = function(whichSide) {
-      var chosenLocation, lumpThemAllTogetherMode, numOptions, randomIndex, theOptions;
-      lumpThemAllTogetherMode = true;
+      var chosenLocation, numOptions, randomIndex, theOptions;
       switch (whichSide) {
         case SIDE_PLANT:
-          theOptions = this.getPlantEvolutionReplacementOptions(lumpThemAllTogetherMode);
+          theOptions = this.getPlantEvolutionReplacementOptions(true);
           break;
         case SIDE_PATHOGEN:
-          theOptions = this.getPathogenEvolutionReplacementOptions(lumpThemAllTogetherMode);
+          theOptions = this.getPathogenEvolutionReplacementOptions(false);
       }
       numOptions = theOptions.length;
-      console.log(numOptions + " options: " + theOptions);
       if (numOptions > 0) {
         randomIndex = Math.floor(Math.random() * numOptions);
         chosenLocation = theOptions[randomIndex];

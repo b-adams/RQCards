@@ -304,12 +304,11 @@ window.PlayMat = class PlayMat
         return detectors
 
   getRandomEvolutionReplacementLocation: (whichSide) ->
-    lumpThemAllTogetherMode = true
     switch whichSide
-      when SIDE_PLANT then theOptions = this.getPlantEvolutionReplacementOptions lumpThemAllTogetherMode
-      when SIDE_PATHOGEN then theOptions = this.getPathogenEvolutionReplacementOptions lumpThemAllTogetherMode
+      when SIDE_PLANT then theOptions = this.getPlantEvolutionReplacementOptions true #select effectors and features equally
+      when SIDE_PATHOGEN then theOptions = this.getPathogenEvolutionReplacementOptions false #select alarms before detectors
     numOptions = theOptions.length
-    console.log numOptions+" options: "+theOptions
+    #console.log numOptions+" options: "+theOptions
     if numOptions > 0
       randomIndex = Math.floor(Math.random() * numOptions)
       chosenLocation = theOptions[randomIndex]
