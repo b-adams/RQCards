@@ -78,7 +78,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           selector += "a" + (arguments[2] + 1);
           break;
         default:
-          alert("Bad element request");
+          alert("PMC Bad element request");
           selector = "";
       }
       return $(selector);
