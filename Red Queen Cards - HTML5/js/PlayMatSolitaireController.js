@@ -28,7 +28,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
   PlayMatSolitaireController = (function() {
     function PlayMatSolitaireController() {
-      alert("Solitaire Build 131015@1856");
+      alert("Solitaire Build 131015@2303");
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
       this.iteration = 0;
@@ -355,6 +355,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return this.selectedElement = choice;
     };
 
+    PlayMatSolitaireController.prototype.selectElementAtLocation = function(whichLocation) {
+      this.clearCurrentSelection();
+      return this.selectedElement = whichLocation;
+    };
+
     PlayMatSolitaireController.prototype.doDraw = function(type) {
       var anElement;
       anElement = this.getRandomInactiveElementOfType(type);
@@ -589,10 +594,23 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.processAction = function(whichSide) {
-      var action, cost, type;
-      action = this.actionChoices[whichSide].val();
-      type = this.selectedElement[LOCATION_TYPE];
-      switch (action) {
+      var action, chosenAaction, cost, locationEvolutionWouldReplace, selectedType, type;
+      chosenAaction = this.actionChoices[whichSide].val();
+      selectedType = this.selectedElement[LOCATION_TYPE];
+      switch (chosenAaction) {
+        case ACTION_REPLACE:
+          type = selectedType;
+          action = chosenAaction;
+          break;
+        case ACTION_DISCARD:
+          type = selectedType;
+          action = chosenAaction;
+          break;
+        case ACTION_RANDOM:
+          locationEvolutionWouldReplace = this.theModel.getRandomEvolutionReplacementLocation(whichSide);
+          type = locationEvolutionWouldReplace[LOCATION_TYPE];
+          action = ACTION_REPLACE;
+          break;
         case ACTION_DRAW_A:
           type = TYPE_ALARM;
           action = ACTION_DRAW;
@@ -608,25 +626,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         case ACTION_DRAW_D:
           type = TYPE_DETECTOR;
           action = ACTION_DRAW;
-          break;
-        case ACTION_RANDOM:
-          type = (function() {
-            switch (whichSide) {
-              case SIDE_PLANT:
-                if (Math.random() < 0.5) {
-                  return TYPE_DETECTOR;
-                } else {
-                  return TYPE_ALARM;
-                }
-              case SIDE_PATHOGEN:
-                if (Math.random() < 0.5) {
-                  return TYPE_FEATURE;
-                } else {
-                  return TYPE_EFFECTOR;
-                }
-            }
-          })();
       }
+      cost = this.costForAction(action, type);
       switch (action) {
         case ACTION_DISCARD:
           this.doDiscardSelected();
@@ -637,13 +638,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         case ACTION_REPLACE:
           this.doDraw(type);
           this.doDiscardSelected();
-          break;
-        case ACTION_RANDOM:
-          this.doDraw(type);
-          this.selectRandomInactiveElementOfType(type);
-          this.doDiscardSelected();
       }
-      cost = this.costForAction(action, type);
       this.changePressure(whichSide, -cost);
       this.clearCurrentSelection();
       return this.moveToNextTurn();

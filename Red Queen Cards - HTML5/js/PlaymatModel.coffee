@@ -26,7 +26,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 window.PlayMat = class PlayMat
   constructor: ->
     this.clearBoard()
-    alert "Mat Build 131015@1736"
+    alert "Mat Build 131015@2303"
     return this
 
 # Data setup
@@ -257,12 +257,11 @@ window.PlayMat = class PlayMat
         if detected then detectedSet.push cardLoc
     return detectedSet
 
-  getPathogenEvolutionReplacementOptions: ->
-    lumpThemAllTogetherMode = true
+  getPathogenEvolutionReplacementOptions: (lumpThemAllTogetherMode) ->
     effectors = this.getDetectedEffectors()
     features = this.getDetectedFeatures()
     if lumpThemAllTogetherMode
-      return effectors + features
+      return effectors.concat features
     else
       if effectors.length > 0
         return effectors
@@ -291,17 +290,30 @@ window.PlayMat = class PlayMat
         if not detecting then uselessSet.push cardLoc
     return uselessSet
 
-  getPlantEvolutionReplacementOptions: ->
-    lumpThemAllTogetherMode = true
+  getPlantEvolutionReplacementOptions: (lumpThemAllTogetherMode) ->
     detectors = this.getDetectedEffectors()
     alarms = this.getDetectedFeatures()
     if lumpThemAllTogetherMode
-      return detectors + alarms
+      return detectors.concat alarms
     else
       if alarms.length > 0
         return alarms
       else
         return detectors
+
+  getRandomEvolutionReplacementLocation: (whichSide) ->
+    lumpThemAllTogetherMode = true
+    switch whichSide
+      when SIDE_PLANT then theOptions = this.getPlantEvolutionReplacementOptions lumpThemAllTogetherMode
+      when SIDE_PATHOGEN then theOptions = this.getPathogenEvolutionReplacementOptions lumpThemAllTogetherMode
+    numOptions = theOptions.length
+    console.log numOptions+" options: "+theOptions
+    if numOptions > 0
+      randomIndex = Math.floor(Math.random() * numOptions)
+      return numOptions[randomIndex]
+    else
+      return new Location
+
 
 
 window.Location = class Location

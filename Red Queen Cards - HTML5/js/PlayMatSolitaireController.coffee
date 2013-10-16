@@ -24,7 +24,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 class PlayMatSolitaireController
   constructor: ->
-    alert "Solitaire Build 131015@1856"
+    alert "Solitaire Build 131015@2303"
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
@@ -315,6 +315,9 @@ class PlayMatSolitaireController
     choice = this.getRandomInactiveElementOfType type
     @selectedElement = choice
 
+  selectElementAtLocation: (whichLocation) ->
+    this.clearCurrentSelection()
+    @selectedElement = whichLocation
 
   doDraw: (type) ->
     anElement = this.getRandomInactiveElementOfType type
@@ -488,10 +491,22 @@ class PlayMatSolitaireController
     return cost
 
   processAction: (whichSide) ->
-    action = @actionChoices[whichSide].val()
-    type = @selectedElement[LOCATION_TYPE]
+    chosenAaction = @actionChoices[whichSide].val()
+    #Set up default type for selection-based (discard/replace) actions
+    selectedType = @selectedElement[LOCATION_TYPE]
 
-    switch action
+    #Override type/actions for non-selection-based actions
+    switch chosenAaction
+      when ACTION_REPLACE
+        type = selectedType
+        action = chosenAaction
+      when ACTION_DISCARD
+        type = selectedType
+        action = chosenAaction
+      when ACTION_RANDOM
+        locationEvolutionWouldReplace = @theModel.getRandomEvolutionReplacementLocation whichSide
+        type = locationEvolutionWouldReplace[LOCATION_TYPE]
+        action = ACTION_REPLACE
       when ACTION_DRAW_A
         type = TYPE_ALARM
         action = ACTION_DRAW
@@ -504,26 +519,21 @@ class PlayMatSolitaireController
       when ACTION_DRAW_D
         type = TYPE_DETECTOR
         action = ACTION_DRAW
-      when ACTION_RANDOM
-        type = switch whichSide
-          when SIDE_PLANT then (if Math.random() < 0.5 then TYPE_DETECTOR else TYPE_ALARM)
-          when SIDE_PATHOGEN then (if Math.random() < 0.5 then TYPE_FEATURE else TYPE_EFFECTOR)
 
+    cost = this.costForAction action, type
+    #console.log "Cost for "+action+"/"+type+": "+cost
 
+    #Execute appropriate action(s)
     switch action
       when ACTION_DISCARD
         this.doDiscardSelected()
-      when ACTION_DRAW then this.doDraw type
+      when ACTION_DRAW
+        this.doDraw type
       when ACTION_REPLACE
-        this.doDraw type
-        this.doDiscardSelected()
         #Draw before discard to prevent re-drawing the same card
-      when ACTION_RANDOM
         this.doDraw type
-        this.selectRandomInactiveElementOfType type
         this.doDiscardSelected()
-    cost = this.costForAction action, type
-    #console.log "Cost for "+action+"/"+type+": "+cost
+
     this.changePressure whichSide, -cost
     this.clearCurrentSelection()
     this.moveToNextTurn()
