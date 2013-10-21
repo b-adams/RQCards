@@ -53,6 +53,10 @@ class PlayMatSolitaireController
       plant: null
       pathogen: null
     }
+    @LossExplanationChoices = {
+      plant: null
+      pathogen: null
+    }
     @selectedElement = new Location(-1, -1, -1)
     @goButtons = {
       plant: null
@@ -222,9 +226,8 @@ class PlayMatSolitaireController
     if victoryForWinner < 0
       message += "\nWARNING: Unsustainably costly win!"
 
-    rapidRunMode = false
-    showmessage = (firstPhaseFilter isnt 0) and not (rapidRunMode)
-    alert message if showmessage
+    explainMode = @LossExplanationChoices[@currentPlayer].prop("checked")
+    alert message if explainMode and (firstPhaseFilter isnt 0)
 
     this.changePressure loser, pressureForLoser*firstPhaseFilter
     @victoryPoints[winner] += victoryForWinner*firstPhaseFilter
@@ -586,6 +589,9 @@ $(document).ready ->
 
   control.AITurnSteppers[SIDE_PLANT] = $("#"+ID_PLANT_AUTOTURNS)
   control.AITurnSteppers[SIDE_PATHOGEN] = $("#"+ID_PATHO_AUTOTURNS)
+
+  control.LossExplanationChoices[SIDE_PLANT] = $("#"+ID_PLANT_LOSS_EXPLANATIONS)
+  control.LossExplanationChoices[SIDE_PATHOGEN] = $("#"+ID_PATHO_LOSS_EXPLANATIONS)
 
   control.goButtons[SIDE_PLANT] = $("#"+ID_PLANT_ENGAGE)
   control.actionChoices[SIDE_PLANT] = $("#"+ID_PLANT_ACTIONS)

@@ -56,6 +56,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         plant: null,
         pathogen: null
       };
+      this.LossExplanationChoices = {
+        plant: null,
+        pathogen: null
+      };
       this.selectedElement = new Location(-1, -1, -1);
       this.goButtons = {
         plant: null,
@@ -203,7 +207,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.moveToNextTurn = function() {
-      var etiWins, firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, ptiWins, rapidRunMode, rewards, showmessage, victoryForWinner, virWins, vpLine, vpReason, winline, winner;
+      var etiWins, explainMode, firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, ptiWins, rewards, victoryForWinner, virWins, vpLine, vpReason, winline, winner;
       this.updateBoardState();
       firstPhaseFilter = this.iteration === 0 ? 0 : 1;
       message = "ERROR: Message not instantiated";
@@ -251,9 +255,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       if (victoryForWinner < 0) {
         message += "\nWARNING: Unsustainably costly win!";
       }
-      rapidRunMode = false;
-      showmessage = (firstPhaseFilter !== 0) && !rapidRunMode;
-      if (showmessage) {
+      explainMode = this.LossExplanationChoices[this.currentPlayer].prop("checked");
+      if (explainMode && (firstPhaseFilter !== 0)) {
         alert(message);
       }
       this.changePressure(loser, pressureForLoser * firstPhaseFilter);
@@ -692,6 +695,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     }
     control.AITurnSteppers[SIDE_PLANT] = $("#" + ID_PLANT_AUTOTURNS);
     control.AITurnSteppers[SIDE_PATHOGEN] = $("#" + ID_PATHO_AUTOTURNS);
+    control.LossExplanationChoices[SIDE_PLANT] = $("#" + ID_PLANT_LOSS_EXPLANATIONS);
+    control.LossExplanationChoices[SIDE_PATHOGEN] = $("#" + ID_PATHO_LOSS_EXPLANATIONS);
     control.goButtons[SIDE_PLANT] = $("#" + ID_PLANT_ENGAGE);
     control.actionChoices[SIDE_PLANT] = $("#" + ID_PLANT_ACTIONS);
     control.goButtons[SIDE_PATHOGEN] = $("#" + ID_PATHO_ENGAGE);

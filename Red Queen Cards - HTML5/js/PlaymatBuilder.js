@@ -57,12 +57,16 @@
     theRow = $(document.createElement('tr')).attr("style", "width:100%; border: 1px solid black").appendTo(theTable);
     $(document.createElement('td')).text("PLANT").appendTo(theRow);
     plantAIBox = $(document.createElement('td')).appendTo(theRow);
+    $(document.createElement('span')).text(" Explain Losses").appendTo(plantAIBox);
+    $(document.createElement('input')).attr("type", "checkbox").prop('checked', 'true').attr("id", ID_PLANT_LOSS_EXPLANATIONS).appendTo(plantAIBox);
     $(document.createElement('span')).text("AI Turns left:").appendTo(plantAIBox);
     plantAutoStepper = $(document.createElement('input')).attr("id", ID_PLANT_AUTOTURNS).appendTo(plantAIBox);
     plantAutoStepper.text("AI Turns left:");
     plantAutoStepper.attr("type", "number").attr("min", 0).attr("max", 1000).attr("value", 0);
     $(document.createElement('td')).text("PATHOGEN").appendTo(theRow);
     pathogenAIBox = $(document.createElement('td')).appendTo(theRow);
+    $(document.createElement('span')).text(" Explain Losses").appendTo(pathogenAIBox);
+    $(document.createElement('input')).attr("type", "checkbox").prop('checked', 'true').attr("id", ID_PATHO_LOSS_EXPLANATIONS).appendTo(pathogenAIBox);
     $(document.createElement('span')).text("AI Turns left:").appendTo(pathogenAIBox);
     pathogenAutoStepper = $(document.createElement('input')).attr("id", ID_PATHO_AUTOTURNS).appendTo(pathogenAIBox);
     pathogenAutoStepper.attr("type", "number").attr("min", 0).attr("max", 1000).attr("value", 0);
