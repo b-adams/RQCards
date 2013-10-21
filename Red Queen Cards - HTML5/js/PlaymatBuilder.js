@@ -52,11 +52,20 @@
   };
 
   createSolitaireControls = function(inElement) {
-    var pathoControls, plantControls, selector, theRow, theTable;
+    var pathoControls, pathogenAIBox, pathogenAutoStepper, plantAIBox, plantAutoStepper, plantControls, selector, theRow, theTable;
     theTable = $(document.createElement('table')).attr("style", "width:100%").attr("border", 1).appendTo(inElement);
     theRow = $(document.createElement('tr')).attr("style", "width:100%; border: 1px solid black").appendTo(theTable);
-    $(document.createElement('td')).attr("colspan", 2).text("PLANT").appendTo(theRow);
-    $(document.createElement('td')).attr("colspan", 2).text("PATHOGEN").appendTo(theRow);
+    $(document.createElement('td')).text("PLANT").appendTo(theRow);
+    plantAIBox = $(document.createElement('td')).appendTo(theRow);
+    $(document.createElement('span')).text("AI Turns left:").appendTo(plantAIBox);
+    plantAutoStepper = $(document.createElement('input')).attr("id", ID_PLANT_AUTOTURNS).appendTo(plantAIBox);
+    plantAutoStepper.text("AI Turns left:");
+    plantAutoStepper.attr("type", "number").attr("min", 0).attr("max", 1000).attr("value", 0);
+    $(document.createElement('td')).text("PATHOGEN").appendTo(theRow);
+    pathogenAIBox = $(document.createElement('td')).appendTo(theRow);
+    $(document.createElement('span')).text("AI Turns left:").appendTo(pathogenAIBox);
+    pathogenAutoStepper = $(document.createElement('input')).attr("id", ID_PATHO_AUTOTURNS).appendTo(pathogenAIBox);
+    pathogenAutoStepper.attr("type", "number").attr("min", 0).attr("max", 1000).attr("value", 0);
     theRow = $(document.createElement('tr')).appendTo(theTable);
     $(document.createElement('td')).text("Victories: 0").attr("id", ID_PLANT_VICTORY).appendTo(theRow);
     $(document.createElement('td')).text("Pressure: 2").attr("id", ID_PLANT_PRESSURE).appendTo(theRow);

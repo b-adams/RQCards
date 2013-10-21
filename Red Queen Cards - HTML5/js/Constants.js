@@ -55,6 +55,8 @@ var ID_PLANT_VICTORY = "plantVicPts"
 var ID_PLANT_PRESSURE = "plantPressPts"
 var ID_PATHO_VICTORY = "pathoVicPts"
 var ID_PATHO_PRESSURE = "pathoPressPts"
+var ID_PLANT_AUTOTURNS = "plantAITurns"
+var ID_PATHO_AUTOTURNS = "pathoAITurns"
 
 var SIDE_PLANT = "plant"
 var SIDE_PATHOGEN = "pathogen"
