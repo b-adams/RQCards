@@ -52,11 +52,24 @@
   };
 
   createSolitaireControls = function(inElement) {
-    var pathoControls, plantControls, selector, theRow, theTable;
+    var pathoControls, pathogenAIBox, pathogenAutoStepper, plantAIBox, plantAutoStepper, plantControls, selector, theRow, theTable;
     theTable = $(document.createElement('table')).attr("style", "width:100%").attr("border", 1).appendTo(inElement);
     theRow = $(document.createElement('tr')).attr("style", "width:100%; border: 1px solid black").appendTo(theTable);
-    $(document.createElement('td')).attr("colspan", 2).text("PLANT").appendTo(theRow);
-    $(document.createElement('td')).attr("colspan", 2).text("PATHOGEN").appendTo(theRow);
+    $(document.createElement('td')).text("PLANT").appendTo(theRow);
+    plantAIBox = $(document.createElement('td')).appendTo(theRow);
+    $(document.createElement('span')).text(" Explain Losses").appendTo(plantAIBox);
+    $(document.createElement('input')).attr("type", "checkbox").prop('checked', 'true').attr("id", ID_PLANT_LOSS_EXPLANATIONS).appendTo(plantAIBox);
+    $(document.createElement('span')).text("AI Turns left:").appendTo(plantAIBox);
+    plantAutoStepper = $(document.createElement('input')).attr("id", ID_PLANT_AUTOTURNS).appendTo(plantAIBox);
+    plantAutoStepper.text("AI Turns left:");
+    plantAutoStepper.attr("type", "number").attr("min", 0).attr("max", 1000).attr("value", 0);
+    $(document.createElement('td')).text("PATHOGEN").appendTo(theRow);
+    pathogenAIBox = $(document.createElement('td')).appendTo(theRow);
+    $(document.createElement('span')).text(" Explain Losses").appendTo(pathogenAIBox);
+    $(document.createElement('input')).attr("type", "checkbox").prop('checked', 'true').attr("id", ID_PATHO_LOSS_EXPLANATIONS).appendTo(pathogenAIBox);
+    $(document.createElement('span')).text("AI Turns left:").appendTo(pathogenAIBox);
+    pathogenAutoStepper = $(document.createElement('input')).attr("id", ID_PATHO_AUTOTURNS).appendTo(pathogenAIBox);
+    pathogenAutoStepper.attr("type", "number").attr("min", 0).attr("max", 1000).attr("value", 0);
     theRow = $(document.createElement('tr')).appendTo(theTable);
     $(document.createElement('td')).text("Victories: 0").attr("id", ID_PLANT_VICTORY).appendTo(theRow);
     $(document.createElement('td')).text("Pressure: 2").attr("id", ID_PLANT_PRESSURE).appendTo(theRow);
@@ -70,7 +83,7 @@
     $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo(selector);
     $(document.createElement('option')).attr("value", ACTION_DRAW_D).text(ACTION_DRAW_D).appendTo(selector);
     $(document.createElement('option')).attr("value", ACTION_DRAW_A).text(ACTION_DRAW_A).appendTo(selector);
-    $(document.createElement('option')).attr("value", ACTION_RANDOM).text(ACTION_RANDOM).appendTo(selector);
+    $(document.createElement('option')).attr("value", ACTION_EVO_PRESSURE).text(ACTION_EVO_PRESSURE).appendTo(selector);
     pathoControls = $(document.createElement('td')).attr("colspan", 2).appendTo(theRow);
     selector = $(document.createElement('select')).attr("style", "width:100%").attr("id", ID_PATHO_ACTIONS).appendTo(pathoControls);
     $(document.createElement('option')).attr("value", "").text("Select Pathogen Action").appendTo(selector);
@@ -78,7 +91,7 @@
     $(document.createElement('option')).attr("value", ACTION_REPLACE).text(ACTION_REPLACE).appendTo(selector);
     $(document.createElement('option')).attr("value", ACTION_DRAW_F).text(ACTION_DRAW_F).appendTo(selector);
     $(document.createElement('option')).attr("value", ACTION_DRAW_E).text(ACTION_DRAW_E).appendTo(selector);
-    $(document.createElement('option')).attr("value", ACTION_RANDOM).text(ACTION_RANDOM).appendTo(selector);
+    $(document.createElement('option')).attr("value", ACTION_EVO_PRESSURE).text(ACTION_EVO_PRESSURE).appendTo(selector);
     theRow = $(document.createElement('tr')).appendTo(theTable);
     plantControls = $(document.createElement('td')).attr("colspan", 2).appendTo(theRow);
     $(document.createElement('button')).attr("type", "button").attr("id", ID_PLANT_ENGAGE).attr("style", "width:100%").text("Plant Go").appendTo(plantControls);
