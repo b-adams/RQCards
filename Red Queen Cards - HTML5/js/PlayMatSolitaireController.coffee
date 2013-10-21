@@ -145,7 +145,7 @@ class PlayMatSolitaireController
       when ACTION_DRAW_F
         actionType = ACTION_DRAW
         elementType = TYPE_FEATURE
-      when ACTION_RANDOM
+      when ACTION_EVO_PRESSURE
         null
       else
         @goButtons[whoseSide].html("Action Required")
@@ -166,7 +166,10 @@ class PlayMatSolitaireController
       @goButtons[whoseSide].css "background", "yellow"
       return
 
-    @goButtons[whoseSide].html("Go (Spend: "+cost+"pp)")
+    if cost > 0
+      @goButtons[whoseSide].html("Go (Spend: "+cost+"pp)")
+    else
+      @goButtons[whoseSide].html("Go")
     @goButtons[whoseSide].css "background", "green"
 
 
@@ -182,17 +185,17 @@ class PlayMatSolitaireController
       when RESULT_ETI
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
-        pressureForLoser = 25
+        pressureForLoser = PRESSURE_FOR_ETI_LOSS
         victoryForWinner = rewards[SIDE_PLANT]
       when RESULT_PTI
         winner = SIDE_PLANT
         loser =  SIDE_PATHOGEN
-        pressureForLoser = 15
+        pressureForLoser = PRESSURE_FOR_MTI_LOSS
         victoryForWinner = rewards[SIDE_PLANT]
       else #RESULT_VIR
         winner = SIDE_PATHOGEN
         loser =  SIDE_PLANT
-        pressureForLoser = 15
+        pressureForLoser = PRESSURE_FOR_VIRULENCE_LOSS
         victoryForWinner = rewards[SIDE_PATHOGEN]
 
     vpReason = rewards[winner+"_reason"]
@@ -219,7 +222,7 @@ class PlayMatSolitaireController
     if victoryForWinner < 0
       message += "\nWARNING: Unsustainably costly win!"
 
-    rapidRunMode = true
+    rapidRunMode = false
     showmessage = (firstPhaseFilter isnt 0) and not (rapidRunMode)
     alert message if showmessage
 
@@ -243,7 +246,7 @@ class PlayMatSolitaireController
     #console.log "Moved to turn "+@iteration
     if this.getAITurnsLeftForCurrentSide() > 0
       #console.log "AI Control: " + this.getAITurnsLeftForCurrentSide()
-      @actionChoices[@currentPlayer].val ACTION_RANDOM
+      @actionChoices[@currentPlayer].val ACTION_EVO_PRESSURE
       this.decrementAITurnsLeftForCurrentSide()
       this.processAction @currentPlayer
     #else console.log "Player control"
@@ -461,8 +464,8 @@ class PlayMatSolitaireController
     return {
       plant: plantRewards-plantExpenses
       pathogen: pathoRewards-pathoExpenses
-      plant_reason: "12 income - 2*#{existingDetectors} expenses from #{existingDetectors} detectors"
-      pathogen_reason: "2*(#{existingFeatures}-2) income based on #{existingFeatures} features"
+      plant_reason: " = 12 income - 2*#{existingDetectors} expenses from #{existingDetectors} detectors"
+      pathogen_reason: " = 2*(#{existingFeatures}-2) income based on #{existingFeatures} features"
     }
 
   costForAction: (actionType, elementType) ->
@@ -475,26 +478,32 @@ class PlayMatSolitaireController
     existingEffectors = @theModel.countActiveCellsOfType TYPE_EFFECTOR
     roomForEffectors = existingEffectors < existingFeatures
 
+    evocost = 0
+
     switch elementType
       when TYPE_ALARM
-        drawCost = 10
-        discardCost = 10
-        replaceCost = 15 # < 20
+        drawCost = PRESSURE_FOR_VIRULENCE_LOSS-5
+        discardCost = PRESSURE_FOR_VIRULENCE_LOSS-5
+        replaceCost = PRESSURE_FOR_VIRULENCE_LOSS
+        evocost = PRESSURE_FOR_VIRULENCE_LOSS
         if excessDetectionTools > 0 then drawCost+=excessDetectionTools
       when TYPE_DETECTOR
-        drawCost = 20
-        discardCost = 10
-        replaceCost = 25 # < 30
+        drawCost = PRESSURE_FOR_VIRULENCE_LOSS+5
+        discardCost = PRESSURE_FOR_VIRULENCE_LOSS-5
+        replaceCost = PRESSURE_FOR_VIRULENCE_LOSS+10
+        evocost = PRESSURE_FOR_VIRULENCE_LOSS
         if excessDetectionTools > 0 then drawCost+=excessDetectionTools
       when TYPE_FEATURE
-        drawCost = 20
-        discardCost = if roomForEffectors then 10 else 20
-        replaceCost = 15 # < 30
+        drawCost = PRESSURE_FOR_MTI_LOSS+5
+        discardCost = (if roomForEffectors then PRESSURE_FOR_MTI_LOSS else PRESSURE_FOR_ETI_LOSS)-5
+        replaceCost = PRESSURE_FOR_MTI_LOSS
+        evocost = PRESSURE_FOR_MTI_LOSS
         if existingFeatures <= 2 then discardCost = -1
       when TYPE_EFFECTOR
-        drawCost = if roomForEffectors then 10 else 20
-        discardCost = 10
-        replaceCost = 15 # < 20
+        drawCost = (if roomForEffectors then PRESSURE_FOR_MTI_LOSS else PRESSURE_FOR_ETI_LOSS)-5
+        discardCost = PRESSURE_FOR_MTI_LOSS-5
+        replaceCost = PRESSURE_FOR_MTI_LOSS # < 20
+        evocost = PRESSURE_FOR_MTI_LOSS
 
     #console.log "Draw cost: "+drawCost+" Discard cost: "+discardCost
 
@@ -504,7 +513,7 @@ class PlayMatSolitaireController
       when ACTION_DISCARD then discardCost
       when ACTION_REPLACE then replaceCost
       when ACTION_DRAW then drawCost
-      when ACTION_RANDOM then (if availablePoints < 5 then availablePoints else 5)
+      when ACTION_EVO_PRESSURE then evocost
       else 0
     if cost < 0 then cost = -1
 
@@ -524,7 +533,7 @@ class PlayMatSolitaireController
         selectedType = @selectedElement[LOCATION_TYPE]
         type = selectedType
         action = chosenAaction
-      when ACTION_RANDOM
+      when ACTION_EVO_PRESSURE
         locationEvolutionWouldReplace = @theModel.getRandomEvolutionReplacementLocation whichSide
         this.doSelect locationEvolutionWouldReplace
         selectedType = @selectedElement[LOCATION_TYPE]
@@ -544,6 +553,7 @@ class PlayMatSolitaireController
         action = ACTION_DRAW
 
     cost = this.costForAction action, type
+    if String(chosenAaction) == String(ACTION_EVO_PRESSURE) then cost = this.costForAction chosenAaction, type
     #console.log "Cost for "+action+"/"+type+": "+cost
 
     #Execute appropriate action(s)

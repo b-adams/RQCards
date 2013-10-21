@@ -173,7 +173,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           actionType = ACTION_DRAW;
           elementType = TYPE_FEATURE;
           break;
-        case ACTION_RANDOM:
+        case ACTION_EVO_PRESSURE:
           null;
           break;
         default:
@@ -194,7 +194,11 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         this.goButtons[whoseSide].css("background", "yellow");
         return;
       }
-      this.goButtons[whoseSide].html("Go (Spend: " + cost + "pp)");
+      if (cost > 0) {
+        this.goButtons[whoseSide].html("Go (Spend: " + cost + "pp)");
+      } else {
+        this.goButtons[whoseSide].html("Go");
+      }
       return this.goButtons[whoseSide].css("background", "green");
     };
 
@@ -209,19 +213,19 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
         case RESULT_ETI:
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
-          pressureForLoser = 25;
+          pressureForLoser = PRESSURE_FOR_ETI_LOSS;
           victoryForWinner = rewards[SIDE_PLANT];
           break;
         case RESULT_PTI:
           winner = SIDE_PLANT;
           loser = SIDE_PATHOGEN;
-          pressureForLoser = 15;
+          pressureForLoser = PRESSURE_FOR_MTI_LOSS;
           victoryForWinner = rewards[SIDE_PLANT];
           break;
         default:
           winner = SIDE_PATHOGEN;
           loser = SIDE_PLANT;
-          pressureForLoser = 15;
+          pressureForLoser = PRESSURE_FOR_VIRULENCE_LOSS;
           victoryForWinner = rewards[SIDE_PATHOGEN];
       }
       vpReason = rewards[winner + "_reason"];
@@ -247,7 +251,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       if (victoryForWinner < 0) {
         message += "\nWARNING: Unsustainably costly win!";
       }
-      rapidRunMode = true;
+      rapidRunMode = false;
       showmessage = (firstPhaseFilter !== 0) && !rapidRunMode;
       if (showmessage) {
         alert(message);
@@ -268,7 +272,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       document.title = "State: " + this.boardState + " | Turn: " + this.currentPlayer;
       this.iteration += 1;
       if (this.getAITurnsLeftForCurrentSide() > 0) {
-        this.actionChoices[this.currentPlayer].val(ACTION_RANDOM);
+        this.actionChoices[this.currentPlayer].val(ACTION_EVO_PRESSURE);
         this.decrementAITurnsLeftForCurrentSide();
         return this.processAction(this.currentPlayer);
       }
@@ -542,13 +546,13 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       return {
         plant: plantRewards - plantExpenses,
         pathogen: pathoRewards - pathoExpenses,
-        plant_reason: "12 income - 2*" + existingDetectors + " expenses from " + existingDetectors + " detectors",
-        pathogen_reason: "2*(" + existingFeatures + "-2) income based on " + existingFeatures + " features"
+        plant_reason: " = 12 income - 2*" + existingDetectors + " expenses from " + existingDetectors + " detectors",
+        pathogen_reason: " = 2*(" + existingFeatures + "-2) income based on " + existingFeatures + " features"
       };
     };
 
     PlayMatSolitaireController.prototype.costForAction = function(actionType, elementType) {
-      var availablePoints, cost, detectionCostLimiter, discardCost, drawCost, excessDetectionTools, existingAlarms, existingDetectors, existingEffectors, existingFeatures, replaceCost, roomForEffectors;
+      var availablePoints, cost, detectionCostLimiter, discardCost, drawCost, evocost, excessDetectionTools, existingAlarms, existingDetectors, existingEffectors, existingFeatures, replaceCost, roomForEffectors;
       detectionCostLimiter = 8;
       existingAlarms = this.theModel.countActiveCellsOfType(TYPE_ALARM);
       existingDetectors = this.theModel.countActiveCellsOfType(TYPE_DETECTOR);
@@ -556,35 +560,40 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       existingFeatures = this.theModel.countActiveCellsOfType(TYPE_FEATURE);
       existingEffectors = this.theModel.countActiveCellsOfType(TYPE_EFFECTOR);
       roomForEffectors = existingEffectors < existingFeatures;
+      evocost = 0;
       switch (elementType) {
         case TYPE_ALARM:
-          drawCost = 10;
-          discardCost = 10;
-          replaceCost = 15;
+          drawCost = PRESSURE_FOR_VIRULENCE_LOSS - 5;
+          discardCost = PRESSURE_FOR_VIRULENCE_LOSS - 5;
+          replaceCost = PRESSURE_FOR_VIRULENCE_LOSS;
+          evocost = PRESSURE_FOR_VIRULENCE_LOSS;
           if (excessDetectionTools > 0) {
             drawCost += excessDetectionTools;
           }
           break;
         case TYPE_DETECTOR:
-          drawCost = 20;
-          discardCost = 10;
-          replaceCost = 25;
+          drawCost = PRESSURE_FOR_VIRULENCE_LOSS + 5;
+          discardCost = PRESSURE_FOR_VIRULENCE_LOSS - 5;
+          replaceCost = PRESSURE_FOR_VIRULENCE_LOSS + 10;
+          evocost = PRESSURE_FOR_VIRULENCE_LOSS;
           if (excessDetectionTools > 0) {
             drawCost += excessDetectionTools;
           }
           break;
         case TYPE_FEATURE:
-          drawCost = 20;
-          discardCost = roomForEffectors ? 10 : 20;
-          replaceCost = 15;
+          drawCost = PRESSURE_FOR_MTI_LOSS + 5;
+          discardCost = (roomForEffectors ? PRESSURE_FOR_MTI_LOSS : PRESSURE_FOR_ETI_LOSS) - 5;
+          replaceCost = PRESSURE_FOR_MTI_LOSS;
+          evocost = PRESSURE_FOR_MTI_LOSS;
           if (existingFeatures <= 2) {
             discardCost = -1;
           }
           break;
         case TYPE_EFFECTOR:
-          drawCost = roomForEffectors ? 10 : 20;
-          discardCost = 10;
-          replaceCost = 15;
+          drawCost = (roomForEffectors ? PRESSURE_FOR_MTI_LOSS : PRESSURE_FOR_ETI_LOSS) - 5;
+          discardCost = PRESSURE_FOR_MTI_LOSS - 5;
+          replaceCost = PRESSURE_FOR_MTI_LOSS;
+          evocost = PRESSURE_FOR_MTI_LOSS;
       }
       availablePoints = this.pressurePoints[this.currentPlayer];
       cost = (function() {
@@ -595,12 +604,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
             return replaceCost;
           case ACTION_DRAW:
             return drawCost;
-          case ACTION_RANDOM:
-            if (availablePoints < 5) {
-              return availablePoints;
-            } else {
-              return 5;
-            }
+          case ACTION_EVO_PRESSURE:
+            return evocost;
           default:
             return 0;
         }
@@ -625,7 +630,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           type = selectedType;
           action = chosenAaction;
           break;
-        case ACTION_RANDOM:
+        case ACTION_EVO_PRESSURE:
           locationEvolutionWouldReplace = this.theModel.getRandomEvolutionReplacementLocation(whichSide);
           this.doSelect(locationEvolutionWouldReplace);
           selectedType = this.selectedElement[LOCATION_TYPE];
@@ -649,6 +654,9 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
           action = ACTION_DRAW;
       }
       cost = this.costForAction(action, type);
+      if (String(chosenAaction) === String(ACTION_EVO_PRESSURE)) {
+        cost = this.costForAction(chosenAaction, type);
+      }
       switch (action) {
         case ACTION_DISCARD:
           this.doDiscardSelected();

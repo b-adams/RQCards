@@ -45,7 +45,7 @@ var ACTION_DRAW_F = "Draw Feature"
 var ACTION_DRAW_D = "Draw Detector"
 var ACTION_DRAW_E = "Draw Effector"
 var ACTION_DRAW_A = "Draw Alarm"
-var ACTION_RANDOM = "Random action"
+var ACTION_EVO_PRESSURE = "AI Picks"
 
 var ID_PLANT_ACTIONS = "plantAction"
 var ID_PATHO_ACTIONS = "pathoAction"
@@ -64,3 +64,7 @@ var SIDE_PATHOGEN = "pathogen"
 var LOCATION_TYPE = "cardtype"
 var LOCATION_COLUMN = "colIndex"
 var LOCATION_VARIANT = "variety"
+
+var PRESSURE_FOR_VIRULENCE_LOSS = 15
+var PRESSURE_FOR_ETI_LOSS = 25
+var PRESSURE_FOR_MTI_LOSS = 15
