@@ -28,7 +28,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
   PlayMatSolitaireController = (function() {
     function PlayMatSolitaireController() {
-      alert("Solitaire Build 131015@2341");
       this.theModel = new PlayMat();
       this.boardState = "Uninitialized";
       this.iteration = 0;
@@ -52,6 +51,10 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.victoryPoints = {
         plant: 0,
         pathogen: 0
+      };
+      this.AITurnSteppers = {
+        plant: null,
+        pathogen: null
       };
       this.selectedElement = new Location(-1, -1, -1);
       this.goButtons = {
@@ -196,7 +199,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
     };
 
     PlayMatSolitaireController.prototype.moveToNextTurn = function() {
-      var etiWins, firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, ptiWins, rewards, victoryForWinner, virWins, vpLine, vpReason, winline, winner;
+      var etiWins, firstPhaseFilter, loser, lostAgain, message, ppLine, pressureForLoser, ptiWins, rapidRunMode, rewards, showmessage, victoryForWinner, virWins, vpLine, vpReason, winline, winner;
       this.updateBoardState();
       firstPhaseFilter = this.iteration === 0 ? 0 : 1;
       message = "ERROR: Message not instantiated";
@@ -244,7 +247,9 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       if (victoryForWinner < 0) {
         message += "\nWARNING: Unsustainably costly win!";
       }
-      if (firstPhaseFilter !== 0) {
+      rapidRunMode = true;
+      showmessage = (firstPhaseFilter !== 0) && !rapidRunMode;
+      if (showmessage) {
         alert(message);
       }
       this.changePressure(loser, pressureForLoser * firstPhaseFilter);
@@ -261,7 +266,23 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       this.pressureBoxen[SIDE_PLANT].html("Pressure: " + this.pressurePoints[SIDE_PLANT]);
       this.pressureBoxen[SIDE_PATHOGEN].html("Pressure: " + this.pressurePoints[SIDE_PATHOGEN]);
       document.title = "State: " + this.boardState + " | Turn: " + this.currentPlayer;
-      return this.iteration += 1;
+      this.iteration += 1;
+      if (this.getAITurnsLeftForCurrentSide() > 0) {
+        this.actionChoices[this.currentPlayer].val(ACTION_RANDOM);
+        this.decrementAITurnsLeftForCurrentSide();
+        return this.processAction(this.currentPlayer);
+      }
+    };
+
+    PlayMatSolitaireController.prototype.getAITurnsLeftForCurrentSide = function() {
+      return this.AITurnSteppers[this.currentPlayer].val();
+    };
+
+    PlayMatSolitaireController.prototype.decrementAITurnsLeftForCurrentSide = function() {
+      var current, updated;
+      current = this.getAITurnsLeftForCurrentSide();
+      updated = current > 0 ? current - 1 : 0;
+      return this.AITurnSteppers[this.currentPlayer].val(updated);
     };
 
     PlayMatSolitaireController.prototype.doDiscard = function(locWhere) {
@@ -661,6 +682,8 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
       control.connectElement(new Location(TYPE_ALARM, i, VARIETY_LEFT));
       control.connectElement(new Location(TYPE_ALARM, i, VARIETY_RIGHT));
     }
+    control.AITurnSteppers[SIDE_PLANT] = $("#" + ID_PLANT_AUTOTURNS);
+    control.AITurnSteppers[SIDE_PATHOGEN] = $("#" + ID_PATHO_AUTOTURNS);
     control.goButtons[SIDE_PLANT] = $("#" + ID_PLANT_ENGAGE);
     control.actionChoices[SIDE_PLANT] = $("#" + ID_PLANT_ACTIONS);
     control.goButtons[SIDE_PATHOGEN] = $("#" + ID_PATHO_ENGAGE);

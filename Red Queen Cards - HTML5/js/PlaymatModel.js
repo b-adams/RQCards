@@ -29,7 +29,6 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
   window.PlayMat = PlayMat = (function() {
     function PlayMat() {
       this.clearBoard();
-      alert("Mat Build 131015@2341");
       return this;
     }
 

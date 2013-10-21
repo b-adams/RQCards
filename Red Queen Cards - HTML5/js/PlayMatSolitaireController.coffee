@@ -24,7 +24,7 @@ along with this program.  If not, see http://www.gnu.org/licenses/.
 
 class PlayMatSolitaireController
   constructor: ->
-    alert "Solitaire Build 131015@2341"
+    #alert "Solitaire Build 131020@2226"
     @theModel = new PlayMat()
     @boardState = "Uninitialized"
     @iteration = 0
@@ -48,6 +48,10 @@ class PlayMatSolitaireController
     @victoryPoints = {
       plant: 0
       pathogen: 0
+    }
+    @AITurnSteppers = {
+      plant: null
+      pathogen: null
     }
     @selectedElement = new Location(-1, -1, -1)
     @goButtons = {
@@ -215,7 +219,9 @@ class PlayMatSolitaireController
     if victoryForWinner < 0
       message += "\nWARNING: Unsustainably costly win!"
 
-    alert message if firstPhaseFilter isnt 0
+    rapidRunMode = true
+    showmessage = (firstPhaseFilter isnt 0) and not (rapidRunMode)
+    alert message if showmessage
 
     this.changePressure loser, pressureForLoser*firstPhaseFilter
     @victoryPoints[winner] += victoryForWinner*firstPhaseFilter
@@ -235,6 +241,21 @@ class PlayMatSolitaireController
     document.title = "State: "+@boardState+" | Turn: "+@currentPlayer
     @iteration += 1
     #console.log "Moved to turn "+@iteration
+    if this.getAITurnsLeftForCurrentSide() > 0
+      #console.log "AI Control: " + this.getAITurnsLeftForCurrentSide()
+      @actionChoices[@currentPlayer].val ACTION_RANDOM
+      this.decrementAITurnsLeftForCurrentSide()
+      this.processAction @currentPlayer
+    #else console.log "Player control"
+
+
+  getAITurnsLeftForCurrentSide: ->
+    return @AITurnSteppers[@currentPlayer].val()
+
+  decrementAITurnsLeftForCurrentSide: ->
+    current = this.getAITurnsLeftForCurrentSide()
+    updated = if current > 0 then current-1 else 0
+    @AITurnSteppers[@currentPlayer].val(updated)
 
   doDiscard: (locWhere) ->
     oldValue = @theModel.isCellActive locWhere
@@ -552,6 +573,9 @@ $(document).ready ->
     control.connectElement new Location(TYPE_EFFECTOR, i, VARIETY_RIGHT)
     control.connectElement new Location(TYPE_ALARM,    i, VARIETY_LEFT)
     control.connectElement new Location(TYPE_ALARM,    i, VARIETY_RIGHT)
+
+  control.AITurnSteppers[SIDE_PLANT] = $("#"+ID_PLANT_AUTOTURNS)
+  control.AITurnSteppers[SIDE_PATHOGEN] = $("#"+ID_PATHO_AUTOTURNS)
 
   control.goButtons[SIDE_PLANT] = $("#"+ID_PLANT_ENGAGE)
   control.actionChoices[SIDE_PLANT] = $("#"+ID_PLANT_ACTIONS)

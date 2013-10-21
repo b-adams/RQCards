@@ -123,3 +123,5 @@ createCopyright = (inElement) ->
   agplURL = $(document.createElement('href')).attr("href", "http://www.gnu.org/licenses/agpl.html").append(agplLogo)
   inElement.html('<a href="https://github.com/b-adams/RQCards">Source</a> for this project available under the <a href="http://www.gnu.org/licenses/agpl.html">AGPLv3</a>')
   inElement.prepend(agplURL)
+
+#alert "Solitaire Boardmaker 131020@2218"
